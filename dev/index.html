@@ -547,6 +547,28 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#version-evolution-v12-v13-v14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Version Evolution (v1.2 → v1.3 → v1.4)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-documentation-site-map-diataxis-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4 Documentation Site Map (Diátaxis Architecture)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#why-cherenkov" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2600,6 +2622,28 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#version-evolution-v12-v13-v14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Version Evolution (v1.2 → v1.3 → v1.4)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-documentation-site-map-diataxis-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4 Documentation Site Map (Diátaxis Architecture)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#why-cherenkov" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2733,8 +2777,106 @@
   style Q fill:#7c3aed,stroke:#fff,stroke-width:2px,color:#fff
   style V fill:#2563eb,stroke:#fff,stroke-width:2px,color:#fff
   style H fill:#059669,stroke:#fff,stroke-width:2px,color:#fff</code></pre>
-<p><img alt="CHERENKOV-QA 1.4 Unified Overview Dashboard" src="assets/overview-dashboard.svg" />
-<em>Figure 1: CHERENKOV-QA 1.4 Unified 5-Hub Overview Dashboard with live drift streaming and Second Brain metrics.</em></p>
+<p><img alt="CHERENKOV-QA 1.4 Homepage Overview" src="assets/homepage_overview.png" />
+<em>Figure 1: CHERENKOV-QA 1.4 Autonomous Quality Fabric — Unified Overview &amp; Diátaxis Navigation.</em></p>
+<hr />
+<h2 id="version-evolution-v12-v13-v14">Version Evolution (v1.2 → v1.3 → v1.4)<a class="headerlink" href="#version-evolution-v12-v13-v14" title="Permanent link">&para;</a></h2>
+<p>The progression from foundational conformance to an autonomous, zero-lock-in quality fabric across releases:</p>
+<pre class="mermaid"><code>flowchart TD
+  subgraph V12["Version 1.2.0 (Foundation)"]
+    direction TB
+    A1["Core API Conformance Engine"]
+    A2["Playwright Test Generation"]
+    A3["SQLite Storage (verdicts.db)"]
+    A4["D7 Non-Negotiable Invariants"]
+    A5["CLI Baseline (run, validate, eject)"]
+    A_WARN["⚠️ Outdated Banner Active"]
+  end
+
+  subgraph V13["Version 1.3.0 (Autonomous Extensions)"]
+    direction TB
+    B1["Second Brain (Knowledge Mesh / RAG)"]
+    B2["VLM + LocalAI Backend Routing"]
+    B3["Tauri 2 Desktop Host App"]
+    B4["Chat Agent + Persona SSE"]
+    B5["Mobile Engine (Maestro/ADB)"]
+    B6["Kubernetes Operator &amp; CRDs"]
+    B_WARN["⚠️ Banner links to /1.4/"]
+  end
+
+  subgraph V14["Version 1.4.0 (Consolidated Release - CURRENT)"]
+    direction TB
+    C1["Unified 1.4 Diátaxis Documentation Hub"]
+    C2["Clean Architecture Ports &amp; Adapters (ADR-004)"]
+    C3["MemSearch Semantic Memory &amp; SDD Protocol"]
+    C4["Multi-Agent Conductor &amp; CC-1..CC-6 Suite"]
+    C5["Native CI/CD &amp; Jenkins Shared Library"]
+    C6["Spec Guardian &amp; Portable Test Certificates"]
+    C7["Continuous Conformance Trend &amp; Coverage Maps"]
+    C_OK["✅ Authoritative Release (No Warning Banner)"]
+  end
+
+  V12 ==&gt;|"Added Background Daemons, Enterprise SAML, MCP"| V13
+  V13 ==&gt;|"Added Coverage Analytics, Regression Engine, CI Bots"| V14
+
+  classDef v12 fill:#1e293b,stroke:#64748b,stroke-width:2px,color:#f8fafc;
+  classDef v13 fill:#1e1b4b,stroke:#818cf8,stroke-width:2px,color:#f8fafc;
+  classDef v14 fill:#0c4a6e,stroke:#38bdf8,stroke-width:2.5px,color:#f8fafc;
+  classDef warn fill:#ef4444,stroke:#ef4444,color:#ffffff;
+  classDef ok fill:#059669,stroke:#10b981,color:#ffffff;
+
+  class A1,A2,A3,A4,A5 v12;
+  class B1,B2,B3,B4,B5,B6 v13;
+  class C1,C2,C3,C4,C5,C6,C7 v14;
+  class A_WARN,B_WARN warn;
+  class C_OK ok;</code></pre>
+<p><img alt="CHERENKOV-QA Version Evolution Architecture" src="assets/version_diff.png" />
+<em>Figure 2: Architectural progression across CHERENKOV-QA minor releases.</em></p>
+<hr />
+<h2 id="14-documentation-site-map-diataxis-architecture">1.4 Documentation Site Map (Diátaxis Architecture)<a class="headerlink" href="#14-documentation-site-map-diataxis-architecture" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>flowchart TB
+  Root(["CHERENKOV-QA 1.4 Documentation Hub"])
+
+  subgraph Hub1["1. 🎓 Tutorials (Learning)"]
+    H1_1["Getting Started Guide&lt;br/&gt;(getting-started/index.md)"]
+    H1_2["Quickstart Walkthrough&lt;br/&gt;(getting-started/quickstart.md)"]
+    H1_3["Installation &amp; Setup&lt;br/&gt;(getting-started/installation.md)"]
+    H1_4["Configuration &amp; Cost Tiers&lt;br/&gt;(configuration.md / cost-tiers.md)"]
+  end
+
+  subgraph Hub2["2. 🛠️ How-To Guides (Task-Oriented)"]
+    H2_1["API Conformance Testing&lt;br/&gt;(guides/api-conformance.md)"]
+    H2_2["Check Suite Integrity Audit&lt;br/&gt;(guides/check-suite.md)"]
+    H2_3["Spec Guardian Daemon&lt;br/&gt;(guides/continuous-monitoring.md)"]
+    H2_4["HITL Review &amp; Certification&lt;br/&gt;(guides/hitl.md / guides/certificates.md)"]
+    H2_5["Dashboard &amp; Docker&lt;br/&gt;(guides/dashboard.md / guides/docker.md)"]
+  end
+
+  subgraph Hub3["3. 📋 Reference (Information-Oriented)"]
+    H3_1["CLI Reference &amp; Flags&lt;br/&gt;(cli/reference.md / cli/completions.md)"]
+    H3_2["Architecture &amp; Module Inventory&lt;br/&gt;(architecture/module-reference.md)"]
+    H3_3["Error Handling &amp; Exit Codes&lt;br/&gt;(troubleshooting/faq.md)"]
+    H3_4["Master Release Notes&lt;br/&gt;(releases/v1.4.0.md / changelog.md)"]
+  end
+
+  subgraph Hub4["4. 💡 Explanations (Understanding-Oriented)"]
+    H4_1["Clean Architecture &amp; System Design&lt;br/&gt;(architecture/clean-architecture.md)"]
+    H4_2["Second Brain &amp; Knowledge Mesh&lt;br/&gt;(architecture/second-brain.md)"]
+    H4_3["Platform Operating Model&lt;br/&gt;(architecture/platform-operating-model.md)"]
+    H4_4["D7 Validation Invariants&lt;br/&gt;(AGENTS.md / architecture/user-journeys.md)"]
+  end
+
+  Root --&gt; Hub1
+  Root --&gt; Hub2
+  Root --&gt; Hub3
+  Root --&gt; Hub4
+
+  classDef rootNode fill:#0f172a,stroke:#38bdf8,stroke-width:3px,color:#ffffff;
+  classDef hub fill:#1e293b,stroke:#64748b,stroke-width:1.5px,color:#f8fafc;
+  class Root rootNode;
+  class H1_1,H1_2,H1_3,H1_4,H2_1,H2_2,H2_3,H2_4,H2_5,H3_1,H3_2,H3_3,H3_4,H4_1,H4_2,H4_3,H4_4 hub;</code></pre>
+<p><img alt="CHERENKOV-QA 1.4 Site Map Architecture" src="assets/sitemap_architecture.png" />
+<em>Figure 3: Comprehensive Diátaxis structure across Tutorials, How-To Guides, Reference, and Explanations.</em></p>
 <div class="admonition note">
 <p class="admonition-title">Shipped today vs. where it's heading</p>
 <p><strong>API conformance is the shipped core</strong> — <code>validate</code>, <code>verify</code>, generation, the <a href="guides/check-suite/">check-suite integrity audit</a>, and <a href="guides/certificates/">signed certificates</a> all run today. Mobile, performance, and security evidence are the platform's <em>direction</em>, not current scope. For the full picture, read the <a href="architecture/platform-operating-model/">Platform Operating Model</a> and the <a href="architecture/user-journeys/">User Journeys</a>.</p>
@@ -2867,8 +3009,6 @@
     
   
   
-    
-  
 
 
   <aside class="md-source-file">
@@ -2878,19 +3018,10 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="August 15, 2026 23:52:55 UTC"><span class="timeago" datetime="2026-08-15T23:52:55+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="August 15, 2026 23:52:55 UTC">2026-08-15</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="August 16, 2026 01:34:35 UTC"><span class="timeago" datetime="2026-08-16T01:34:35+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="August 16, 2026 01:34:35 UTC">2026-08-16</span>
   </span>
 
     
-    
-      
-  <span class="md-source-file__fact">
-    <span class="md-icon" title="Created">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
-    </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="June 29, 2026 00:05:04 UTC"><span class="timeago" datetime="2026-06-29T00:05:04+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="June 29, 2026 00:05:04 UTC">2026-06-29</span>
-  </span>
-
     
     
     

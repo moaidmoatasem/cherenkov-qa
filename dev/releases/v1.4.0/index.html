@@ -2312,6 +2312,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#version-evolution-v12-v13-v14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Version Evolution (v1.2 → v1.3 → v1.4)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#whats-new-since-v130" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2574,6 +2585,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#version-evolution-v12-v13-v14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Version Evolution (v1.2 → v1.3 → v1.4)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#whats-new-since-v130" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2658,6 +2680,50 @@
 
 <h1 id="release-notes-cherenkov-qa-v140">Release Notes: CHERENKOV-QA v1.4.0<a class="headerlink" href="#release-notes-cherenkov-qa-v140" title="Permanent link">&para;</a></h1>
 <p><strong>Date:</strong> 2026-08-05</p>
+<h2 id="version-evolution-v12-v13-v14">Version Evolution (v1.2 → v1.3 → v1.4)<a class="headerlink" href="#version-evolution-v12-v13-v14" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>flowchart TD
+  subgraph V12["Version 1.2.0 (Foundation)"]
+    direction TB
+    A1["Core API Conformance Engine"]
+    A2["Playwright Test Generation"]
+    A3["SQLite Storage (verdicts.db)"]
+    A4["D7 Non-Negotiable Invariants"]
+    A5["CLI Baseline (run, validate, eject)"]
+  end
+
+  subgraph V13["Version 1.3.0 (Autonomous Extensions)"]
+    direction TB
+    B1["Second Brain (Knowledge Mesh / RAG)"]
+    B2["VLM + LocalAI Backend Routing"]
+    B3["Tauri 2 Desktop Host App"]
+    B4["Chat Agent + Persona SSE"]
+    B5["Mobile Engine (Maestro/ADB)"]
+    B6["Kubernetes Operator &amp; CRDs"]
+  end
+
+  subgraph V14["Version 1.4.0 (Consolidated Release - CURRENT)"]
+    direction TB
+    C1["Unified 1.4 Diátaxis Documentation Hub"]
+    C2["Clean Architecture Ports &amp; Adapters (ADR-004)"]
+    C3["MemSearch Semantic Memory &amp; SDD Protocol"]
+    C4["Multi-Agent Conductor &amp; CC-1..CC-6 Suite"]
+    C5["Native CI/CD &amp; Jenkins Shared Library"]
+    C6["Spec Guardian &amp; Portable Test Certificates"]
+    C7["Continuous Conformance Trend &amp; Coverage Maps"]
+  end
+
+  V12 ==&gt;|"Added Background Daemons, Enterprise SAML, MCP"| V13
+  V13 ==&gt;|"Added Coverage Analytics, Regression Engine, CI Bots"| V14
+
+  classDef v12 fill:#1e293b,stroke:#64748b,stroke-width:2px,color:#f8fafc;
+  classDef v13 fill:#1e1b4b,stroke:#818cf8,stroke-width:2px,color:#f8fafc;
+  classDef v14 fill:#0c4a6e,stroke:#38bdf8,stroke-width:2.5px,color:#f8fafc;
+
+  class A1,A2,A3,A4,A5 v12;
+  class B1,B2,B3,B4,B5,B6 v13;
+  class C1,C2,C3,C4,C5,C6,C7 v14;</code></pre>
+<p><img alt="Version Evolution Diagram" src="../../assets/version_diff.png" />
+<em>Figure: Architectural evolution across CHERENKOV-QA minor versions.</em></p>
 <h2 id="whats-new-since-v130">What's New Since v1.3.0<a class="headerlink" href="#whats-new-since-v130" title="Permanent link">&para;</a></h2>
 <h3 id="features">Features<a class="headerlink" href="#features" title="Permanent link">&para;</a></h3>
 <ul>
@@ -2690,8 +2756,6 @@
     
   
   
-    
-  
 
 
   <aside class="md-source-file">
@@ -2701,19 +2765,10 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="August 15, 2026 23:52:55 UTC"><span class="timeago" datetime="2026-08-15T23:52:55+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="August 15, 2026 23:52:55 UTC">2026-08-15</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="August 16, 2026 01:34:35 UTC"><span class="timeago" datetime="2026-08-16T01:34:35+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="August 16, 2026 01:34:35 UTC">2026-08-16</span>
   </span>
 
     
-    
-      
-  <span class="md-source-file__fact">
-    <span class="md-icon" title="Created">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
-    </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="August 15, 2026 23:52:55 UTC"><span class="timeago" datetime="2026-08-15T23:52:55+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="August 15, 2026 23:52:55 UTC">2026-08-15</span>
-  </span>
-
     
     
     
