@@ -1,0 +1,2267 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Autonomous Quality Fabric">
+      
+      
+        <meta name="author" content="TesterArmy">
+      
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>CHERENKOV — Frontend Redesign: Workflows, UX & Agent Build Prompts - Cherenkov QA</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#cherenkov-frontend-redesign-workflows-ux-agent-build-prompts" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+          <aside class="md-banner md-banner--warning">
+            <div class="md-banner__inner md-grid md-typeset">
+              
+  <div class="md-version-warning">
+    <strong>Notice:</strong> You are viewing documentation for an older version of CHERENKOV-QA.
+    <a href="https://moaidmoatasem.github.io/cherenkov-qa/1.4/">Click here for the latest version (v1.4).</a>
+  </div>
+
+            </div>
+            <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
+          </aside>
+        
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Cherenkov QA" class="md-header__button md-logo" aria-label="Cherenkov QA" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Cherenkov QA
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              CHERENKOV — Frontend Redesign: Workflows, UX &amp; Agent Build Prompts
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../1.4/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../1.4/getting-started/" class="md-tabs__link">
+          
+  
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../1.4/guides/" class="md-tabs__link">
+          
+  
+  
+  QA & Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../1.4/architecture/" class="md-tabs__link">
+          
+  
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../1.4/guides/ci-cd/" class="md-tabs__link">
+          
+  
+  
+  Ecosystem
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../1.4/troubleshooting/faq/" class="md-tabs__link">
+          
+  
+  
+  Troubleshooting
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../1.4/cli/reference/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Cherenkov QA" class="md-nav__button md-logo" aria-label="Cherenkov QA" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Cherenkov QA
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/getting-started/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/getting-started/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/getting-started/cost-tiers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cost Tiers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    QA & Testing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    QA & Testing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides Hub
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/api-conformance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Conformance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/check-suite/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Check Suite
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/test-generation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Generation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/continuous-monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spec Guardian
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/certificates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Certificates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/hitl/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HITL
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/eject/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Eject
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/docker/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docker
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/system-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/platform-operating-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/user-journeys/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Journeys
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/clean-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Clean Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/module-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Module Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/second-brain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Second Brain
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/diagrams/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Diagrams
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_9" id="__nav_4_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Role Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Role Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/roles/developer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/roles/qa-engineer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    QA Engineer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/roles/devops/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DevOps & SRE
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/roles/team-lead/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Team Lead
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ecosystem
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Ecosystem
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/ci-cd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CI/CD
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/integrations/github-actions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GitHub Actions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/integrations/vscode/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    VS Code
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/integrations/mcp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MCP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/integrations/langchain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LangChain
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Troubleshooting
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/troubleshooting/faq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FAQ
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/troubleshooting/common-issues/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Common Issues
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/cli/reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/cli/completions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Completions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/releases/v1.4.0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v1.4.0 Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/releases/v1.3.0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v1.3.0 Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/releases/v1.2.0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v1.2.0 Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="cherenkov-frontend-redesign-workflows-ux-agent-build-prompts">CHERENKOV — Frontend Redesign: Workflows, UX &amp; Agent Build Prompts</h1>
+<p><strong>Targets:</strong> <code>track-b-c-deferred/dashboard/</code> (React 18 + Vite + Tailwind v4 + lucide-react, mock-first <code>lib/api.ts</code>).
+<strong>Purpose:</strong> realign the FE from the old <em>generator</em> flow (Projects→Pipeline→Review→Heal→Eject) to the <strong>Reality-Engine master plan</strong> (<a href="../../vision/07_MASTER_PLAN/"><code>../vision/07_MASTER_PLAN.md</code></a>) — truth → divergence → author/learn — while <strong>keeping one consistent design system</strong>, easy navigation, and a manual-QA-first experience.
+<strong>How to use:</strong> §1–§6 are the design of record. <strong>§7 is the agent backlog</strong> — self-contained prompts you hand to coding agents in order. Every prompt inherits the <strong>Consistency Contract (FE-0)</strong>.</p>
+<blockquote>
+<p>Status note: the dashboard currently lives under <code>track-b-c-deferred/</code>. <strong>Pre-req (FE-0):</strong> relocate/activate it to <code>dashboard/</code> (or wire it into the build) before the screen work, OR keep the path and just build in place. Pick one and keep it consistent.</p>
+</blockquote>
+<hr />
+<h2 id="1-design-goals-what-good-means-here">1. Design goals (what "good" means here)</h2>
+<ol>
+<li><strong>Land on value, not a list.</strong> First screen answers <em>"is my system lying to itself, and am I safe to ship?"</em> — not "pick a project."</li>
+<li><strong>Manual-QA-first.</strong> A non-coder can author and run a real test by typing intent. No selectors, no YAML.</li>
+<li><strong>One consistent system.</strong> Every screen reuses the same shell, tokens, card, pill, empty-state, and motion language. Zero bespoke styling.</li>
+<li><strong>Easy to reach.</strong> ⌘K command palette + always-present primary action + grouped, labeled nav (≤6 groups).</li>
+<li><strong>Trust is visible.</strong> Every finding/test shows provenance, evidence, and "why" inline — autonomy you can audit.</li>
+<li><strong>Accessible &amp; calm.</strong> WCAG AA contrast, full keyboard nav, <code>prefers-reduced-motion</code> honored (the theme is glow-heavy).</li>
+</ol>
+<hr />
+<h2 id="2-current-state-audit-what-exists-reuse-dont-rebuild">2. Current-state audit (what exists — reuse, don't rebuild)</h2>
+<p><strong>Design system (keep verbatim):</strong> Tailwind v4 <code>@theme</code> in <code>src/index.css</code>:
+<code>--color-bg-base #020617</code>, <code>--color-glow-blue/#22d3ee</code>, <code>--color-success #10b981</code>, <code>--color-warning #f59e0b</code>, <code>--color-danger #ef4444</code>; fonts Inter / Poppins (display) / JetBrains Mono; utility classes <code>.cherenkov-panel</code>, <code>.cherenkov-card</code>, <code>.cherenkov-glow</code>, <code>.glow-text</code>, <code>.grid-bg</code>, <code>.dashed-glow</code>; animations <code>glow-pulse</code>, <code>beam-flow</code>, <code>pulse-slow</code>.
+<strong>Shell (keep):</strong> <code>Sidebar</code> (280px, grouped nav + budget meter + Live/Idle) + <code>TopBar</code> (project, status, cost) + <code>&lt;main&gt;</code> <code>activeTab</code> switch in <code>App.tsx</code>.
+<strong>Screens that survive (reframe, don't delete):</strong> <code>SetupScreen</code> (→ New-Run wizard), <code>ReviewScreen</code> (→ HITL that feeds Reflector), <code>HealingScreen</code>, <code>EjectScreen</code>, <code>SettingsScreen</code>, <code>ProjectsScreen</code> (→ demoted to a switcher), <code>PipelineScreen</code> (→ demoted to a live-run drawer).
+<strong>Data layer (keep pattern):</strong> <code>types.ts</code> + <code>mockData.ts</code> + <code>lib/api.ts</code> with graceful mock fallback (<code>runPipeline</code> already try/catch-falls back). <strong>All new screens build mock-first.</strong></p>
+<p><strong>The IA gap:</strong> there is no surface for the product's actual deliverables — Truth Map, <strong>Divergences</strong>, intent authoring, perf/visual/coverage signals, <strong>memory/pairing</strong>, governance. That's the redesign.</p>
+<hr />
+<h2 id="3-revised-information-architecture-the-new-navigation">3. Revised information architecture (the new navigation)</h2>
+<p>Grouped sidebar, section labels, ≤6 groups. ★ = new screen. Old names in (parens).</p>
+<div class="highlight"><pre><span></span><code>◇ OVERVIEW ★                     ← landing: release-readiness + critical divergences + recent learning
+
+ENGINE
+  ⊹ Truth Map ★                  ← the claim graph (what the system claims, w/ provenance)
+  ⚡ Divergences ★  (the star)    ← confirmed &quot;system lying to itself&quot; findings
+  🔍 Explore ★                   ← autonomous &quot;second pair of eyes&quot; run
+
+AUTHOR
+  ✦ Author by Intent ★           ← manual-QA: plain-English → live-executed test
+  ☑ Review Queue (ReviewScreen)  ← HITL approve/reject → feeds Reflector
+
+SIGNALS
+  📈 Signals ★                   ← one screen, tabs: Performance · Visual · Coverage
+
+OPERATE
+  ✨ Healing (HealingScreen)
+  ⬇ Eject (EjectScreen)
+  🛡 Governance ★                 ← KPIs, model certification, traceability
+
+LEARN
+  🧠 Memory &amp; Pairing ★          ← Reflector idioms + junior↔senior Mentor
+
+─ pinned bottom ─
+  Projects (switcher)  ·  Settings  ·  Live/Idle + budget meter
+</code></pre></div>
+<p><strong>Reachability layer (global, above nav):</strong>
+- <strong>⌘K Command Palette</strong> — jump to any screen, start a run, open a divergence, "author a test…", switch project.
+- <strong>Primary action</strong> — <code>New Run</code> button (always visible, top of sidebar) opens the Setup wizard.
+- <strong>Live-run drawer</strong> — clicking the TopBar <code>LIVE</code> status slides in the old <code>PipelineScreen</code> DAG as a drawer (contextual, not a nav tab).</p>
+<p><strong>Autonomy ladder control (TopBar segmented control):</strong> <code>Assisted · Augmented · Agentic</code> — sets how much the engine does unattended; persisted to <code>[copilot] autonomy</code>. Manual QAs start on <strong>Assisted</strong>.</p>
+<hr />
+<h2 id="4-global-ux-patterns-apply-on-every-screen">4. Global UX patterns (apply on every screen)</h2>
+<table>
+<thead>
+<tr>
+<th>Pattern</th>
+<th>Rule</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Page shell</strong></td>
+<td>Every screen = <code>PageHeader</code> (title, 1-line purpose, primary action, optional tabs) + scrollable body in <code>.cherenkov-card</code> panels. No screen invents its own frame.</td>
+</tr>
+<tr>
+<td><strong>Empty states</strong></td>
+<td>Icon + one sentence + <strong>one primary CTA</strong> + a "Try the Petstore demo" secondary. Never a blank panel.</td>
+</tr>
+<tr>
+<td><strong>Loading</strong></td>
+<td>Skeleton shimmer (reuse glow tokens), never spinners-only; optimistic updates for approve/reject.</td>
+</tr>
+<tr>
+<td><strong>Async feedback</strong></td>
+<td>Toasts for every backend action (success/danger tokens); inline error with retry.</td>
+</tr>
+<tr>
+<td><strong>Severity system</strong></td>
+<td><code>critical→danger</code>, <code>high→#fb923c</code>, <code>medium→warning</code>, <code>low→glow-blue</code>, <code>info→text-muted</code>. One <code>SeverityPill</code>. Used by Divergences, Signals, Governance — identical everywhere.</td>
+</tr>
+<tr>
+<td><strong>Status system</strong></td>
+<td><code>reproduced→success</code>, <code>pending→warning</code>, <code>rejected→text-muted</code>, <code>live→glow pulse</code>. One <code>StatusDot</code>.</td>
+</tr>
+<tr>
+<td><strong>Provenance/evidence</strong></td>
+<td>Any claim/finding/test exposes <code>[spec|code|traffic|db]</code> provenance chips + an "evidence" disclosure (request/response diff, screenshot).</td>
+</tr>
+<tr>
+<td><strong>Keyboard</strong></td>
+<td>⌘K palette; <code>j/k</code> to move in lists; <code>Enter</code> opens; <code>a</code>/<code>r</code> approve/reject in Review; visible focus rings (glow-blue).</td>
+</tr>
+<tr>
+<td><strong>A11y</strong></td>
+<td>WCAG AA contrast (verify cyan-on-dark for text ≥ 4.5:1 — use <code>text-primary</code>, reserve glow for accents/borders, not body text); ARIA roles on nav/lists/dialogs; <code>prefers-reduced-motion</code> disables <code>glow-pulse</code>/<code>beam-flow</code>/<code>pulse-slow</code>.</td>
+</tr>
+<tr>
+<td><strong>Responsive</strong></td>
+<td><code>&lt; lg</code>: sidebar collapses to icon rail with tooltips; panels stack single-column.</td>
+</tr>
+<tr>
+<td><strong>Density</strong></td>
+<td>Comfortable default; a compact toggle in Settings for power users (senior SDETs).</td>
+</tr>
+<tr>
+<td><strong>Onboarding</strong></td>
+<td>First run: a 3-step coachmark tour ending at "your first reproduced divergence" (mirrors the product's &lt;10-min promise).</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="5-screen-workflows-purpose-who-flow-states">5. Screen workflows (purpose · who · flow · states)</h2>
+<p><strong>Overview ★</strong> — <em>Who: lead/anyone.</em> Three cards: <strong>Release Readiness</strong> (KPI ring: open critical divergences, false-positive rate), <strong>Top Divergences</strong> (3 worst, click → Divergences), <strong>Recent Learning</strong> (what the Reflector just learned — "stopped re-surfacing 4 known-noise findings"). Empty → "Run your first map" CTA.</p>
+<p><strong>Truth Map ★</strong> — <em>Who: SDET/lead.</em> Left: endpoint list (method+path). Right: selected endpoint's <strong>claims</strong> grouped by provenance <code>[spec|code|traffic|db]</code>. Highlights endpoints that have a divergence. CTA: "Hunt divergences here."</p>
+<p><strong>Divergences ★ (the star)</strong> — <em>Who: everyone.</em> Filterable list (by D1–D5 class, severity, status). Row = severity pill + one-line claim-vs-claim + provenance chips. Detail drawer: <strong>Claim A vs Claim B</strong>, <strong>evidence</strong> (real request/response diff or screenshot), <strong>repro steps</strong>, severity, and actions: <code>Close with test</code> (→ emitter), <code>Mark intended</code>, <code>Reject</code> (→ Reflector). This is the money screen — make it skimmable and trustworthy.</p>
+<p><strong>Explore ★</strong> — <em>Who: manual QA.</em> "Point me at your app" → autonomous crawl → results as a <strong>"second pair of eyes" digest</strong>: anomalies, 5xx, JS errors, visual breaks, each promotable to a divergence or an authored test. Live progress uses <code>beam-flow</code>.</p>
+<p><strong>Author by Intent ★ (the manual-QA heart)</strong> — <em>Who: non-coder QA.</em> Big plain-English input ("check a guest can checkout with a discount code and that the email arrives"), example chips, <strong>Mentor idioms surface contextually</strong> ("seniors on this service also check tenant isolation"). Run → <strong>live Pilot execution preview</strong> (vision) → result with evidence → <code>Save &amp; Eject</code> to a real Playwright file. Never shows a selector. Autonomy = Assisted by default (human confirms each step).</p>
+<p><strong>Review Queue (upgrade ReviewScreen)</strong> — HITL approve/reject/edit, now: every decision writes a <strong>verdict to the Reflector</strong> with an optional reason; show "this teaches CHERENKOV" microcopy so users feel the compounding value.</p>
+<p><strong>Signals ★</strong> — tabs: <strong>Performance</strong> (latency history + ML anomaly confidence band, TTFT/cost for AI endpoints), <strong>Visual</strong> (baseline vs current, semantic diff), <strong>Coverage</strong> (SDET coverage + which paths got new tests). Shared chart components; severity system for regressions.</p>
+<p><strong>Memory &amp; Pairing ★</strong> — <em>Who: junior + lead.</em> Two panes: <strong>Idioms</strong> (the team's accumulated senior checks, with confirm-count + decay), and <strong>Pairing</strong> — a junior view where Mentor explains <em>why</em> a senior would check X here. Surfaces the compounding moat as a human-facing feature.</p>
+<p><strong>Governance ★</strong> — KPI dashboard (defect-escape, false-positive, coverage-accuracy, maintenance-efficiency trends), <strong>Model Certification</strong> status per tier (Gold-Set pass/fail), and a <strong>traceability</strong> explorer (artifact → prompt+model+claims+evidence). Compliance-export button.</p>
+<p><strong>Healing / Eject / Settings</strong> — keep; restyle to the shared shell. Settings gains: substrate <strong>tiers</strong> (small/deep/vision/ml), <strong>egress</strong> dial (none/internal/any), <strong>budgets</strong>, <strong>autonomy</strong> default, density toggle, reduced-motion override.</p>
+<hr />
+<h2 id="6-consistency-contract-the-rules-every-agent-obeys-referenced-by-all-prompts">6. Consistency contract (the rules every agent obeys — referenced by all prompts)</h2>
+<ol>
+<li><strong>Tokens only.</strong> Use <code>@theme</code> CSS vars / Tailwind classes (<code>bg-bg-base</code>, <code>text-text-primary</code>, <code>text-text-muted</code>, <code>glow-blue</code>, <code>success/warning/danger-custom</code>). No raw hex except inside the existing <code>index.css</code>.</li>
+<li><strong>Primitives only.</strong> Build/great-reuse shared components (FE-0): <code>PageHeader</code>, <code>Panel</code> (<code>.cherenkov-panel</code>), <code>Card</code> (<code>.cherenkov-card</code>), <code>SeverityPill</code>, <code>StatusDot</code>, <code>ProvenanceChip</code>, <code>EmptyState</code>, <code>Skeleton</code>, <code>Toast</code>, <code>CommandPalette</code>, <code>Drawer</code>, <code>Tabs</code>, <code>KpiRing</code>. No screen restyles these.</li>
+<li><strong>Icons:</strong> lucide-react only; one icon per nav item; 16–20px.</li>
+<li><strong>Motion:</strong> reuse <code>glow-pulse/beam-flow/pulse-slow</code>; all wrapped so <code>prefers-reduced-motion: reduce</code> disables them.</li>
+<li><strong>Data:</strong> mock-first. New endpoints → add typed stub in <code>lib/api.ts</code> that try/catches and falls back to <code>mockData.ts</code> (match existing <code>runPipeline</code> pattern). Never block UI on a missing backend.</li>
+<li><strong>Naming:</strong> screens are <code>XxxScreen.tsx</code> in <code>src/components/</code>; shared primitives in <code>src/components/ui/</code>; types in <code>types.ts</code>; nav id == <code>activeTab</code> key.</li>
+<li><strong>A11y/contrast:</strong> body text never relies on glow color; every interactive element keyboard-reachable with a visible focus ring.</li>
+<li><strong>Definition of done per screen:</strong> loads with mock data, has empty + loading + error states, is keyboard navigable, matches the shell, passes <code>npm run build</code> and lint.</li>
+</ol>
+<hr />
+<h2 id="7-agent-build-backlog-copy-paste-prompts-run-in-order">7. Agent build backlog — copy-paste prompts (run in order)</h2>
+<blockquote>
+<p>Each prompt is self-contained. Prepend this line to every one you dispatch:
+<em>"Work in <code>track-b-c-deferred/dashboard/</code>. Obey the Consistency Contract in <code>docs/dashboard/FE_REDESIGN.md</code> §6. Build mock-first. Keep <code>npm run build</code> green. Do not restyle shared primitives."</em></p>
+</blockquote>
+<h3 id="fe-0-foundation-shared-ui-primitives-consistency-kit">FE-0 — Foundation: shared UI primitives + consistency kit</h3>
+<p><strong>Goal:</strong> create the reusable kit every screen depends on, so consistency is structural.
+<strong>Create:</strong> <code>src/components/ui/{PageHeader,Panel,Card,SeverityPill,StatusDot,ProvenanceChip,EmptyState,Skeleton,Toast,Tabs,Drawer,KpiRing}.tsx</code> and <code>src/components/ui/index.ts</code> barrel.
+<strong>Build:</strong> each primitive uses only <code>@theme</code> tokens; <code>SeverityPill</code> maps <code>critical|high|medium|low|info</code> → the §4 color system; <code>StatusDot</code> maps <code>reproduced|pending|rejected|live</code>; <code>ProvenanceChip</code> renders <code>spec|code|traffic|db</code> with distinct subtle tints; all motion wrapped in a <code>useReducedMotion</code> guard (add <code>src/lib/useReducedMotion.ts</code>).
+<strong>Also:</strong> add a <code>ToastProvider</code> and mount in <code>App.tsx</code>.
+<strong>Acceptance:</strong> a <code>/ui-kit</code> dev story (or a temporary tab) renders every primitive in every state; reduced-motion verified; build green.
+<strong>Out of scope:</strong> screens, nav.</p>
+<h3 id="fe-1-information-architecture-navigation-refactor">FE-1 — Information architecture &amp; navigation refactor</h3>
+<p><strong>Goal:</strong> implement the §3 grouped nav + reachability layer without breaking existing screens.
+<strong>Modify:</strong> <code>Sidebar.tsx</code> (grouped sections with labels: OVERVIEW/ENGINE/AUTHOR/SIGNALS/OPERATE/LEARN + pinned Projects/Settings; collapsible to icon-rail <code>&lt; lg</code>). <code>App.tsx</code> (extend <code>activeTab</code> union to new ids: <code>overview, truth-map, divergences, explore, author, review, signals, healing, eject, governance, memory, settings</code>; render placeholders for not-yet-built screens using <code>EmptyState</code> "Coming in this milestone"). <code>TopBar.tsx</code> (add <strong>autonomy segmented control</strong> + clickable <code>LIVE</code> status that opens a <code>Drawer</code> hosting the existing <code>PipelineScreen</code>).
+<strong>Create:</strong> <code>src/components/CommandPalette.tsx</code> (⌘K / Ctrl-K, fuzzy nav + actions: "New run", "Author a test", "Open divergences", "Switch project"); mount globally.
+<strong>Acceptance:</strong> every nav id routes; ⌘K works; Live drawer shows the DAG; nothing previously working is lost; keyboard + reduced-motion ok.</p>
+<h3 id="fe-2-overview-landing-screen">FE-2 — Overview (landing) screen</h3>
+<p><strong>Create:</strong> <code>src/components/OverviewScreen.tsx</code>. Three <code>Card</code>s: <strong>Release Readiness</strong> (<code>KpiRing</code> of open critical divergences + false-positive rate), <strong>Top Divergences</strong> (3 worst rows → deep-link to Divergences), <strong>Recent Learning</strong> (Reflector activity feed). Empty state → "Run your first map". Add <code>overviewMock</code> to <code>mockData.ts</code> + typed <code>fetchOverview()</code> stub.
+<strong>Acceptance:</strong> default landing tab; all three cards populate from mock; CTAs deep-link.</p>
+<h3 id="fe-3-truth-map-screen">FE-3 — Truth Map screen</h3>
+<p><strong>Create:</strong> <code>TruthMapScreen.tsx</code> — master/detail: endpoint list (badge endpoints with divergences) ↔ claims grouped by <code>ProvenanceChip</code>. CTA "Hunt divergences here" → Divergences filtered to that endpoint. Add <code>truthModelMock</code> + <code>fetchTruthModel()</code>.
+<strong>Acceptance:</strong> selecting an endpoint shows its claims with provenance; divergence badges visible; empty state present.</p>
+<h3 id="fe-4-divergences-screen-priority-the-star">FE-4 — Divergences screen (priority — the star)</h3>
+<p><strong>Create:</strong> <code>DivergencesScreen.tsx</code> — filter bar (D1–D5, severity, status), virtualized list of <code>SeverityPill</code> rows (claim-A vs claim-B one-liner + provenance chips + <code>StatusDot</code>), and a <code>Drawer</code> detail: Claim A vs B, <strong>evidence</strong> (req/resp diff or screenshot), repro steps, actions <code>Close with test</code> / <code>Mark intended</code> / <code>Reject (→ teaches Reflector)</code>. Add rich <code>divergencesMock</code> (cover all 5 classes + severities) + <code>fetchDivergences()</code>/<code>actOnDivergence()</code>.
+<strong>Acceptance:</strong> filterable, skimmable, drawer shows evidence + provenance; actions toast + optimistic update; keyboard <code>j/k/Enter</code>.</p>
+<h3 id="fe-5-author-by-intent-manual-qa-copilot-mentor-idioms">FE-5 — Author by Intent (manual-QA Copilot) + Mentor idioms</h3>
+<p><strong>Create:</strong> <code>AuthorScreen.tsx</code> — large plain-English intent input + example chips; contextual <strong>Mentor idiom</strong> suggestions panel; "Run" → stepped <strong>live Pilot preview</strong> (use <code>beam-flow</code>), each step human-confirmable on Assisted; result card with evidence + <code>Save &amp; Eject</code>. <strong>No selector ever shown.</strong> Add <code>mentorIdiomsMock</code>, <code>authorRunMock</code>, <code>submitIntent()</code> stub.
+<strong>Acceptance:</strong> a non-coder flow: type intent → see steps → get a passing test → eject; idioms surface; fully keyboard-usable; empty state teaches with 2 example intents.</p>
+<h3 id="fe-6-review-queue-upgrade-feeds-reflector">FE-6 — Review Queue upgrade (feeds Reflector)</h3>
+<p><strong>Modify:</strong> <code>ReviewScreen.tsx</code> — keep approve/reject/edit; add a <strong>reason capture</strong> on reject and "this teaches CHERENKOV" microcopy; emit verdicts via <code>recordVerdict()</code> stub; show a small "X idioms learned this session" counter.
+<strong>Acceptance:</strong> decisions persist to mock verdict store; counter increments; a/r keyboard shortcuts.</p>
+<h3 id="fe-7-signals-performance-visual-coverage">FE-7 — Signals (Performance / Visual / Coverage)</h3>
+<p><strong>Create:</strong> <code>SignalsScreen.tsx</code> with <code>Tabs</code>. <strong>Performance:</strong> latency series + ML anomaly confidence band + TTFT/cost for AI endpoints. <strong>Visual:</strong> baseline vs current with semantic-diff callouts. <strong>Coverage:</strong> coverage % + newly-covered paths. Shared lightweight chart component <code>ui/Chart.tsx</code> (no heavy dep unless already present — check <code>package.json</code> first). Add <code>signalsMock</code>.
+<strong>Acceptance:</strong> three tabs render from mock; regressions use the severity system; anomaly band visible; reduced-motion ok.</p>
+<h3 id="fe-8-memory-pairing">FE-8 — Memory &amp; Pairing</h3>
+<p><strong>Create:</strong> <code>MemoryScreen.tsx</code> — <strong>Idioms</strong> list (text, confirm-count, decay, source endpoints) + <strong>Pairing</strong> pane (junior view: Mentor's "why a senior checks this here"). Add <code>idiomsMock</code>, <code>pairingMock</code>.
+<strong>Acceptance:</strong> idioms sortable by confidence; pairing pane explains rationale; empty state for new projects.</p>
+<h3 id="fe-9-governance">FE-9 — Governance</h3>
+<p><strong>Create:</strong> <code>GovernanceScreen.tsx</code> — KPI trend cards (defect-escape, false-positive, coverage-accuracy, maintenance-efficiency), <strong>Model Certification</strong> table (per tier: Gold-Set pass/fail, faithfulness score), <strong>Traceability</strong> explorer (artifact → prompt+model+claims+evidence). Compliance-export button (mock download). Add <code>governanceMock</code>.
+<strong>Acceptance:</strong> KPIs trend from mock; cert table shows pass/fail with the status system; traceability drill-down works.</p>
+<h3 id="fe-10-settings-global-polish-a11yonboarding-pass">FE-10 — Settings + global polish + a11y/onboarding pass</h3>
+<p><strong>Modify:</strong> <code>SettingsScreen.tsx</code> — substrate <strong>tiers</strong> (small/deep/vision/ml), <strong>egress</strong> dial, <strong>budgets</strong>, <strong>autonomy</strong> default, <strong>density</strong> + <strong>reduced-motion</strong> toggles (persist to localStorage; reflect the real <code>cherenkov.toml</code> shape).
+<strong>Global pass:</strong> verify WCAG AA contrast on all text; ensure every screen has empty/loading/error; finalize the 3-step onboarding coachmark ("first reproduced divergence"); audit <code>prefers-reduced-motion</code>; responsive <code>&lt; lg</code> icon-rail; run lint + <code>npm run build</code>.
+<strong>Acceptance:</strong> settings map to config keys; contrast/keyboard/motion audited; onboarding fires once; build + lint green.</p>
+<hr />
+<h2 id="8-sequencing-evaluation">8. Sequencing &amp; evaluation</h2>
+<p><strong>Order:</strong> FE-0 → FE-1 (unblocks everything) → <strong>FE-4 Divergences</strong> (the star, do early to prove value) → FE-2 Overview → FE-5 Author (manual-QA heart) → FE-3 Truth Map → FE-6 Review → FE-7 Signals → FE-8 Memory → FE-9 Governance → FE-10 polish.</p>
+<p><strong>Why this is the right FE:</strong> it (a) reuses the entire existing design system and shell — <em>consistency by construction</em>; (b) reorganizes IA around the product's real deliverables so users land on value; (c) makes the manual-QA the protagonist (Author by Intent, Explore, plain-English everywhere); (d) keeps everything reachable (grouped nav + ⌘K + persistent primary action); (e) bakes trust in (provenance/evidence on every finding) and accessibility in (contrast, keyboard, reduced-motion).</p>
+<p><strong>Top risks (FE):</strong> glow-heavy theme can fail AA contrast on body text → rule: glow for accents/borders only. Scope is 11 screens → ship behind the existing <code>activeTab</code> placeholders so nav is whole even while screens land incrementally. New screens depend on backend that doesn't exist yet → mock-first contract makes every screen demoable today and live later by swapping the <code>lib/api.ts</code> stub.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "toc.integrate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"current": "1.4", "versions": ["1.2", "1.3", "1.4"]}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../javascripts/version-banner.js"></script>
+      
+    
+  </body>
+</html>

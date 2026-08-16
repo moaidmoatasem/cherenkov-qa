@@ -1,0 +1,3477 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Autonomous Quality Fabric">
+      
+      
+        <meta name="author" content="TesterArmy">
+      
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Cherenkov QA — Comprehensive Regression Testing Report - Cherenkov QA</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#cherenkov-qa-comprehensive-regression-testing-report" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+          <aside class="md-banner md-banner--warning">
+            <div class="md-banner__inner md-grid md-typeset">
+              
+  <div class="md-version-warning">
+    <strong>Notice:</strong> You are viewing documentation for an older version of CHERENKOV-QA.
+    <a href="https://moaidmoatasem.github.io/cherenkov-qa/1.4/">Click here for the latest version (v1.4).</a>
+  </div>
+
+            </div>
+            <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
+          </aside>
+        
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Cherenkov QA" class="md-header__button md-logo" aria-label="Cherenkov QA" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Cherenkov QA
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Cherenkov QA — Comprehensive Regression Testing Report
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../1.4/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../1.4/getting-started/" class="md-tabs__link">
+          
+  
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../1.4/guides/" class="md-tabs__link">
+          
+  
+  
+  QA & Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../1.4/architecture/" class="md-tabs__link">
+          
+  
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../1.4/guides/ci-cd/" class="md-tabs__link">
+          
+  
+  
+  Ecosystem
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../1.4/troubleshooting/faq/" class="md-tabs__link">
+          
+  
+  
+  Troubleshooting
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../1.4/cli/reference/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Cherenkov QA" class="md-nav__button md-logo" aria-label="Cherenkov QA" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Cherenkov QA
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/getting-started/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/getting-started/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/getting-started/cost-tiers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cost Tiers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    QA & Testing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    QA & Testing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides Hub
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/api-conformance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Conformance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/check-suite/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Check Suite
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/test-generation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Generation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/continuous-monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spec Guardian
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/certificates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Certificates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/hitl/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HITL
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/eject/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Eject
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/docker/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docker
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/system-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/platform-operating-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/user-journeys/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Journeys
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/clean-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Clean Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/module-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Module Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/second-brain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Second Brain
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/diagrams/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Diagrams
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_9" id="__nav_4_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Role Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Role Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/roles/developer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/roles/qa-engineer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    QA Engineer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/roles/devops/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DevOps & SRE
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/roles/team-lead/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Team Lead
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ecosystem
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Ecosystem
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/ci-cd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CI/CD
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/integrations/github-actions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GitHub Actions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/integrations/vscode/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    VS Code
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/integrations/mcp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MCP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/integrations/langchain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LangChain
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Troubleshooting
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/troubleshooting/faq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FAQ
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/troubleshooting/common-issues/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Common Issues
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/cli/reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/cli/completions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Completions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/releases/v1.4.0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v1.4.0 Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/releases/v1.3.0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v1.3.0 Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/releases/v1.2.0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v1.2.0 Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="cherenkov-qa-comprehensive-regression-testing-report">Cherenkov QA — Comprehensive Regression Testing Report</h1>
+<p><strong>Date:</strong> 2026-06-09
+<strong>Branch:</strong> <code>claude/regression-testing-gaps-lupixa</code>
+<strong>Test Run Results:</strong> 16 failed / 245 passed / 9 skipped (261 total, 6.1% failure rate)
+<strong>Scope:</strong> Full codebase — E2E, unit, smoke, integration, CI/CD, business logic, customer journeys</p>
+<hr />
+<h2 id="table-of-contents">Table of Contents</h2>
+<ol>
+<li><a href="#1-executive-summary">Executive Summary</a></li>
+<li><a href="#2-actual-test-run--real-failures">Actual Test Run — Real Failures</a></li>
+<li><a href="#3-e2e-coverage-assessment">E2E Coverage Assessment</a></li>
+<li><a href="#4-customer-centric-assessment">Customer-Centric Assessment</a></li>
+<li><a href="#5-qa-persona-assessment">QA Persona Assessment</a></li>
+<li><a href="#6-workflow-coverage-assessment">Workflow Coverage Assessment</a></li>
+<li><a href="#7-functionality-coverage-assessment">Functionality Coverage Assessment</a></li>
+<li><a href="#8-technical-gaps">Technical Gaps</a></li>
+<li><a href="#9-business-gaps">Business Gaps</a></li>
+<li><a href="#10-needed-enhancements">Needed Enhancements</a></li>
+<li><a href="#11-recommendations">Recommendations</a></li>
+<li><a href="#12-gap-heat-map">Gap Heat Map</a></li>
+</ol>
+<hr />
+<h2 id="1-executive-summary">1. Executive Summary</h2>
+<p>Cherenkov QA is a production-grade API conformance test generator (OpenAPI → Playwright) with 217 Python source files, 47 React components, 60+ test files, and 5 CI workflows. Despite impressive breadth, the test suite has <strong>critical structural weaknesses</strong> that prevent reliable regression detection:</p>
+<table>
+<thead>
+<tr>
+<th>Dimension</th>
+<th>Score</th>
+<th>Key Finding</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CI Quality Gates</td>
+<td>D</td>
+<td>All smoke tests use <code>\|\| true</code>; zero blocking gates for tests or coverage</td>
+</tr>
+<tr>
+<td>E2E Coverage Depth</td>
+<td>C+</td>
+<td>18/20 screens covered, but assertions are visibility-only, not behavioural</td>
+</tr>
+<tr>
+<td>Python Unit Test Coverage</td>
+<td>C</td>
+<td>245 passing tests, but 20+ core modules have zero unit tests</td>
+</tr>
+<tr>
+<td>API Endpoint Coverage</td>
+<td>F</td>
+<td>Only ~15–20% of endpoints have any test coverage</td>
+</tr>
+<tr>
+<td>Error Path Coverage</td>
+<td>F</td>
+<td>Zero tests for 4xx/5xx, timeouts, or network failures</td>
+</tr>
+<tr>
+<td>Dependency Completeness</td>
+<td>F</td>
+<td><code>requirements.txt</code> lists 5 packages; project needs 20+</td>
+</tr>
+<tr>
+<td>Security Testing</td>
+<td>D</td>
+<td>Snyk gates CRITICAL/HIGH but Semgrep is soft; auth endpoints have a failing dependency</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="2-actual-test-run-real-failures">2. Actual Test Run — Real Failures</h2>
+<p>Running <code>python -m pytest tests/ --ignore=tests/eject_fixtures</code> with full dependency install produces <strong>16 failures</strong>.</p>
+<h3 id="21-failure-inventory">2.1 Failure Inventory</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Test File</th>
+<th>Test Name</th>
+<th>Root Cause</th>
+<th>Severity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1–5</td>
+<td><code>tests/test_hitl_auth.py</code></td>
+<td>All 5 auth tests</td>
+<td>Missing <code>python-multipart</code> in <code>requirements.txt</code>; FastAPI can't process form data</td>
+<td><strong>CRITICAL</strong></td>
+</tr>
+<tr>
+<td>6–8</td>
+<td><code>tests/integration/test_redis_fallback.py</code></td>
+<td>All 3 Redis fallback tests</td>
+<td>Missing <code>redis</code> module in <code>requirements.txt</code></td>
+<td><strong>CRITICAL</strong></td>
+</tr>
+<tr>
+<td>9</td>
+<td><code>tests/test_mutation_validate.py</code></td>
+<td><code>test_validation_mutation</code></td>
+<td>Test calls <code>run_pipeline(simulate_fail_stage="REVIEW")</code> but <code>CHERENKOV_ENV</code> is not set to <code>development</code> in test setup</td>
+<td><strong>HIGH</strong></td>
+</tr>
+<tr>
+<td>10–13</td>
+<td><code>tests/unit/test_chat.py</code></td>
+<td>4 LLM fallback tests</td>
+<td>Mock LLM not wired; Ollama unavailable returns real error instead of <code>[MOCK]</code> prefix</td>
+<td><strong>HIGH</strong></td>
+</tr>
+<tr>
+<td>14</td>
+<td><code>tests/unit/test_mcp_chat_tools.py</code></td>
+<td><code>test_with_all_params</code></td>
+<td>Path normalization bug: test passes <code>"api.yaml"</code>, code absolutizes to <code>/home/user/cherenkov-qa/api.yaml</code>; assertion expects relative</td>
+<td><strong>MEDIUM</strong></td>
+</tr>
+<tr>
+<td>15</td>
+<td><code>tests/test_legacy_deep_healing.py</code></td>
+<td><code>test_legacy_deep_healing</code></td>
+<td>Playwright E2E sub-process fails because <code>stub/playwright.config.ts</code> references <code>@playwright/test</code> which is not installed in test env</td>
+<td><strong>MEDIUM</strong></td>
+</tr>
+<tr>
+<td>16</td>
+<td><code>tests/test_legacy_visual.py</code></td>
+<td><code>test_legacy_visual</code></td>
+<td>Visual baseline initialized then immediately detects layout mismatch (self-fulfilling failure); env has no stable UI to screenshot</td>
+<td><strong>MEDIUM</strong></td>
+</tr>
+</tbody>
+</table>
+<h3 id="22-deprecationwarnings">2.2 DeprecationWarnings</h3>
+<p><code>cherenkov/web/api.py:133</code> uses <code>@app.on_event("startup")</code> which is deprecated in FastAPI. Should be migrated to <code>lifespan</code> context manager to avoid future breakage.</p>
+<h3 id="23-version-mismatch">2.3 Version Mismatch</h3>
+<p><code>requirements.txt</code> pins <code>pydantic==2.7.1</code> but the environment has <code>pydantic==2.13.4</code>. This will cause environment drift between dev, CI, and production containers.</p>
+<hr />
+<h2 id="3-e2e-coverage-assessment">3. E2E Coverage Assessment</h2>
+<h3 id="31-dashboard-e2e-playwright-cherenkovwebuitests">3.1 Dashboard E2E (Playwright — <code>cherenkov/web/ui/tests/</code>)</h3>
+<p><strong>27 test cases</strong> across 2 spec files (<code>dashboard_e2e.spec.ts</code>, <code>a11y.spec.ts</code>).</p>
+<h4 id="screen-coverage-matrix">Screen Coverage Matrix</h4>
+<table>
+<thead>
+<tr>
+<th>Screen</th>
+<th>LOC</th>
+<th>E2E Tests</th>
+<th>A11y Tested</th>
+<th>Depth</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ProjectsScreen</td>
+<td>292</td>
+<td>✅ Full</td>
+<td>✅ Axe scan</td>
+<td>Shallow</td>
+</tr>
+<tr>
+<td>OverviewScreen</td>
+<td>234</td>
+<td>✅ Full</td>
+<td>❌</td>
+<td>Shallow</td>
+</tr>
+<tr>
+<td>TruthMapScreen</td>
+<td>197</td>
+<td>✅ Full</td>
+<td>❌</td>
+<td>Shallow</td>
+</tr>
+<tr>
+<td>DivergencesScreen</td>
+<td>344</td>
+<td>✅ Partial</td>
+<td>❌</td>
+<td>Visibility only</td>
+</tr>
+<tr>
+<td>AuthorScreen</td>
+<td>251</td>
+<td>✅ Partial</td>
+<td>❌</td>
+<td>Shallow</td>
+</tr>
+<tr>
+<td>SignalsScreen</td>
+<td>193</td>
+<td>✅ Tab switch</td>
+<td>❌</td>
+<td>Visibility only</td>
+</tr>
+<tr>
+<td>MemoryScreen</td>
+<td>83</td>
+<td>✅ Visibility</td>
+<td>❌</td>
+<td>Trivial</td>
+</tr>
+<tr>
+<td>GovernanceScreen</td>
+<td>129</td>
+<td>✅ Visibility</td>
+<td>❌</td>
+<td>Trivial</td>
+</tr>
+<tr>
+<td>SetupScreen</td>
+<td>541</td>
+<td>✅ Full</td>
+<td>❌</td>
+<td>Shallow</td>
+</tr>
+<tr>
+<td>PipelineScreen</td>
+<td>486</td>
+<td>✅ Full</td>
+<td>❌</td>
+<td>Shallow</td>
+</tr>
+<tr>
+<td><strong>ReviewScreen</strong></td>
+<td><strong>766</strong></td>
+<td>✅ Partial</td>
+<td>❌</td>
+<td><strong>Near-zero</strong></td>
+</tr>
+<tr>
+<td>HealingScreen</td>
+<td>319</td>
+<td>✅ Full</td>
+<td>❌</td>
+<td>Shallow</td>
+</tr>
+<tr>
+<td>EjectScreen</td>
+<td>287</td>
+<td>✅ Full</td>
+<td>❌</td>
+<td>Shallow</td>
+</tr>
+<tr>
+<td>SettingsScreen</td>
+<td>341</td>
+<td>✅ Full</td>
+<td>❌</td>
+<td>Shallow</td>
+</tr>
+<tr>
+<td>KnowledgeExplorerScreen</td>
+<td>171</td>
+<td>✅ Full</td>
+<td>❌</td>
+<td>Shallow</td>
+</tr>
+<tr>
+<td>DeviceManagerScreen</td>
+<td>243</td>
+<td>✅ Partial</td>
+<td>❌</td>
+<td>Visibility only</td>
+</tr>
+<tr>
+<td>ChatScreen</td>
+<td>233</td>
+<td>✅ Full</td>
+<td>❌</td>
+<td>Shallow</td>
+</tr>
+<tr>
+<td>UiKitScreen</td>
+<td>251</td>
+<td>✅ Full</td>
+<td>❌</td>
+<td>Trivial</td>
+</tr>
+<tr>
+<td><strong>MobileScreen</strong></td>
+<td><strong>142</strong></td>
+<td>❌ <strong>UNTESTED</strong></td>
+<td>❌</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>MobilePilotScreen</strong></td>
+<td><strong>204</strong></td>
+<td>❌ <strong>UNTESTED</strong></td>
+<td>❌</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<h4 id="assertion-quality">Assertion Quality</h4>
+<ul>
+<li><strong>Primary patterns used:</strong> <code>toBeVisible()</code>, <code>toContainText()</code>, <code>toHaveAttribute()</code></li>
+<li><strong>Real data validation found in only 3 places</strong> (textarea value, localStorage, API payload)</li>
+<li><strong>Zero assertions</strong> on filtered results, API response content, state after actions</li>
+</ul>
+<h4 id="structural-problems">Structural Problems</h4>
+<ul>
+<li><strong>Brittle selectors:</strong> Heavy use of <code>#id-*</code> and hardcoded text like <code>getByText('POST /pets')</code> — one UI refactor breaks dozens of tests</li>
+<li><strong>Hardcoded mock data:</strong> <code>proj-petstore</code>, <code>fail-1</code>, <code>fail-2</code> baked into <code>api_mocks.ts</code></li>
+<li><strong>Single viewport (1280×720):</strong> No mobile (375×667), tablet (768×1024), or wide desktop (1920×1080)</li>
+<li><strong>Single browser (Chromium):</strong> No Firefox or Safari</li>
+<li><strong>Magic timeouts:</strong> Scattered <code>waitForTimeout(500)</code> calls instead of proper waiter conditions</li>
+<li><strong>Duplicate test names:</strong> Two tests labelled "Knowledge: enter query…" (lines 455, 467) — one actually tests DeviceManagerScreen</li>
+</ul>
+<h4 id="interaction-gaps-never-tested">Interaction Gaps (Never Tested)</h4>
+<ul>
+<li>Drag-and-drop in SetupScreen</li>
+<li>j/k keyboard navigation in DivergencesScreen</li>
+<li>Approval/rejection workflow in ReviewScreen</li>
+<li>Code editing in ReviewScreen editor</li>
+<li>Filter combinations (only filter presence checked, not results)</li>
+<li>Copy-to-clipboard buttons</li>
+<li>Hover states triggering content</li>
+<li>Form validation error messages</li>
+<li>Right-click / context menus</li>
+</ul>
+<h3 id="32-playwright-api-suite-playwright-suite-stub">3.2 Playwright API Suite (<code>playwright-suite/</code>, <code>stub/</code>)</h3>
+<table>
+<thead>
+<tr>
+<th>Test File</th>
+<th>Content</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>happy_path.spec.ts</code></td>
+<td>POST /users → 201, <code>id</code>, <code>email</code> presence</td>
+<td>Shallow</td>
+</tr>
+<tr>
+<td><code>password_too_short.spec.ts</code></td>
+<td>POST /users invalid → 422 status only</td>
+<td>Trivial</td>
+</tr>
+<tr>
+<td><code>visual_regression_baseline_ui.spec.ts</code></td>
+<td>Screenshot baseline at 1280×720</td>
+<td>Single viewport</td>
+</tr>
+<tr>
+<td><code>golden_edit.spec.ts</code></td>
+<td>Empty file (<code>// test</code>)</td>
+<td><strong>Useless</strong></td>
+</tr>
+<tr>
+<td><code>GET_v1_customers.spec.ts</code></td>
+<td>Status 200 + <code>data</code> property</td>
+<td>Trivial</td>
+</tr>
+<tr>
+<td><code>POST_v1_customers.spec.ts</code></td>
+<td>Customer created, has <code>id</code></td>
+<td>Shallow</td>
+</tr>
+<tr>
+<td><code>GET_v1_customers_search.spec.ts</code></td>
+<td>Search, has <code>data</code></td>
+<td>Trivial</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Zero tests for:</strong> response body schema, error messages, pagination, update/delete, concurrent operations, boundary conditions.</p>
+<hr />
+<h2 id="4-customer-centric-assessment">4. Customer-Centric Assessment</h2>
+<h3 id="41-zero-error-state-testing">4.1 Zero Error State Testing</h3>
+<p>Every user flow that encounters an error is completely untested:</p>
+<table>
+<thead>
+<tr>
+<th>User Action</th>
+<th>Error Scenario</th>
+<th>Tested?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Upload spec file</td>
+<td>File &gt; 10MB</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>Enter spec URL</td>
+<td>404 URL</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>Enter spec URL</td>
+<td>Private IP blocked</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>Trigger pipeline run</td>
+<td>LLM timeout</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>Approve test</td>
+<td>Concurrent approval by another user</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>Eject tests</td>
+<td>Disk full</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>Chat query</td>
+<td>Ollama not running</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>Validate</td>
+<td>Target server unreachable</td>
+<td>❌</td>
+</tr>
+</tbody>
+</table>
+<h3 id="42-empty-state-coverage">4.2 Empty State Coverage</h3>
+<p>When there is no data (fresh install, no projects yet), the UI shows empty states. <strong>None of these are tested.</strong></p>
+<h3 id="43-onboarding-first-run-experience">4.3 Onboarding / First-Run Experience</h3>
+<p><code>OnboardingWizard.tsx</code> exists as a component. It has <strong>zero test coverage</strong> — neither E2E nor unit.</p>
+<h3 id="44-responsive-multi-device">4.4 Responsive / Multi-Device</h3>
+<p>The product claims mobile and multi-device support (mobile pilot, device manager, Appium/Maestro). Yet:
+- All E2E tests run at one fixed 1280×720 viewport
+- MobileScreen and MobilePilotScreen have zero E2E tests
+- No touch/swipe interaction tested</p>
+<h3 id="45-accessibility-a11y">4.5 Accessibility (A11y)</h3>
+<ul>
+<li>Only 2 of 20 screens have any accessibility testing (<code>ProjectsScreen</code> via Axe, <code>OverviewScreen</code> KpiRing via ARIA)</li>
+<li>Color contrast explicitly excluded from Axe scan</li>
+<li>No keyboard-only navigation tested beyond Ctrl+K</li>
+<li>No screen-reader announcement testing (<code>aria-live</code>, <code>aria-label</code> content)</li>
+<li>No focus trap testing in modals/drawers</li>
+</ul>
+<h3 id="46-performance-ux">4.6 Performance UX</h3>
+<p>No tests verify:
+- Loading skeleton shown while data fetches
+- Toast notification timing
+- WebSocket reconnection on disconnect
+- Long operation progress feedback</p>
+<hr />
+<h2 id="5-qa-persona-assessment">5. QA Persona Assessment</h2>
+<h3 id="51-test-quality-metrics">5.1 Test Quality Metrics</h3>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Value</th>
+<th>Target</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Total test files</td>
+<td>74</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Passing tests</td>
+<td>245</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Failing tests</td>
+<td>16 (6.1%)</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Skipped tests</td>
+<td>9</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Empty/trivial tests</td>
+<td><code>golden_edit.spec.ts</code> (1 file)</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Tests asserting data content</td>
+<td>~10%</td>
+<td>&gt;60%</td>
+</tr>
+<tr>
+<td>Tests asserting only visibility</td>
+<td>~60%</td>
+<td>&lt;20%</td>
+</tr>
+<tr>
+<td>Error path tests</td>
+<td>0%</td>
+<td>&gt;30%</td>
+</tr>
+<tr>
+<td>Coverage threshold enforced</td>
+<td>None</td>
+<td>&gt;70%</td>
+</tr>
+</tbody>
+</table>
+<h3 id="52-test-organisation">5.2 Test Organisation</h3>
+<p><strong>Strengths:</strong>
+- Logical directory split: <code>tests/smoke/</code>, <code>tests/unit/</code>, <code>tests/integration/</code>
+- Kill-criteria pattern used in most smoke tests (explicit exit codes + assertions)
+- No empty test bodies or bare <code>pass</code> statements
+- Good use of mocking for external dependencies (LLM, subprocess, HTTP)</p>
+<p><strong>Weaknesses:</strong>
+- No <code>conftest.py</code> → shared fixtures not available across test modules
+- No <code>pytest.ini</code> / <code>[tool.pytest]</code> configuration in <code>pyproject.toml</code>
+- Test for simulation mode requires <code>CHERENKOV_ENV=development</code> but no fixture sets it
+- 4 chat fallback tests rely on Ollama LLM being absent but mock not stubbed → environment-dependent
+- Duplicate test names in <code>dashboard_e2e.spec.ts</code></p>
+<h3 id="53-known-documented-bugs-without-regression-tests">5.3 Known Documented Bugs Without Regression Tests</h3>
+<p>Per <code>agent_memory/known-bugs.md</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Bug</th>
+<th>Description</th>
+<th>Regression Test?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bug #1 (Canonical)</td>
+<td>Spec declares 422, target API returns 400 on POST /users validation</td>
+<td><code>password_too_short.spec.ts</code> covers status but doesn't assert mismatch pattern</td>
+</tr>
+<tr>
+<td>Bug #2</td>
+<td>Auth expiry: 201 → 401 drift</td>
+<td><code>smoke_test_healing.py</code> covers, no dedicated regression</td>
+</tr>
+<tr>
+<td>Bug #3</td>
+<td>Contract drift (missing response fields)</td>
+<td>No dedicated regression test</td>
+</tr>
+</tbody>
+</table>
+<h3 id="54-validation-gate-status">5.4 Validation Gate Status</h3>
+<p>Per <code>agent_memory/validation-gate.md</code>: The human validation gate (5-reviewer QA runbook) has <strong>0/5 reviews completed</strong>. The gate is explicitly "NOT PASSED." Product development continues under a waiver but no validated QA stamp exists.</p>
+<hr />
+<h2 id="6-workflow-coverage-assessment">6. Workflow Coverage Assessment</h2>
+<h3 id="61-core-test-generation-workflow">6.1 Core Test Generation Workflow</h3>
+<div class="highlight"><pre><span></span><code>INGEST → PLAN → GENERATE → REVIEW → APPROVE/REJECT → EJECT
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>Unit Tests</th>
+<th>Integration</th>
+<th>E2E</th>
+<th>Coverage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>INGEST</td>
+<td>❌</td>
+<td>❌</td>
+<td>✅ (smoke)</td>
+<td>E2E only</td>
+</tr>
+<tr>
+<td>PLAN</td>
+<td>❌</td>
+<td>❌</td>
+<td>✅ (smoke)</td>
+<td>E2E only</td>
+</tr>
+<tr>
+<td>GENERATE</td>
+<td>❌</td>
+<td>❌</td>
+<td>✅ (smoke, GPU-opt-in)</td>
+<td>E2E only</td>
+</tr>
+<tr>
+<td>REVIEW (6 gates)</td>
+<td>❌</td>
+<td>❌</td>
+<td>✅ (partial smoke)</td>
+<td>E2E partial</td>
+</tr>
+<tr>
+<td>HITL Approve</td>
+<td>✅ (root test)</td>
+<td>✅ (smoke)</td>
+<td>✅</td>
+<td>Good</td>
+</tr>
+<tr>
+<td>HITL Reject</td>
+<td>✅ (root test)</td>
+<td>✅ (smoke)</td>
+<td>✅</td>
+<td>Good</td>
+</tr>
+<tr>
+<td>HITL Classify</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>None</td>
+</tr>
+<tr>
+<td>EJECT</td>
+<td>❌</td>
+<td>❌</td>
+<td>✅ (smoke)</td>
+<td>E2E only</td>
+</tr>
+</tbody>
+</table>
+<h3 id="62-validation-workflow">6.2 Validation Workflow</h3>
+<table>
+<thead>
+<tr>
+<th>Sub-workflow</th>
+<th>Tested?</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Run generated tests vs target</td>
+<td>✅ (smoke)</td>
+<td>Shallow</td>
+</tr>
+<tr>
+<td>Trace reader analysis</td>
+<td>❌</td>
+<td>No unit tests</td>
+</tr>
+<tr>
+<td>Value tightening suggestions</td>
+<td>❌</td>
+<td>No tests</td>
+</tr>
+<tr>
+<td>TLS / auth header support</td>
+<td>❌</td>
+<td>No tests</td>
+</tr>
+</tbody>
+</table>
+<h3 id="63-healing-workflow">6.3 Healing Workflow</h3>
+<table>
+<thead>
+<tr>
+<th>Sub-workflow</th>
+<th>Tested?</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AuthExpiryHealer</td>
+<td>✅ (smoke)</td>
+<td>Shallow</td>
+</tr>
+<tr>
+<td>ContractDriftHealer</td>
+<td>✅ (smoke)</td>
+<td>Shallow</td>
+</tr>
+<tr>
+<td>SandboxHealer</td>
+<td>❌</td>
+<td>No tests</td>
+</tr>
+<tr>
+<td>VisualHealer</td>
+<td>❌</td>
+<td>No tests</td>
+</tr>
+<tr>
+<td>D2 Planner replan loop</td>
+<td>❌</td>
+<td><strong>Critical gap</strong></td>
+</tr>
+</tbody>
+</table>
+<h3 id="64-cicd-workflow">6.4 CI/CD Workflow</h3>
+<p>All smoke tests run with <code>|| true</code> — <strong>a failing smoke test does not block a merge</strong>. Quality gates that are enforced:</p>
+<table>
+<thead>
+<tr>
+<th>Gate</th>
+<th>Blocking?</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Docker build</td>
+<td>✅ Yes</td>
+<td>Hard failure</td>
+</tr>
+<tr>
+<td>Snyk CRITICAL/HIGH</td>
+<td>✅ Yes</td>
+<td>Hard failure</td>
+</tr>
+<tr>
+<td>Docs drift check</td>
+<td>✅ Yes</td>
+<td>Hard failure</td>
+</tr>
+<tr>
+<td>Smoke tests (36)</td>
+<td>❌ No</td>
+<td><code>\|\| true</code> on all</td>
+</tr>
+<tr>
+<td>Unit tests</td>
+<td>❌ No</td>
+<td>Coverage XML generated but never checked</td>
+</tr>
+<tr>
+<td>mypy type checking</td>
+<td>❌ No</td>
+<td><code>\|\| true</code></td>
+</tr>
+<tr>
+<td>ruff linting</td>
+<td>❌ No</td>
+<td>Pre-commit only, not in CI</td>
+</tr>
+<tr>
+<td>Semgrep security</td>
+<td>❌ No</td>
+<td><code>continue-on-error: true</code></td>
+</tr>
+<tr>
+<td>CodeQL analysis</td>
+<td>❌ No</td>
+<td>Configured but not in any workflow</td>
+</tr>
+<tr>
+<td>Accessibility</td>
+<td>❌ No</td>
+<td>Not in CI at all</td>
+</tr>
+<tr>
+<td>Performance regression</td>
+<td>❌ No</td>
+<td>k6 runs but no thresholds</td>
+</tr>
+</tbody>
+</table>
+<h3 id="65-mobile-workflow">6.5 Mobile Workflow</h3>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Tested?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>APK/HAR ingestion</td>
+<td>✅ (<code>test_mobile_pipeline.py</code>)</td>
+</tr>
+<tr>
+<td>Mobile plan generation</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Maestro test generation</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Appium test generation</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Mobile eject</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>MobileScreen UI</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>MobilePilotScreen UI</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>Device connectivity check</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>Real device run (CI)</td>
+<td>❌ (only on self-hosted ADB runner)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="7-functionality-coverage-assessment">7. Functionality Coverage Assessment</h2>
+<h3 id="71-api-endpoint-coverage">7.1 API Endpoint Coverage</h3>
+<p><strong>Total endpoints defined:</strong> 30+ (core + knowledge + chat)
+<strong>Endpoints with any test coverage:</strong> ~6 (20%)</p>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Method</th>
+<th>Tested?</th>
+<th>Depth</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/api/v1/health</code></td>
+<td>GET</td>
+<td>✅ (smoke)</td>
+<td>Shallow</td>
+</tr>
+<tr>
+<td><code>/api/v1/doctor</code></td>
+<td>GET</td>
+<td>❌</td>
+<td>None</td>
+</tr>
+<tr>
+<td><code>/api/v1/ingest</code></td>
+<td>POST</td>
+<td>❌</td>
+<td>None</td>
+</tr>
+<tr>
+<td><code>/api/v1/run</code></td>
+<td>POST</td>
+<td>✅ (E2E, smoke)</td>
+<td>Shallow</td>
+</tr>
+<tr>
+<td><code>/api/v1/tests</code></td>
+<td>GET</td>
+<td>❌</td>
+<td>None</td>
+</tr>
+<tr>
+<td><code>/api/v1/review/queue</code></td>
+<td>GET</td>
+<td>✅ (smoke)</td>
+<td>Shallow</td>
+</tr>
+<tr>
+<td><code>/api/v1/review/approve</code></td>
+<td>POST</td>
+<td>✅ (root test)</td>
+<td>Good</td>
+</tr>
+<tr>
+<td><code>/api/v1/review/reject</code></td>
+<td>POST</td>
+<td>✅ (root test)</td>
+<td>Good</td>
+</tr>
+<tr>
+<td><code>/api/v1/review/edit</code></td>
+<td>POST</td>
+<td>❌</td>
+<td>None</td>
+</tr>
+<tr>
+<td><code>/api/v1/review/classify</code></td>
+<td>POST</td>
+<td>❌</td>
+<td>None</td>
+</tr>
+<tr>
+<td><code>/api/v1/validate</code></td>
+<td>POST</td>
+<td>✅ (smoke)</td>
+<td>Shallow</td>
+</tr>
+<tr>
+<td><code>/api/v1/eject</code></td>
+<td>POST</td>
+<td>✅ (smoke)</td>
+<td>Shallow</td>
+</tr>
+<tr>
+<td><code>/api/v1/divergences</code></td>
+<td>GET</td>
+<td>❌</td>
+<td>None</td>
+</tr>
+<tr>
+<td><code>/api/v1/divergences/act</code></td>
+<td>POST</td>
+<td>❌</td>
+<td>None</td>
+</tr>
+<tr>
+<td><code>/api/v1/overview</code></td>
+<td>GET</td>
+<td>❌</td>
+<td>None</td>
+</tr>
+<tr>
+<td><code>/api/v1/truth-map</code></td>
+<td>GET</td>
+<td>❌</td>
+<td>None</td>
+</tr>
+<tr>
+<td><code>/api/v1/failures</code></td>
+<td>GET</td>
+<td>❌</td>
+<td>None</td>
+</tr>
+<tr>
+<td><code>/api/v1/metrics</code></td>
+<td>GET</td>
+<td>❌</td>
+<td>None</td>
+</tr>
+<tr>
+<td><code>/api/v1/mobile/pilot/status</code></td>
+<td>GET</td>
+<td>❌</td>
+<td>None</td>
+</tr>
+<tr>
+<td><code>/api/v1/mobile/pilot/start</code></td>
+<td>POST</td>
+<td>❌</td>
+<td>None</td>
+</tr>
+<tr>
+<td><code>/ws/live</code></td>
+<td>WS</td>
+<td>❌</td>
+<td>None</td>
+</tr>
+<tr>
+<td>All <code>/api/v1/chat/*</code></td>
+<td>Multiple</td>
+<td>❌</td>
+<td>None</td>
+</tr>
+<tr>
+<td>All <code>/api/v1/knowledge/*</code></td>
+<td>Multiple</td>
+<td>❌</td>
+<td>None</td>
+</tr>
+</tbody>
+</table>
+<h3 id="72-python-source-modules-without-any-tests">7.2 Python Source Modules Without Any Tests</h3>
+<p><strong>Core (<code>cherenkov/core/</code>):</strong>
+- <code>errors.py</code> — Zero tests
+- <code>compat.py</code> — Zero tests
+- <code>feedback_store.py</code> — No direct unit tests</p>
+<p><strong>Execution (<code>cherenkov/execution/</code>):</strong>
+- <code>k6_runner.py</code> — Zero tests
+- <code>trace_reader.py</code> — Zero tests
+- <code>visual_diff.py</code> — No unit tests (smoke only)
+- <code>playwright_invoke.py</code> — Zero tests
+- <code>perf_analyzer.py</code> — Zero tests
+- <code>prism_mock.py</code> — Zero tests
+- <code>demo_mode.py</code> — Zero tests</p>
+<p><strong>Stages (<code>cherenkov/stages/</code>):</strong>
+- <code>certify_cmd.py</code> — Zero tests
+- <code>copilot_cmd.py</code> — No isolated unit tests
+- <code>daemon_cmd.py</code> — Zero tests
+- <code>governance_cmd.py</code> — Zero tests
+- <code>map_cmd.py</code> — Zero tests
+- <code>profile_cmd.py</code> — Zero tests
+- <code>report_cmd.py</code> — Zero tests
+- <code>review_serve.py</code> — Zero tests
+- <code>self_test_cmd.py</code> — Zero tests
+- <code>ui_generate.py</code> — Zero tests
+- <code>ui_plan.py</code> — Zero tests</p>
+<hr />
+<h2 id="8-technical-gaps">8. Technical Gaps</h2>
+<h3 id="t1-critical-incomplete-requirementstxt">T1 — CRITICAL: Incomplete <code>requirements.txt</code></h3>
+<p><strong>File:</strong> <code>requirements.txt</code>
+<strong>Impact:</strong> Causes 8 test failures. Breaks fresh installs.</p>
+<p>Missing from <code>requirements.txt</code> but required by the project:
+- <code>fastapi</code> (used by <code>cherenkov/web/api.py</code> and 3 test files)
+- <code>redis</code> (used by <code>tests/integration/test_redis_fallback.py</code>, optional store backend)
+- <code>python-multipart</code> (required by FastAPI for form data — HITL auth endpoints)
+- <code>click</code> (used by <code>tests/unit/test_doctor.py</code>, CLI framework)
+- <code>httpx2</code> / <code>httpx</code> (FastAPI TestClient dependency)
+- <code>uvicorn</code> (FastAPI ASGI server)
+- <code>pytest</code> (test runner)
+- <code>pytest-cov</code> (coverage)
+- <code>anyio</code> (async test support)</p>
+<p>Also: <code>pydantic==2.7.1</code> is pinned but <code>2.13.4</code> is in use. The pin will cause <code>pip install</code> to install a version that doesn't match the running environment.</p>
+<h3 id="t2-critical-all-ci-smoke-tests-are-non-blocking">T2 — CRITICAL: All CI Smoke Tests Are Non-Blocking</h3>
+<p><strong>File:</strong> <code>.github/workflows/ci.yml</code>
+<strong>Impact:</strong> A broken commit merges silently. Tests are theater.</p>
+<p>Every smoke test step uses <code>|| true</code>:
+<div class="highlight"><pre><span></span><code><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">python -m pytest tests/smoke/smoke_test.py -v || true</span>
+</code></pre></div>
+This means any failure is swallowed and CI reports green regardless.</p>
+<h3 id="t3-high-no-coverage-threshold">T3 — HIGH: No Coverage Threshold</h3>
+<p>Coverage XML is generated but never evaluated. There is no <code>--cov-fail-under</code> flag and no CI step inspects <code>coverage.xml</code>. The project can regress to 0% coverage without CI alerting.</p>
+<h3 id="t4-high-test-requires-environment-variable-not-set-by-fixture">T4 — HIGH: Test Requires Environment Variable Not Set by Fixture</h3>
+<p><strong>File:</strong> <code>tests/test_mutation_validate.py</code>
+<code>run_pipeline(simulate_fail_stage="REVIEW")</code> asserts <code>CHERENKOV_ENV != "production"</code> but no fixture sets this env var. The test will always fail unless run with <code>CHERENKOV_ENV=development</code> manually.</p>
+<p><strong>Fix:</strong> Add <code>os.environ["CHERENKOV_ENV"] = "development"</code> in test setup or <code>conftest.py</code>.</p>
+<h3 id="t5-high-llm-mock-not-wired-in-chat-tests">T5 — HIGH: LLM Mock Not Wired in Chat Tests</h3>
+<p><strong>File:</strong> <code>tests/unit/test_chat.py</code> (lines 259–271)
+Tests expect <code>[MOCK]</code> prefix from a mock LLM but the mock is never injected. When Ollama is unavailable, the agent returns a real error message, not the mock response. 4 tests fail.</p>
+<h3 id="t6-high-path-normalization-bug">T6 — HIGH: Path Normalization Bug</h3>
+<p><strong>File:</strong> <code>tests/unit/test_mcp_chat_tools.py:129</code>
+Test passes <code>spec_path="api.yaml"</code> but the tool absolutizes it to <code>/home/user/cherenkov-qa/api.yaml</code>. The assertion expects the relative form. Either the test must pass an absolute path, or the tool must not absolutize relative paths.</p>
+<h3 id="t7-medium-fastapi-on_event-deprecation">T7 — MEDIUM: FastAPI <code>on_event</code> Deprecation</h3>
+<p><strong>File:</strong> <code>cherenkov/web/api.py:133</code>
+<code>@app.on_event("startup")</code> is deprecated. Must be migrated to the <code>lifespan</code> context manager pattern before the next FastAPI major release.</p>
+<h3 id="t8-medium-visual-regression-tests-require-stable-running-ui">T8 — MEDIUM: Visual Regression Tests Require Stable Running UI</h3>
+<p><code>test_legacy_visual.py</code> and <code>test_legacy_deep_healing.py</code> start a FastAPI target server and take screenshots. Without the full dashboard running, they produce unstable baselines and immediately fail on layout mismatch. These tests should either be isolated behind a <code>@pytest.mark.requires_ui</code> tag or converted to mock-based tests.</p>
+<h3 id="t9-medium-eject-endpoint-returns-success-on-exception">T9 — MEDIUM: <code>eject</code> Endpoint Returns Success on Exception</h3>
+<p><strong>File:</strong> <code>cherenkov/web/api.py:541</code>
+<div class="highlight"><pre><span></span><code><span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ejected&quot;</span><span class="p">,</span> <span class="s2">&quot;output_path&quot;</span><span class="p">:</span> <span class="n">payload</span><span class="o">.</span><span class="n">output_path</span><span class="p">,</span> <span class="s2">&quot;files&quot;</span><span class="p">:</span> <span class="p">[]}</span>
+</code></pre></div>
+A failed eject returns HTTP 200 with an empty <code>files</code> array, misleading the client that ejection succeeded.</p>
+<h3 id="t10-medium-websocket-wslive-has-no-authentication">T10 — MEDIUM: WebSocket <code>/ws/live</code> Has No Authentication</h3>
+<p>Any client can connect to the live event stream without credentials. In multi-tenant or network-exposed deployments this leaks pipeline state.</p>
+<h3 id="t11-low-dashboard-endpoints-have-no-authentication">T11 — LOW: Dashboard Endpoints Have No Authentication</h3>
+<p><code>/api/v1/overview</code>, <code>/api/v1/truth-map</code>, <code>/api/v1/failures</code>, <code>/api/v1/metrics</code> require no auth while <code>/api/v1/review/*</code> endpoints do. Inconsistent security model.</p>
+<h3 id="t12-low-feedback-store-not-transactional">T12 — LOW: Feedback Store Not Transactional</h3>
+<p><strong>File:</strong> <code>cherenkov/core/feedback_store.py</code>
+Uses a plain JSON file with no file lock. Concurrent feedback writes will corrupt the file.</p>
+<h3 id="t13-low-no-conftestpy-for-shared-fixtures">T13 — LOW: No conftest.py for Shared Fixtures</h3>
+<p>No <code>conftest.py</code> exists at the project root or in <code>tests/</code>. Environment variable setup, common mocks, and test database cleanup must be duplicated across every test file.</p>
+<h3 id="t14-low-codeql-configured-but-not-running">T14 — LOW: CodeQL Configured But Not Running</h3>
+<p><code>.github/codeql/codeql-config.yml</code> exists but no GitHub Actions workflow invokes it. CodeQL is the most important static security analysis tool in the stack and is silently disabled.</p>
+<hr />
+<h2 id="9-business-gaps">9. Business Gaps</h2>
+<h3 id="b1-classify-action-untested">B1 — Classify Action Untested</h3>
+<p><code>POST /api/v1/review/classify</code> accepts three values (<code>regression</code>, <code>intended</code>, <code>ignore</code>) and maps them to different downstream actions. This classification drives false-positive rate reduction — a core business KPI. It has <strong>zero test coverage</strong>.</p>
+<h3 id="b2-d2-feedback-loop-replan-untested">B2 — D2 Feedback Loop (Replan) Untested</h3>
+<p>The orchestrator's D2 Planner detects repeated failures and replans test scenarios. The hard-coded limits (3 replans, 2 failures per case type before circuit break) and replan logic are complex state machine code with <strong>no tests</strong>. If the planner loop misbehaves, it can generate infinite loops or silently skip entire endpoint categories.</p>
+<h3 id="b3-demo-mode-untested">B3 — Demo Mode Untested</h3>
+<p><code>execution/demo_mode.py</code> injects mock findings for demonstration purposes. No tests verify that demo mode correctly fakes data, that demo flags are stripped before production runs, or that demo mode doesn't contaminate real verdicts.</p>
+<h3 id="b4-knowledge-graph-rag-quality-untested">B4 — Knowledge Graph / RAG Quality Untested</h3>
+<p><code>cherenkov/knowledge/</code> and GraphRAG-based enrichment have smoke test coverage but no quality metrics. There is no test for relevance, recall, or correctness of knowledge-enriched test generation.</p>
+<h3 id="b5-governance-kpis-not-validated">B5 — Governance KPIs Not Validated</h3>
+<p><code>GET /api/v1/metrics</code> and the GovernanceScreen display defect escape count, false positive rate, and cache hit ratio. These calculations are <strong>never tested</strong>. A bug in accounting could silently under/over-report KPIs shown to stakeholders.</p>
+<h3 id="b6-human-validation-gate-not-passed">B6 — Human Validation Gate Not Passed</h3>
+<p>Per <code>docs/process/QA_VALIDATION_RUNBOOK.md</code>, 5 QA reviewers must answer "Yes" to: "Would you keep these generated tests in your suite?" <strong>0/5 reviews have been completed.</strong> The validation gate is explicitly "NOT PASSED." Any claim of QA certification is unsupported.</p>
+<h3 id="b7-prism-mock-drift-undetected">B7 — Prism Mock Drift Undetected</h3>
+<p><code>execution/prism_mock.py</code> launches a Stoplight Prism mock server from the OpenAPI spec. If the spec and the Prism version drift (new spec keywords, stricter validation), mock startup silently fails. There is no consumer-driven contract test (CDC) to detect Prism drift.</p>
+<h3 id="b8-mena-compliance-scanner-not-in-ci">B8 — MENA Compliance Scanner Not in CI</h3>
+<p><code>test_mena_compliance.py</code> exists but is not wired into the CI pipeline. Compliance scanning is a business requirement (MENA market) but runs only locally.</p>
+<h3 id="b9-exposed-credential-in-repository">B9 — Exposed Credential in Repository</h3>
+<p>Per <code>agent_memory/validation-gate.md</code>: <code>scripts/close_validation_gate.py</code> contains an exposed GitHub token. This credential must be revoked and rotated. Storing credentials in source code is a critical security violation.</p>
+<h3 id="b10-no-multi-tenant-rbac-model">B10 — No Multi-Tenant / RBAC Model</h3>
+<p>The system uses a single shared API key. There is no role-based access control. All authenticated users have identical permissions. For enterprise deployment (multi-team, audit requirements), this is a blocker.</p>
+<hr />
+<h2 id="10-needed-enhancements">10. Needed Enhancements</h2>
+<h3 id="ne1-fix-requirementstxt-immediately">NE1 — Fix requirements.txt Immediately</h3>
+<p>Add all missing runtime and test dependencies with pinned versions:
+<div class="highlight"><pre><span></span><code>fastapi&gt;=0.110.0
+uvicorn[standard]&gt;=0.29.0
+redis&gt;=5.0.0
+python-multipart&gt;=0.0.9
+click&gt;=8.1.0
+httpx&gt;=0.27.0
+pytest&gt;=8.0.0
+pytest-cov&gt;=5.0.0
+pytest-anyio&gt;=0.0.0
+anyio&gt;=4.0.0
+</code></pre></div>
+Remove the <code>pydantic==2.7.1</code> pin; use <code>pydantic&gt;=2.7.0,&lt;3.0.0</code> to allow minor upgrades.</p>
+<h3 id="ne2-make-smoke-tests-block-ci">NE2 — Make Smoke Tests Block CI</h3>
+<p>Remove all <code>|| true</code> from <code>.github/workflows/ci.yml</code>. Tests that are expected to fail in certain environments (e.g., GPU tests) should be marked with <code>pytest.mark.skip</code> or <code>pytest.mark.requires_ollama</code> and excluded from the default run, not silently swallowed.</p>
+<h3 id="ne3-enforce-coverage-threshold">NE3 — Enforce Coverage Threshold</h3>
+<p>Add to <code>pyproject.toml</code>:
+<div class="highlight"><pre><span></span><code><span class="k">[tool.pytest.ini_options]</span>
+<span class="n">addopts</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;--cov=cherenkov --cov-fail-under=60 --cov-report=xml&quot;</span>
+</code></pre></div></p>
+<h3 id="ne4-add-conftestpy-with-shared-fixtures">NE4 — Add conftest.py with Shared Fixtures</h3>
+<p>Create <code>/home/user/cherenkov-qa/tests/conftest.py</code>:
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">os</span><span class="o">,</span><span class="w"> </span><span class="nn">pytest</span>
+
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">autouse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">dev_env</span><span class="p">(</span><span class="n">monkeypatch</span><span class="p">):</span>
+    <span class="n">monkeypatch</span><span class="o">.</span><span class="n">setenv</span><span class="p">(</span><span class="s2">&quot;CHERENKOV_ENV&quot;</span><span class="p">,</span> <span class="s2">&quot;development&quot;</span><span class="p">)</span>
+
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">mock_llm</span><span class="p">(</span><span class="n">monkeypatch</span><span class="p">):</span>
+    <span class="c1"># Inject a deterministic mock LLM for all chat/generate tests</span>
+    <span class="o">...</span>
+</code></pre></div></p>
+<h3 id="ne5-wire-codeql-into-ci">NE5 — Wire CodeQL into CI</h3>
+<p>Add a new job in <code>ci.yml</code> or in <code>security-scan.yml</code>:
+<div class="highlight"><pre><span></span><code><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">github/codeql-action/init@v3</span>
+<span class="w">  </span><span class="nt">with</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">languages</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">python, javascript</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">github/codeql-action/analyze@v3</span>
+</code></pre></div></p>
+<h3 id="ne6-migrate-fastapi-on_event-to-lifespan">NE6 — Migrate FastAPI <code>on_event</code> to Lifespan</h3>
+<p><strong>File:</strong> <code>cherenkov/web/api.py:133</code>
+Replace:
+<div class="highlight"><pre><span></span><code><span class="nd">@app</span><span class="o">.</span><span class="n">on_event</span><span class="p">(</span><span class="s2">&quot;startup&quot;</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">startup_event</span><span class="p">():</span>
+    <span class="o">...</span>
+</code></pre></div>
+With:
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">asynccontextmanager</span>
+<span class="nd">@asynccontextmanager</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">lifespan</span><span class="p">(</span><span class="n">app</span><span class="p">:</span> <span class="n">FastAPI</span><span class="p">):</span>
+    <span class="c1"># startup code</span>
+    <span class="k">yield</span>
+    <span class="c1"># shutdown code</span>
+<span class="n">app</span> <span class="o">=</span> <span class="n">FastAPI</span><span class="p">(</span><span class="n">lifespan</span><span class="o">=</span><span class="n">lifespan</span><span class="p">)</span>
+</code></pre></div></p>
+<h3 id="ne7-fix-eject-endpoint-error-response">NE7 — Fix Eject Endpoint Error Response</h3>
+<p><strong>File:</strong> <code>cherenkov/web/api.py:541</code>
+Return HTTP 500 on exception:
+<div class="highlight"><pre><span></span><code><span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+</code></pre></div></p>
+<h3 id="ne8-add-e2e-tests-for-mobilescreen-and-mobilepilotscreen">NE8 — Add E2E Tests for MobileScreen and MobilePilotScreen</h3>
+<p>Add to <code>dashboard_e2e.spec.ts</code>:
+- Navigate to MobileScreen, verify device list, trigger pilot
+- Navigate to MobilePilotScreen, verify run controls, check status panel</p>
+<h3 id="ne9-add-error-path-e2e-tests">NE9 — Add Error Path E2E Tests</h3>
+<p>Add a dedicated <code>error_paths.spec.ts</code> that uses <code>api_mocks.ts</code> to inject error responses and verifies the UI handles them gracefully:
+- 500 on <code>/api/v1/run</code> → shows error toast
+- 404 on spec URL → shows validation message
+- Network timeout → shows offline overlay</p>
+<h3 id="ne10-add-multi-viewport-playwright-config">NE10 — Add Multi-Viewport Playwright Config</h3>
+<p>Update <code>playwright.config.ts</code>:
+<div class="highlight"><pre><span></span><code><span class="nx">projects</span><span class="o">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">  </span><span class="p">{</span><span class="w"> </span><span class="nx">name</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;desktop&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">use</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">viewport</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">width</span><span class="o">:</span><span class="w"> </span><span class="kt">1280</span><span class="p">,</span><span class="w"> </span><span class="nx">height</span><span class="o">:</span><span class="w"> </span><span class="kt">720</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="p">{</span><span class="w"> </span><span class="nx">name</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;tablet&#39;</span><span class="p">,</span><span class="w">  </span><span class="nx">use</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">viewport</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">width</span><span class="o">:</span><span class="w"> </span><span class="kt">768</span><span class="p">,</span><span class="w">  </span><span class="nx">height</span><span class="o">:</span><span class="w"> </span><span class="kt">1024</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="p">{</span><span class="w"> </span><span class="nx">name</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;mobile&#39;</span><span class="p">,</span><span class="w">  </span><span class="nx">use</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">viewport</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">width</span><span class="o">:</span><span class="w"> </span><span class="kt">375</span><span class="p">,</span><span class="w">  </span><span class="nx">height</span><span class="o">:</span><span class="w"> </span><span class="kt">667</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="nx">isMobile</span><span class="o">:</span><span class="w"> </span><span class="kt">true</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
+<span class="p">]</span>
+</code></pre></div></p>
+<h3 id="ne11-replace-brittle-selectors-with-data-testid">NE11 — Replace Brittle Selectors with <code>data-testid</code></h3>
+<p>Add <code>data-testid</code> attributes to all interactive elements in React components and update E2E tests to use <code>page.getByTestId()</code> instead of <code>#id</code> and <code>getByText()</code>.</p>
+<h3 id="ne12-add-api-integration-tests">NE12 — Add API Integration Tests</h3>
+<p>Create <code>tests/integration/test_api_endpoints.py</code> using FastAPI's <code>TestClient</code>:
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">fastapi.testclient</span><span class="w"> </span><span class="kn">import</span> <span class="n">TestClient</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cherenkov.web.api</span><span class="w"> </span><span class="kn">import</span> <span class="n">app</span>
+
+<span class="n">client</span> <span class="o">=</span> <span class="n">TestClient</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">test_health_returns_200</span><span class="p">():</span>
+    <span class="n">resp</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/api/v1/health&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">resp</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span>
+    <span class="k">assert</span> <span class="s2">&quot;status&quot;</span> <span class="ow">in</span> <span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+</code></pre></div>
+Implement for all 21 core endpoints.</p>
+<h3 id="ne13-add-unit-tests-for-core-untested-modules">NE13 — Add Unit Tests for Core Untested Modules</h3>
+<p>Priority order:
+1. <code>cherenkov/core/errors.py</code> — Error codes, retry behavior
+2. <code>cherenkov/execution/trace_reader.py</code> — HAR parsing, assertion extraction
+3. <code>cherenkov/execution/prism_mock.py</code> — Startup, CDC contract
+4. <code>cherenkov/execution/k6_runner.py</code> — Script generation, threshold parsing
+5. <code>cherenkov/execution/visual_diff.py</code> — Pixel diff algorithm
+6. <code>cherenkov/core/feedback_store.py</code> — Concurrency safety</p>
+<h3 id="ne14-revoke-exposed-github-token">NE14 — Revoke Exposed GitHub Token</h3>
+<p>Immediately revoke the token referenced in <code>scripts/close_validation_gate.py</code> via GitHub Settings → Developer settings → Personal access tokens. Replace with a GitHub Actions secret.</p>
+<h3 id="ne15-add-accessibility-tests-for-all-screens">NE15 — Add Accessibility Tests for All Screens</h3>
+<p>Extend <code>a11y.spec.ts</code> to run <code>injectAxe()</code> + <code>checkA11y()</code> on every screen, not just ProjectsScreen. Add focused tests for:
+- ReviewScreen form label associations
+- Drawer focus trap
+- Toast announcements (<code>aria-live</code>)</p>
+<hr />
+<h2 id="11-recommendations">11. Recommendations</h2>
+<h3 id="priority-1-immediate-blocks-reliability">Priority 1 — Immediate (Blocks reliability)</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Action</th>
+<th>Effort</th>
+<th>Impact</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>T1</td>
+<td>Complete <code>requirements.txt</code> with all missing dependencies</td>
+<td>1h</td>
+<td>Fixes 8 test failures</td>
+</tr>
+<tr>
+<td>T2</td>
+<td>Remove <code>|| true</code> from all CI smoke test steps</td>
+<td>2h</td>
+<td>Makes CI actually gate builds</td>
+</tr>
+<tr>
+<td>B9</td>
+<td>Revoke exposed GitHub token in <code>scripts/close_validation_gate.py</code></td>
+<td>30min</td>
+<td>Security critical</td>
+</tr>
+<tr>
+<td>T4</td>
+<td>Add <code>conftest.py</code> that sets <code>CHERENKOV_ENV=development</code></td>
+<td>1h</td>
+<td>Fixes mutation test failure</td>
+</tr>
+<tr>
+<td>T5</td>
+<td>Wire mock LLM in chat test setup (monkeypatch substrate router)</td>
+<td>2h</td>
+<td>Fixes 4 chat test failures</td>
+</tr>
+<tr>
+<td>T6</td>
+<td>Fix path normalization in MCP tool (accept absolute paths) or fix test assertion</td>
+<td>30min</td>
+<td>Fixes 1 test failure</td>
+</tr>
+</tbody>
+</table>
+<h3 id="priority-2-short-term-improves-correctness-detection">Priority 2 — Short-term (Improves correctness detection)</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Action</th>
+<th>Effort</th>
+<th>Impact</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>T3</td>
+<td>Enforce <code>--cov-fail-under=60</code> in pytest config</td>
+<td>1h</td>
+<td>Prevents silent regression</td>
+</tr>
+<tr>
+<td>NE5</td>
+<td>Wire CodeQL into <code>.github/workflows/ci.yml</code></td>
+<td>2h</td>
+<td>Critical static security analysis</td>
+</tr>
+<tr>
+<td>NE7</td>
+<td>Fix eject endpoint to return 500 on error</td>
+<td>30min</td>
+<td>Corrects misleading success response</td>
+</tr>
+<tr>
+<td>NE6</td>
+<td>Migrate <code>on_event</code> to <code>lifespan</code> in <code>api.py</code></td>
+<td>1h</td>
+<td>Removes deprecation before FastAPI drops it</td>
+</tr>
+<tr>
+<td>NE12</td>
+<td>Create FastAPI integration tests for all endpoints</td>
+<td>3d</td>
+<td>Covers 80% of untested endpoints</td>
+</tr>
+<tr>
+<td>T13</td>
+<td>Create <code>conftest.py</code> with shared fixtures and env setup</td>
+<td>2h</td>
+<td>Enables consistent test isolation</td>
+</tr>
+</tbody>
+</table>
+<h3 id="priority-3-medium-term-improves-coverage-depth">Priority 3 — Medium-term (Improves coverage depth)</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Action</th>
+<th>Effort</th>
+<th>Impact</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NE8</td>
+<td>Add E2E for MobileScreen and MobilePilotScreen</td>
+<td>1d</td>
+<td>Covers 2 untested screens</td>
+</tr>
+<tr>
+<td>NE9</td>
+<td>Add error-path E2E tests (<code>error_paths.spec.ts</code>)</td>
+<td>2d</td>
+<td>Covers zero-tested error flows</td>
+</tr>
+<tr>
+<td>NE10</td>
+<td>Add multi-viewport Playwright projects</td>
+<td>1d</td>
+<td>Enables responsive regression</td>
+</tr>
+<tr>
+<td>NE11</td>
+<td>Add <code>data-testid</code> attributes; update selectors</td>
+<td>2d</td>
+<td>Eliminates brittle E2E selectors</td>
+</tr>
+<tr>
+<td>NE13</td>
+<td>Unit tests for 6 priority untested modules</td>
+<td>3d</td>
+<td>Fills critical coverage gaps</td>
+</tr>
+<tr>
+<td>B6</td>
+<td>Complete QA human validation gate (5 reviewers)</td>
+<td>1–2 weeks</td>
+<td>Unblocks official certification</td>
+</tr>
+</tbody>
+</table>
+<h3 id="priority-4-long-term-enables-scale">Priority 4 — Long-term (Enables scale)</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Action</th>
+<th>Effort</th>
+<th>Impact</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NE15</td>
+<td>A11y tests for all 20 screens</td>
+<td>3d</td>
+<td>Full WCAG 2.1 AA compliance</td>
+</tr>
+<tr>
+<td>B10</td>
+<td>Implement RBAC (reviewer, admin, viewer roles)</td>
+<td>2 weeks</td>
+<td>Enterprise readiness</td>
+</tr>
+<tr>
+<td>T12</td>
+<td>Replace JSON feedback store with SQLite + file lock</td>
+<td>1d</td>
+<td>Concurrency safety</td>
+</tr>
+<tr>
+<td>B4</td>
+<td>Add knowledge graph quality metrics and tests</td>
+<td>1 week</td>
+<td>RAG relevance assurance</td>
+</tr>
+<tr>
+<td>NE3</td>
+<td>Raise coverage threshold to 80% in phases</td>
+<td>Ongoing</td>
+<td>Long-term quality floor</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="12-gap-heat-map">12. Gap Heat Map</h2>
+<div class="highlight"><pre><span></span><code>COMPONENT              UNIT   INT    E2E    CI-GATE   RISK
+─────────────────────────────────────────────────────────
+Core Orchestrator       ⚠️     ❌     ✅      ❌        HIGH
+INGEST Stage            ❌     ❌     ⚠️      ❌        HIGH
+PLAN Stage              ❌     ❌     ⚠️      ❌        HIGH
+GENERATE Stage          ❌     ❌     ⚠️      ❌        HIGH
+REVIEW Stage (6 gates)  ❌     ❌     ⚠️      ❌        HIGH
+HITL Approve/Reject     ✅     ✅     ✅      ❌        LOW
+HITL Classify           ❌     ❌     ❌      ❌        HIGH
+Validate Engine         ⚠️     ❌     ✅      ❌        MEDIUM
+Eject                   ❌     ❌     ✅      ❌        MEDIUM
+Healing (all)           ❌     ❌     ⚠️      ❌        HIGH
+API Endpoints           ❌     ❌     ⚠️      ❌        CRITICAL
+Auth/HITL Auth          ⚠️     ❌     ❌      ❌        HIGH
+WebSocket Events        ❌     ❌     ❌      ❌        HIGH
+Dashboard - 18 screens  N/A    N/A    ⚠️      ❌        MEDIUM
+Dashboard - Mobile (2)  N/A    N/A    ❌      ❌        HIGH
+A11y - 18 screens       N/A    N/A    ❌      ❌        MEDIUM
+Error Paths (all)       ❌     ❌     ❌      ❌        CRITICAL
+Dependencies (reqs.txt) N/A    N/A    N/A     ❌        CRITICAL
+CI Quality Gates        N/A    N/A    N/A     ❌        CRITICAL
+
+Legend: ✅ Good  ⚠️ Partial  ❌ None/Broken
+</code></pre></div>
+<hr />
+<p><em>Report generated by automated regression analysis on 2026-06-09.</em>
+<em>Run command: <code>python -m pytest tests/ --ignore=tests/eject_fixtures -q</code></em>
+<em>Result: 16 failed, 245 passed, 9 skipped in 31.53 seconds</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "toc.integrate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"current": "1.4", "versions": ["1.2", "1.3", "1.4"]}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../javascripts/version-banner.js"></script>
+      
+    
+  </body>
+</html>

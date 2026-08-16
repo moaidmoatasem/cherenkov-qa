@@ -1,0 +1,2682 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Autonomous Quality Fabric">
+      
+      
+        <meta name="author" content="TesterArmy">
+      
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>CHERENKOV-QA: Integration Strategy & Ecosystem Roadmap - Cherenkov QA</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#cherenkov-qa-integration-strategy-ecosystem-roadmap" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+          <aside class="md-banner md-banner--warning">
+            <div class="md-banner__inner md-grid md-typeset">
+              
+  <div class="md-version-warning">
+    <strong>Notice:</strong> You are viewing documentation for an older version of CHERENKOV-QA.
+    <a href="https://moaidmoatasem.github.io/cherenkov-qa/1.4/">Click here for the latest version (v1.4).</a>
+  </div>
+
+            </div>
+            <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL(".."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
+          </aside>
+        
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Cherenkov QA" class="md-header__button md-logo" aria-label="Cherenkov QA" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Cherenkov QA
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              CHERENKOV-QA: Integration Strategy &amp; Ecosystem Roadmap
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../1.4/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../1.4/getting-started/" class="md-tabs__link">
+          
+  
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../1.4/guides/" class="md-tabs__link">
+          
+  
+  
+  QA & Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../1.4/architecture/" class="md-tabs__link">
+          
+  
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../1.4/guides/ci-cd/" class="md-tabs__link">
+          
+  
+  
+  Ecosystem
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../1.4/troubleshooting/faq/" class="md-tabs__link">
+          
+  
+  
+  Troubleshooting
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../1.4/cli/reference/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Cherenkov QA" class="md-nav__button md-logo" aria-label="Cherenkov QA" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Cherenkov QA
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/getting-started/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/getting-started/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/getting-started/cost-tiers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cost Tiers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    QA & Testing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    QA & Testing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/guides/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides Hub
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/guides/api-conformance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Conformance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/guides/check-suite/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Check Suite
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/guides/test-generation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Generation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/guides/continuous-monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spec Guardian
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/guides/certificates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Certificates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/guides/dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/guides/hitl/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HITL
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/guides/eject/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Eject
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/guides/docker/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docker
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/guides/security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/architecture/system-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/architecture/platform-operating-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/architecture/user-journeys/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Journeys
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/architecture/clean-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Clean Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/architecture/module-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Module Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/architecture/second-brain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Second Brain
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/architecture/diagrams/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Diagrams
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_9" id="__nav_4_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Role Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Role Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/roles/developer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/roles/qa-engineer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    QA Engineer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/roles/devops/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DevOps & SRE
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/roles/team-lead/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Team Lead
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ecosystem
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Ecosystem
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/guides/ci-cd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CI/CD
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/integrations/github-actions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GitHub Actions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/integrations/vscode/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    VS Code
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/integrations/mcp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MCP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/integrations/langchain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LangChain
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Troubleshooting
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/troubleshooting/faq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FAQ
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/troubleshooting/common-issues/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Common Issues
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/cli/reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/cli/completions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Completions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/releases/v1.4.0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v1.4.0 Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/releases/v1.3.0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v1.3.0 Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1.4/releases/v1.2.0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v1.2.0 Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="cherenkov-qa-integration-strategy-ecosystem-roadmap">CHERENKOV-QA: Integration Strategy &amp; Ecosystem Roadmap</h1>
+<blockquote>
+<p>Every integration is a distribution channel. Every distribution channel is a growth flywheel.</p>
+</blockquote>
+<hr />
+<h2 id="honest-current-state">Honest Current State</h2>
+<p>Before strategy, truth:</p>
+<table>
+<thead>
+<tr>
+<th>Integration</th>
+<th>Code State</th>
+<th>Reality</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>MCP Server</strong></td>
+<td>✅ Built</td>
+<td>14 tools, 3 resources, full JSON-RPC 2.0, policy engine</td>
+</tr>
+<tr>
+<td><strong>Desktop App (Tauri)</strong></td>
+<td>⚠️ Shell</td>
+<td>Browser wrapper + sidecar launcher. No native UI, no IPC. 30% done.</td>
+</tr>
+<tr>
+<td><strong>VS Code Extension</strong></td>
+<td>🔧 Built</td>
+<td><code>vscode/</code> scaffold — commands, sidebar tree, CodeLens, status bar, ConformancePanel webview. Needs <code>npm install</code> + <code>vsce package</code> to publish.</td>
+</tr>
+<tr>
+<td><strong>Slack</strong></td>
+<td>❌ Zero</td>
+<td><code>notification_endpoint</code> declared in config, never called</td>
+</tr>
+<tr>
+<td><strong>Teams</strong></td>
+<td>❌ Zero</td>
+<td>No code</td>
+</tr>
+<tr>
+<td><strong>Jira</strong></td>
+<td>⚠️ Stub</td>
+<td>Local Markdown export only. MCP tool returns "not implemented".</td>
+</tr>
+<tr>
+<td><strong>Xray / Zephyr</strong></td>
+<td>❌ Zero</td>
+<td>No code</td>
+</tr>
+<tr>
+<td><strong>GitHub Actions</strong></td>
+<td>❌ Zero</td>
+<td>No marketplace action</td>
+</tr>
+<tr>
+<td><strong>Chat Agent</strong></td>
+<td>✅ Built</td>
+<td>Ollama-only, 4 tools, SSE streaming, SQLite memory</td>
+</tr>
+<tr>
+<td><strong>RAG / Knowledge</strong></td>
+<td>✅ Built</td>
+<td>Dual-index (schema + mobile), cosine similarity, disk cache</td>
+</tr>
+<tr>
+<td><strong>MENA Compliance</strong></td>
+<td>⚠️ Partial</td>
+<td>SAMA/FinCSF scanner. MCP tool stubs. No SOC2/GDPR.</td>
+</tr>
+<tr>
+<td><strong>Webhooks (outbound)</strong></td>
+<td>⚠️ Arch only</td>
+<td>Internal callback pattern exists. No actual egress.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="the-integration-stack-tiered-by-strategic-value">The Integration Stack — Tiered by Strategic Value</h2>
+<div class="highlight"><pre><span></span><code>┌─────────────────────────────────────────────────────────────────────┐
+│  TIER 0: WHERE DEVELOPERS LIVE (Highest Leverage)                   │
+│  VS Code · GitHub · CI/CD · Terminal                                │
+├─────────────────────────────────────────────────────────────────────┤
+│  TIER 1: WHERE TEAMS WORK (Collaboration &amp; Workflow)                │
+│  Slack · Teams · Jira · Linear · GitHub Issues                      │
+├─────────────────────────────────────────────────────────────────────┤
+│  TIER 2: WHERE QUALITY LIVES (QA Ecosystem)                         │
+│  Xray · Zephyr · TestRail · Allure · Playwright Report              │
+├─────────────────────────────────────────────────────────────────────┤
+│  TIER 3: WHERE AI LIVES (Model &amp; Agent Ecosystem)                   │
+│  MCP · Claude · Cursor · Copilot · LangChain · OpenAI              │
+├─────────────────────────────────────────────────────────────────────┤
+│  TIER 4: WHERE ENTERPRISE LIVES (Infrastructure &amp; Compliance)       │
+│  K8s · ArgoCD · Datadog · Grafana · PagerDuty · OTEL · SOC2        │
+├─────────────────────────────────────────────────────────────────────┤
+│  TIER 5: WHERE THE MARKET LIVES (Ecosystem Expansion)               │
+│  GraphQL · gRPC · AsyncAPI · Buf · Postman · Stoplight              │
+└─────────────────────────────────────────────────────────────────────┘
+</code></pre></div>
+<hr />
+<h2 id="tier-0-where-developers-live">TIER 0 — Where Developers Live</h2>
+<h3 id="1-vs-code-extension-must-build-now">1. VS Code Extension ❌ → Must Build Now</h3>
+<p><strong>Why it's the #1 priority:</strong> VS Code has 73M+ monthly active users. Every backend developer opens their OpenAPI spec in VS Code. A right-click → "Generate conformance tests" is the highest-conversion funnel imaginable. It's also a <strong>daily active use</strong> driver — not just a one-off CLI command.</p>
+<p><strong>What to build:</strong></p>
+<div class="highlight"><pre><span></span><code>vscode-cherenkov/
+├── src/
+│   ├── extension.ts           # Entry point
+│   ├── commands/
+│   │   ├── generate.ts        # &quot;Generate tests from this spec&quot;
+│   │   ├── validate.ts        # &quot;Run conformance check&quot;
+│   │   ├── eject.ts           # &quot;Eject to vanilla Playwright&quot;
+│   │   └── doctor.ts          # &quot;Check LLM health&quot;
+│   ├── providers/
+│   │   ├── CodeLensProvider.ts  # Inline &quot;Generate&quot; / &quot;Validate&quot; / &quot;N drift violations&quot;
+│   │   ├── DiagnosticsProvider.ts  # Red squiggles on drifting endpoints
+│   │   ├── TreeDataProvider.ts  # Test explorer sidebar
+│   │   └── HoverProvider.ts    # Hover on path → show last verdict
+│   ├── views/
+│   │   ├── ConformancePanel.ts  # WebView: conformance report
+│   │   └── HealingPanel.ts     # WebView: tightening suggestions
+│   └── api/
+│       └── CherenkovClient.ts  # Calls local CLI / MCP server
+├── package.json
+└── .vscodeignore
+</code></pre></div>
+<p><strong>The killer feature:</strong> When a <code>.yaml</code>/<code>.json</code> file is open and recognized as OpenAPI:
+- <strong>Gutter icons</strong>: green dot (passing endpoint), red dot (drift detected), grey dot (untested)
+- <strong>Code lens above each path</strong>: <code>▶ 4 tests passing  ⚠ 1 conformance violation  → Heal</code>
+- <strong>Problems panel</strong>: Conformance violations appear as warnings with file/line attribution
+- <strong>Quick Fix</strong>: <code>Ctrl+.</code> on a violation → "Add suggested value assertion"</p>
+<p><strong>How it connects:</strong> Via <code>cherenkov doctor</code> socket or direct MCP protocol (already built). Extension spawns CLI as a language server.</p>
+<p><strong>Effort:</strong> 3-4 weeks, TypeScript only.</p>
+<hr />
+<h3 id="2-github-actions-marketplace-action-ship-in-week-1">2. GitHub Actions Marketplace Action ❌ → Ship in Week 1</h3>
+<p><strong>The single fastest path to viral adoption.</strong> Every repo that adds:
+<div class="highlight"><pre><span></span><code><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cherenkov-qa/action@v1</span>
+<span class="w">  </span><span class="nt">with</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">spec</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./api/openapi.yaml</span>
+<span class="w">    </span><span class="nt">target</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://localhost:8080</span>
+</code></pre></div>
+...is a public signal to every developer who forks or stars that repo.</p>
+<p><strong>What to build:</strong></p>
+<div class="highlight"><pre><span></span><code><span class="c1"># action.yml</span>
+<span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CHERENKOV Conformance Check</span>
+<span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Generate and run API conformance tests from your OpenAPI spec</span>
+<span class="nt">inputs</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">spec</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Path to OpenAPI spec</span>
+<span class="w">    </span><span class="nt">required</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">  </span><span class="nt">target</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">API server URL to test against</span>
+<span class="w">    </span><span class="nt">required</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">  </span><span class="nt">fail-on-drift</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Exit code 1 if conformance violations found</span>
+<span class="w">    </span><span class="nt">default</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;true&#39;</span>
+<span class="w">  </span><span class="nt">llm-provider</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">LLM provider (ollama|openai)</span>
+<span class="w">    </span><span class="nt">default</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;openai&#39;</span><span class="w">  </span><span class="c1"># CI default; ollama for self-hosted</span>
+<span class="nt">outputs</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">violations</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Number of conformance violations found</span>
+<span class="w">  </span><span class="nt">report-path</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Path to generated conformance report</span>
+<span class="w">  </span><span class="nt">sarif-path</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Path to SARIF output (for GitHub Security tab)</span>
+<span class="nt">runs</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">using</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docker</span>
+<span class="w">  </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ghcr.io/cherenkov-qa/cli:latest</span>
+</code></pre></div>
+<p><strong>SARIF output</strong> is the multiplier: violations show up in the GitHub Security tab as code scanning alerts. Every PR gets conformance annotations directly in the diff.</p>
+<p><strong>Effort:</strong> 3 days. Already have Docker image.</p>
+<hr />
+<h3 id="3-desktop-app-what-it-should-really-be">3. Desktop App — What It Should Really Be</h3>
+<p><strong>Current state:</strong> Tauri wrapper that opens a browser window. A shell.</p>
+<p><strong>The real opportunity:</strong> The desktop app is the onboarding funnel for non-technical users and teams. Think: what if a QA lead could drag-drop an OpenAPI spec, click "Run", and see a conformance report — no terminal, no Docker, no Ollama setup?</p>
+<p><strong>What the desktop app must become:</strong></p>
+<div class="highlight"><pre><span></span><code>CHERENKOV Desktop = Auto-Setup Wizard + Native Performance + System Tray Agent
+
+Phase 1 — Auto-Setup Wizard (eliminates the #1 adoption blocker):
+  ✓ Detects: Ollama installed? Docker? Node? Python?
+  ✓ One-click install of missing dependencies
+  ✓ Downloads qwen2.5-coder:7b silently in background
+  ✓ First run: drag OpenAPI spec → instant demo
+
+Phase 2 — Native File Watcher (killer feature):
+  ✓ Watch a spec file directory
+  ✓ On file save → auto-regenerate affected tests
+  ✓ Native macOS/Windows notification: &quot;3 conformance violations found&quot;
+  ✓ System tray icon: green (passing) / red (drift)
+
+Phase 3 — Offline-First Packaged Binary:
+  ✓ Single .dmg / .exe / .AppImage with everything bundled
+  ✓ Embedded Ollama binary (or download on first run)
+  ✓ No Docker required
+  ✓ Works on airplane
+</code></pre></div>
+<p><strong>To unblock it NOW:</strong> The <code>cargo</code> dependency blocker is solvable. Use <code>tauri-action</code> in CI. For local dev, the CLI + web UI is already functional. Ship Phase 1 as a priority — the auto-setup wizard is the unlock.</p>
+<p><strong>Effort to unblock + ship Phase 1:</strong> 2 weeks after <code>cargo</code> is available.</p>
+<hr />
+<h2 id="tier-1-where-teams-work">TIER 1 — Where Teams Work</h2>
+<h3 id="4-slack-integration-high-roi-medium-effort">4. Slack Integration ❌ → High ROI, Medium Effort</h3>
+<p><strong>The use case:</strong> Your CI/CD runs CHERENKOV on every deploy. When drift is detected, a Slack message appears in <code>#api-quality</code> before the developer even notices the pipeline failed.</p>
+<div class="highlight"><pre><span></span><code>🔴 CHERENKOV: Conformance drift detected
+   Service: payment-service  |  Spec: v2.3.1
+   ┌─────────────────────────────────────────┐
+   │ POST /payments/charge                   │
+   │ Expected: 422 (spec)  Got: 400 (server) │
+   │ Affected tests: 3                       │
+   └─────────────────────────────────────────┘
+   [View Report]  [Open in VS Code]  [Create Jira Ticket]
+</code></pre></div>
+<p><strong>Architecture:</strong> The <code>openclaw/adapter.py</code> <code>notification_endpoint</code> config is already declared. This needs 3 things:
+1. <code>SlackNotifier</code> adapter in <code>cherenkov/adapters/notifiers/slack.py</code>
+2. Wire it into the <code>OpenClawAdapter.notification_endpoint</code>
+3. Block action buttons (approve/reject HITL directly from Slack via slash commands)</p>
+<p><strong>The Slack block kit format:</strong>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">SlackNotifier</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">webhook_url</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span> <span class="o">...</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">notify_drift</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">violation</span><span class="p">:</span> <span class="n">ConformanceViolation</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">notify_hitl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">HITLItem</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>  <span class="c1"># approve/reject from Slack</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">notify_healed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">suggestion</span><span class="p">:</span> <span class="n">HealingSuggestion</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+</code></pre></div></p>
+<p><strong>Effort:</strong> 1 week (Slack SDK is trivial; the hard part is wiring to existing events).</p>
+<hr />
+<h3 id="5-microsoft-teams-integration-enterprise-gate-opener">5. Microsoft Teams Integration ❌ → Enterprise Gate-Opener</h3>
+<p>Teams is where enterprise engineering orgs live. A Teams connector is the difference between "interesting CLI tool" and "approved enterprise software."</p>
+<p>Same architecture as Slack but using Teams Adaptive Cards (richer than Slack blocks). The conformance violation card becomes actionable: engineers approve/reject HITL directly from Teams.</p>
+<p><strong>Effort:</strong> 1 week (parallel with Slack; share the notification interface).</p>
+<hr />
+<h3 id="6-jira-integration-complete-the-stub">6. Jira Integration ⚠️ → Complete the Stub</h3>
+<p><strong>Current state:</strong> <code>jira_exporter.py</code> writes local Markdown files. MCP tool returns "not implemented."</p>
+<p><strong>What needs to change:</strong></p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">JiraClient</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Real Jira API v3 integration.&quot;&quot;&quot;</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">create_issue</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">project_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">violation</span><span class="p">:</span> <span class="n">ConformanceViolation</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">assignee</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">labels</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;api-conformance&quot;</span><span class="p">,</span> <span class="s2">&quot;cherenkov&quot;</span><span class="p">],</span>
+        <span class="n">priority</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;High&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">JiraIssue</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">link_test_run</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">issue_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">verdict_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">transition_issue</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">issue_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">transition</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;In Progress&quot;</span><span class="p">,</span> <span class="s2">&quot;Done&quot;</span><span class="p">,</span> <span class="s2">&quot;Won&#39;t Fix&quot;</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+</code></pre></div>
+<p><strong>The feedback loop:</strong> Jira issue created → developer fixes → fix pushed → CHERENKOV re-runs → violation resolved → Jira issue auto-closed. That closed loop is the enterprise upsell.</p>
+<p><strong>Effort:</strong> 1 week to complete the stub + wire MCP tool.</p>
+<hr />
+<h3 id="7-linear-integration-developer-native-jira-alternative">7. Linear Integration ❌ → Developer-Native Jira Alternative</h3>
+<p>Linear is Jira for engineers who hate Jira. Massive adoption at Series A-C startups. Same architecture as Jira but GraphQL API (simpler). Creates issues with:
+- Epic: API Conformance
+- Labels: <code>conformance-drift</code>, affected service name
+- Auto-assigned to service owner (pulled from OpenAPI <code>info.x-owner</code> field)</p>
+<p><strong>Effort:</strong> 3 days (Linear GraphQL API is clean).</p>
+<hr />
+<h3 id="8-github-issues-integration-zero-config-default">8. GitHub Issues Integration ❌ → Zero-Config Default</h3>
+<p>For open source projects and teams already on GitHub: auto-create issues from conformance failures. Zero setup (already has GitHub token in CI). Every violation becomes a tracked issue with spec diff attached.</p>
+<p><strong>Effort:</strong> 2 days (GitHub REST API).</p>
+<hr />
+<h2 id="tier-2-where-quality-lives">TIER 2 — Where Quality Lives</h2>
+<h3 id="9-xray-jira-test-management-enterprise-qa-unlock">9. Xray (Jira Test Management) ❌ → Enterprise QA Unlock</h3>
+<p>Xray is the #1 test management tool for enterprise Jira shops. 8,000+ companies use it. Importing CHERENKOV test results into Xray means:
+- QA leads see API conformance coverage on their test dashboards
+- Compliance auditors get API test evidence without manual export
+- Test execution history tracks conformance trend over time</p>
+<p><strong>What to build:</strong>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">XrayExporter</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Exports CHERENKOV verdicts as Xray test execution results.&quot;&quot;&quot;</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">import_execution</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">verdicts</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Verdict</span><span class="p">],</span>
+        <span class="n">test_plan_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">environment</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">XrayExecutionResult</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="c1"># Xray JSON format: https://docs.getxray.app/display/XRAY/Import+Execution+Results</span>
+</code></pre></div></p>
+<p><strong>Xray Cloud REST API</strong> accepts JUnit XML (which CHERENKOV should already output from Phase 10 CI work). The incremental cost of Xray integration once JUnit output exists: 2 days.</p>
+<hr />
+<h3 id="10-zephyr-scale-jira-2-enterprise-qa-tool">10. Zephyr Scale (Jira) ❌ → #2 Enterprise QA Tool</h3>
+<p>Zephyr Scale is SmartBear's test management solution. 15,000+ companies. Same play as Xray but different API format. With both Xray and Zephyr covered, CHERENKOV integrates with 80%+ of enterprise QA tooling.</p>
+<p><strong>Effort:</strong> 3 days (similar to Xray but Zephyr-specific API format).</p>
+<hr />
+<h3 id="11-testrail-traditional-qa-teams">11. TestRail ❌ → Traditional QA Teams</h3>
+<p>TestRail is the legacy standard, especially in regulated industries. Older enterprise teams live here. REST API is well-documented.</p>
+<p><strong>Effort:</strong> 3 days.</p>
+<hr />
+<h3 id="12-allure-report-developer-friendly-test-reports">12. Allure Report ❌ → Developer-Friendly Test Reports</h3>
+<p>Allure is open source, beautiful, and beloved by QA engineers. CHERENKOV conformance results as an Allure report = instant credibility with QA community.</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">AllureEmitter</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">emit_verdict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verdict</span><span class="p">:</span> <span class="n">Verdict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Writes Allure JSON result file to allure-results/.&quot;&quot;&quot;</span>
+</code></pre></div>
+<p><strong>Effort:</strong> 2 days (Allure result format is simple JSON).</p>
+<hr />
+<h2 id="tier-3-where-ai-lives">TIER 3 — Where AI Lives</h2>
+<h3 id="13-mcp-server-expand-whats-already-built-14-tools-40-tools">13. MCP Server — Expand What's Already Built ✅ → 14 Tools → 40+ Tools</h3>
+<p><strong>This is already the most important integration and it's BUILT.</strong> But 4 MCP tools return "not yet implemented." Complete them first:</p>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Current</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>run_k6_perf</code></td>
+<td>stub</td>
+<td>Wire to k6 executor</td>
+</tr>
+<tr>
+<td><code>export_jira_ticket</code></td>
+<td>stub</td>
+<td>Wire to real Jira client (see above)</td>
+</tr>
+<tr>
+<td><code>scan_mena_compliance</code></td>
+<td>stub</td>
+<td>Wire to <code>mena_scanner.py</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Then expand to 40+ tools:</strong></p>
+<div class="highlight"><pre><span></span><code><span class="c1"># New MCP tools to add:</span>
+
+<span class="c1"># Developer workflow</span>
+<span class="s2">&quot;generate_tests&quot;</span>           <span class="c1"># trigger full generate pipeline</span>
+<span class="s2">&quot;run_validation&quot;</span>           <span class="c1"># run validate against URL</span>
+<span class="s2">&quot;get_coverage_map&quot;</span>         <span class="c1"># which endpoints are tested</span>
+<span class="s2">&quot;suggest_next_test&quot;</span>        <span class="c1"># GraphRAG-powered test suggestions</span>
+
+<span class="c1"># Integrations</span>
+<span class="s2">&quot;create_jira_issue&quot;</span>        <span class="c1"># real Jira API</span>
+<span class="s2">&quot;post_slack_alert&quot;</span>         <span class="c1"># Slack notification</span>
+<span class="s2">&quot;export_allure_results&quot;</span>    <span class="c1"># Allure format export</span>
+<span class="s2">&quot;sync_xray_execution&quot;</span>      <span class="c1"># Xray test execution import</span>
+
+<span class="c1"># Knowledge</span>
+<span class="s2">&quot;search_idioms&quot;</span>            <span class="c1"># semantic search in knowledge mesh</span>
+<span class="s2">&quot;get_verdict_history&quot;</span>      <span class="c1"># endpoint-level test history</span>
+<span class="s2">&quot;find_similar_incidents&quot;</span>   <span class="c1"># GraphRAG similarity search</span>
+<span class="s2">&quot;get_spec_diff&quot;</span>            <span class="c1"># what changed since last run</span>
+
+<span class="c1"># Agent-native</span>
+<span class="s2">&quot;plan_test_scenarios&quot;</span>      <span class="c1"># plan without generating (dry run)</span>
+<span class="s2">&quot;explain_violation&quot;</span>        <span class="c1"># human-readable violation explanation</span>
+<span class="s2">&quot;suggest_spec_fix&quot;</span>         <span class="c1"># propose OpenAPI spec correction</span>
+<span class="s2">&quot;run_self_play&quot;</span>            <span class="c1"># witness/skeptic divergence analysis</span>
+</code></pre></div>
+<p><strong>Why MCP is the biggest multiplier:</strong>
+- Claude Desktop, Cursor, Windsurf, and every MCP-compatible AI assistant can now call CHERENKOV tools directly
+- An AI agent can: read spec → generate tests → validate → explain violations → create Jira ticket — all in one conversation
+- <strong>This makes CHERENKOV the testing backbone of every AI coding assistant</strong></p>
+<hr />
+<h3 id="14-claude-anthropic-api-integration-premium-tier-llm">14. Claude / Anthropic API Integration ❌ → Premium Tier LLM</h3>
+<p><strong>Current gap:</strong> Chat agent is Ollama-only. No Claude, no GPT-4o.</p>
+<p><strong>What to add:</strong>
+<div class="highlight"><pre><span></span><code><span class="c1"># cherenkov/substrate/providers/anthropic.py</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">AnthropicProvider</span><span class="p">(</span><span class="n">LLMProvider</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Claude Sonnet/Opus via Anthropic API — highest quality test generation.&quot;&quot;&quot;</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">ReasoningRequest</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ReasoningResult</span><span class="p">:</span>
+        <span class="c1"># Uses claude-sonnet-4-6 for test generation</span>
+        <span class="c1"># Uses claude-haiku-4-5 for fast healing suggestions</span>
+        <span class="c1"># Extended thinking for complex conformance analysis</span>
+</code></pre></div></p>
+<p><strong>Why it matters:</strong> Claude is significantly better at TypeScript test generation than <code>qwen2.5-coder:7b</code>. Offering Claude as a premium provider (BYOK) is the enterprise upsell. "Pay for better tests" is an easy value proposition.</p>
+<p><strong>Effort:</strong> 2 days (Anthropic SDK is straightforward).</p>
+<hr />
+<h3 id="15-cursor-windsurf-copilot-integration-via-mcp-zero-extra-work">15. Cursor / Windsurf / Copilot Integration → via MCP (Zero extra work)</h3>
+<p>The MCP server is already built. Cursor and Windsurf both support MCP natively. This means:
+- <strong>Cursor users</strong> can call <code>cherenkov.generate_tests()</code> directly from their AI chat panel
+- <strong>Windsurf users</strong> get CHERENKOV as a built-in tool
+- <strong>GitHub Copilot</strong> (via MCP bridge) can suggest test generation when it sees an OpenAPI file</p>
+<p><strong>Action required:</strong> Publish the MCP server config to the official MCP registry. 1-day effort. Zero code changes.</p>
+<hr />
+<h3 id="16-langchain-llamaindex-tool-agent-ecosystem">16. LangChain / LlamaIndex Tool ❌ → Agent Ecosystem</h3>
+<p>Package CHERENKOV as a LangChain tool and LlamaIndex query engine. This means any team building an AI agent can add <code>from cherenkov import CherenkovTool</code> and get:
+- <code>CherenkovTool.generate_tests(spec_path)</code>
+- <code>CherenkovTool.validate(target_url)</code>
+- <code>CherenkovTool.explain_violation(violation_id)</code></p>
+<p><strong>Why:</strong> LangChain has 90K+ GitHub stars. Being a first-class LangChain tool means discovery by every AI engineer building agents.</p>
+<p><strong>Effort:</strong> 3 days.</p>
+<hr />
+<h2 id="tier-4-where-enterprise-lives">TIER 4 — Where Enterprise Lives</h2>
+<h3 id="17-opentelemetry-export-observability-standard">17. OpenTelemetry Export ❌ → Observability Standard</h3>
+<p>Every enterprise already has Datadog, Jaeger, or Grafana. OTEL spans from CHERENKOV test runs integrate natively:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Each test run emits OTEL spans:</span>
+<span class="c1"># cherenkov.validate (root span)</span>
+<span class="c1">#   cherenkov.generate (child: test generation)</span>
+<span class="c1">#   cherenkov.review.gate (child: 6-gate review)</span>
+<span class="c1">#   cherenkov.execute (child: Playwright run)</span>
+<span class="c1">#   cherenkov.conformance (child: violation check)</span>
+</code></pre></div>
+<p>Enterprises can correlate API conformance runs with deploy events, error rates, and SLO burns. <strong>This is how CHERENKOV becomes part of the observability stack.</strong></p>
+<p><strong>Effort:</strong> 1 week (OTEL Python SDK is well-documented).</p>
+<hr />
+<h3 id="18-pagerduty-opsgenie-integration-on-call-loop">18. PagerDuty / OpsGenie Integration ❌ → On-Call Loop</h3>
+<p>When a production deploy triggers a conformance regression on a critical endpoint, page the on-call engineer immediately. Same notification adapter pattern as Slack.</p>
+<div class="highlight"><pre><span></span><code>CHERENKOV Alert → PagerDuty incident → On-call notified (5 min)
+vs.
+Conformance drift → production incident → postmortem (48 hours)
+</code></pre></div>
+<p><strong>Effort:</strong> 2 days.</p>
+<hr />
+<h3 id="19-argocd-fluxcd-applicationset-gitops-native">19. ArgoCD / FluxCD ApplicationSet ❌ → GitOps Native</h3>
+<p>The K8s operator (<code>ConformanceCheck</code> CRD) is in progress. The next step is an ArgoCD ApplicationSet that auto-creates a <code>ConformanceCheck</code> resource for every service deploying to the cluster.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># ArgoCD ApplicationSet: auto-conformance for all services</span>
+<span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">argoproj.io/v1alpha1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ApplicationSet</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">generators</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">list</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">elements</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">service</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">payment-api</span>
+<span class="w">        </span><span class="nt">spec</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">services/payment-api/openapi.yaml</span>
+<span class="w">  </span><span class="nt">template</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">spec</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">source</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">helm</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">values</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">            </span><span class="no">conformanceCheck:</span>
+<span class="w">              </span><span class="no">spec: {{ spec }}</span>
+<span class="w">              </span><span class="no">target: http://{{ service }}.prod.svc.cluster.local</span>
+</code></pre></div>
+<p>This means: <strong>every service that deploys gets conformance tests automatically, zero manual configuration.</strong></p>
+<p><strong>Effort:</strong> 1 week.</p>
+<hr />
+<h3 id="20-backstage-plugin-enterprise-developer-portal">20. Backstage Plugin ❌ → Enterprise Developer Portal</h3>
+<p>78% of Fortune 500 engineering orgs use Backstage or plan to. A Backstage plugin means:
+- Every service's catalog page shows its API conformance status
+- Engineers see "Last checked: 2 hours ago | 0 violations" on the service card
+- Drill-down to full conformance report from the catalog</p>
+<p><strong>Architecture:</strong>
+<div class="highlight"><pre><span></span><code>cherenkov-backstage-plugin/
+├── src/
+│   ├── plugin.ts              # Plugin entry
+│   ├── components/
+│   │   ├── ConformanceBadge.tsx   # Status badge for catalog cards
+│   │   ├── ConformanceCard.tsx    # Full card for entity page
+│   │   └── ViolationTable.tsx    # Detailed violation list
+│   └── api/
+│       └── CherenkovClient.ts    # Calls CHERENKOV backend API
+</code></pre></div></p>
+<p><strong>Effort:</strong> 2-3 weeks. High enterprise conversion value.</p>
+<hr />
+<h3 id="21-grafana-dashboard-conformance-observability">21. Grafana Dashboard ❌ → Conformance Observability</h3>
+<p>Pre-built Grafana dashboards for:
+- Conformance coverage over time (% endpoints tested)
+- Violation trend (are we getting better or worse?)
+- Test generation latency (LLM performance)
+- Endpoint health heatmap</p>
+<p>Published as a Grafana dashboard JSON to grafana.com/dashboards. <strong>Zero code in CHERENKOV</strong> — just a JSON export. Grafana users discover CHERENKOV via the dashboard marketplace.</p>
+<p><strong>Effort:</strong> 2 days.</p>
+<hr />
+<h2 id="tier-5-where-the-market-lives">TIER 5 — Where the Market Lives</h2>
+<h3 id="22-graphql-schema-support-3x-addressable-market">22. GraphQL Schema Support ✅ → 3x Addressable Market</h3>
+<p><strong>This is the biggest market expansion move.</strong> GraphQL powers: GitHub, Shopify, Twitter/X, Stripe, every modern frontend. Adding GraphQL support triples the addressable market.</p>
+<p><strong>Pipeline:</strong>
+<div class="highlight"><pre><span></span><code>GraphQL Introspection / .graphql schema
+  → Parse: operations, types, resolvers
+  → Plan: query scenarios (happy path, nullability, pagination, error states)
+  → Generate: Apollo/urql typed test code
+  → Validate: response validates against schema
+  → Report: resolver-level conformance
+</code></pre></div></p>
+<p><strong>Effort:</strong> 3-4 weeks. New <code>GraphQLSourceAdapter</code> + updated LLM prompt for GQL test patterns.</p>
+<hr />
+<h3 id="23-grpc-protobuf-support-backend-engineering-niche">23. gRPC / Protobuf Support ✅ → Backend Engineering Niche</h3>
+<p>gRPC is standard in microservices. Every company running K8s microservices has gRPC services. No tool does: <code>.proto</code> → LLM → typed gRPC tests.</p>
+<p><strong>Pipeline:</strong> <code>.proto</code> → <code>protoc</code> → descriptor → CHERENKOV → gRPC Playwright tests.</p>
+<p><strong>Effort:</strong> 3 weeks. Requires <code>protoc</code> integration + gRPC-specific test templates.</p>
+<hr />
+<h3 id="24-asyncapi-websocket-kafka-event-driven-apis">24. AsyncAPI / WebSocket / Kafka ❌ → Event-Driven APIs</h3>
+<p>The next frontier. REST is 60% of APIs. Events are the other 40% and completely untested. AsyncAPI spec → CHERENKOV → event-driven conformance tests.</p>
+<p><strong>Examples:</strong>
+- Kafka topic schema validation
+- WebSocket message conformance
+- Server-Sent Events (CHERENKOV already uses SSE internally)</p>
+<p><strong>Effort:</strong> 4-6 weeks. Long-term strategic play.</p>
+<hr />
+<h3 id="25-postman-collection-import-conversion-funnel">25. Postman Collection Import ❌ → Conversion Funnel</h3>
+<p>Postman has 25M users. Importing a Postman collection as a source adapter means: every Postman user can migrate their manual API tests to CHERENKOV-generated conformance tests.</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">PostmanSourceAdapter</span><span class="p">(</span><span class="n">SourceAdapter</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">ingest</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">collection_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">EndpointSlice</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Converts Postman Collection v2.1 → EndpointSlice[]&quot;&quot;&quot;</span>
+</code></pre></div>
+<p><strong>This is a migration path from the competitor's format. Massive conversion funnel.</strong></p>
+<p><strong>Effort:</strong> 1 week.</p>
+<hr />
+<h2 id="integration-prioritization-matrix">Integration Prioritization Matrix</h2>
+<div class="highlight"><pre><span></span><code>                    HIGH IMPACT
+                         │
+   Xray/Zephyr           │    VS Code Extension ◄── #1
+   Jira (complete)       │    GitHub Actions ◄── #2
+   Teams                 │    GraphQL Support
+   Backstage             │    MCP (complete stubs) ◄── #3
+   OTEL                  │    Slack ◄── #4
+                         │
+LOW EFFORT ──────────────┼──────────────── HIGH EFFORT
+                         │
+   Allure                │    Desktop Auto-Setup Wizard
+   GitHub Issues         │    gRPC / Protobuf
+   Grafana Dashboard     │    Backstage Plugin
+   PagerDuty             │    AsyncAPI
+   Postman Import        │    LangChain Tool
+                         │
+                    LOW IMPACT
+</code></pre></div>
+<hr />
+<h2 id="the-integration-delivery-plan">The Integration Delivery Plan</h2>
+<h3 id="sprint-1-weeks-1-2-foundation">Sprint 1 (Weeks 1-2): Foundation</h3>
+<ul class="task-list">
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Complete 3 MCP stub tools (<code>run_k6_perf</code>, <code>export_jira_ticket</code>, <code>scan_mena_compliance</code>)</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> GitHub Actions marketplace action (SARIF output included)</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> JUnit XML output format (unblocks Xray/Zephyr/TestRail at zero extra cost)</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> <code>SlackNotifier</code> adapter wired to <code>OpenClawAdapter</code></li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Wire <code>notification_endpoint</code> for outbound webhooks (generic HTTP POST)</li>
+</ul>
+<h3 id="sprint-2-weeks-3-6-developer-tools">Sprint 2 (Weeks 3-6): Developer Tools</h3>
+<ul class="task-list">
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> VS Code extension beta (generate + validate commands + gutter icons)</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Jira API client (complete the stub)</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Linear integration</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Allure report emitter</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Pre-commit hook</li>
+</ul>
+<h3 id="sprint-3-weeks-7-10-enterprise-qa">Sprint 3 (Weeks 7-10): Enterprise QA</h3>
+<ul class="task-list">
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Xray Cloud import</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Zephyr Scale import</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> TestRail import</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Teams Adaptive Card integration</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> GitHub Issues auto-create</li>
+</ul>
+<h3 id="sprint-4-weeks-11-14-ai-ecosystem">Sprint 4 (Weeks 11-14): AI Ecosystem</h3>
+<ul class="task-list">
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Anthropic/Claude provider in substrate router</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> OpenAI provider (for BYOK enterprise tier)</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> LangChain tool package</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Publish MCP server to official registry</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Desktop auto-setup wizard</li>
+</ul>
+<h3 id="sprint-5-weeks-15-20-observability-platform">Sprint 5 (Weeks 15-20): Observability &amp; Platform</h3>
+<ul class="task-list">
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> OpenTelemetry export</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> ArgoCD ApplicationSet template</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Backstage plugin</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Grafana dashboard publish</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> PagerDuty / OpsGenie adapter</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Postman collection import</li>
+</ul>
+<h3 id="sprint-6-weeks-20-28-market-expansion">Sprint 6 (Weeks 20-28): Market Expansion</h3>
+<ul class="task-list">
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> GraphQL schema support</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> gRPC / Protobuf support</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> AsyncAPI / WebSocket support</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Buf schema registry integration</li>
+</ul>
+<hr />
+<h2 id="the-compounding-effect">The Compounding Effect</h2>
+<p>Each integration is not just a feature — it's a distribution channel:</p>
+<div class="highlight"><pre><span></span><code>VS Code Extension
+  → 73M VS Code users discover CHERENKOV
+  → They open OpenAPI specs daily
+  → They click &quot;Generate Tests&quot; → they see the value
+  → They add GitHub Actions action to their CI
+  → CI runs → violations appear in Slack
+  → Slack alert → Jira ticket auto-created
+  → QA lead sees Jira ticket → asks &quot;what tool is this?&quot;
+  → Starts enterprise trial
+  → Buys K8s operator license
+</code></pre></div>
+<p>Every integration shortens this funnel. The goal is not to support integrations — <strong>the goal is to make CHERENKOV invisible by making it omnipresent.</strong></p>
+<p>When a developer can't tell where their IDE ends and CHERENKOV begins, when a QA lead's Jira tickets are auto-populated, when an on-call engineer gets paged before the customer complains — that's when CHERENKOV has won.</p>
+<hr />
+<h2 id="the-desktop-app-honest-answer">The Desktop App — Honest Answer</h2>
+<p><strong>Is it ready?</strong> No. It's a browser wrapper.</p>
+<p><strong>Should it be a priority?</strong> Yes — but for the right reason. The desktop app is not about "having a desktop app." It is about <strong>eliminating the #1 adoption barrier</strong>: requiring users to install Ollama, Docker, Python, and Node before seeing any value.</p>
+<p>The desktop app's job is to be a <strong>self-contained onboarding machine</strong>:
+1. User downloads <code>.dmg</code> / <code>.exe</code> / <code>.AppImage</code>
+2. Opens it — sees a setup wizard
+3. Wizard installs Ollama silently
+4. Wizard downloads <code>qwen2.5-coder:7b</code> (progress bar)
+5. User drags in their OpenAPI spec
+6. 60 seconds later: sees their first conformance report</p>
+<p><strong>That flow — no terminal, no Docker, no reading docs — is worth more than 6 months of documentation.</strong></p>
+<p>The technical path: unblock <code>cargo</code> via <code>tauri-action</code> in CI, build the setup wizard as a Tauri native window (not a web view), bundle the Python CLI as a sidecar via PyInstaller.</p>
+<p><strong>This should be Phase 9 after the GitHub Actions action ships.</strong> Order matters: engineers need the CLI to work first, then the desktop app makes it accessible to non-engineers.</p>
+<hr />
+<p><em>Document authored: 2026-06-09</em>
+<em>Part of: PRODUCT_STRATEGY_ROADMAP.md series</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "toc.integrate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"current": "1.4", "versions": ["1.2", "1.3", "1.4"]}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../javascripts/version-banner.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,3744 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Autonomous Quality Fabric">
+      
+      
+        <meta name="author" content="TesterArmy">
+      
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>CHERENKOV-QA: Unified Master Plan - Cherenkov QA</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#cherenkov-qa-unified-master-plan" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+          <aside class="md-banner md-banner--warning">
+            <div class="md-banner__inner md-grid md-typeset">
+              
+  <div class="md-version-warning">
+    <strong>Notice:</strong> You are viewing documentation for an older version of CHERENKOV-QA.
+    <a href="https://moaidmoatasem.github.io/cherenkov-qa/1.4/">Click here for the latest version (v1.4).</a>
+  </div>
+
+            </div>
+            <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
+          </aside>
+        
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Cherenkov QA" class="md-header__button md-logo" aria-label="Cherenkov QA" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Cherenkov QA
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              CHERENKOV-QA: Unified Master Plan
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../1.4/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../1.4/getting-started/" class="md-tabs__link">
+          
+  
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../1.4/guides/" class="md-tabs__link">
+          
+  
+  
+  QA & Testing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../1.4/architecture/" class="md-tabs__link">
+          
+  
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../1.4/guides/ci-cd/" class="md-tabs__link">
+          
+  
+  
+  Ecosystem
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../1.4/troubleshooting/faq/" class="md-tabs__link">
+          
+  
+  
+  Troubleshooting
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../1.4/cli/reference/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Cherenkov QA" class="md-nav__button md-logo" aria-label="Cherenkov QA" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Cherenkov QA
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/getting-started/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/getting-started/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/getting-started/cost-tiers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cost Tiers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    QA & Testing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    QA & Testing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides Hub
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/api-conformance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Conformance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/check-suite/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Check Suite
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/test-generation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Generation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/continuous-monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spec Guardian
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/certificates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Certificates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/hitl/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HITL
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/eject/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Eject
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/docker/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docker
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/system-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/platform-operating-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operating Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/user-journeys/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Journeys
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/clean-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Clean Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/module-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Module Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/second-brain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Second Brain
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/architecture/diagrams/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Diagrams
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_9" id="__nav_4_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Role Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Role Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/roles/developer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/roles/qa-engineer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    QA Engineer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/roles/devops/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DevOps & SRE
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/roles/team-lead/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Team Lead
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ecosystem
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Ecosystem
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/guides/ci-cd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CI/CD
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/integrations/github-actions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GitHub Actions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/integrations/vscode/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    VS Code
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/integrations/mcp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MCP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/integrations/langchain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LangChain
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Troubleshooting
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/troubleshooting/faq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FAQ
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/troubleshooting/common-issues/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Common Issues
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/cli/reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/cli/completions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Completions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/releases/v1.4.0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v1.4.0 Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/releases/v1.3.0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v1.3.0 Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.4/releases/v1.2.0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v1.2.0 Release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="cherenkov-qa-unified-master-plan">CHERENKOV-QA: Unified Master Plan</h1>
+<p><strong>Consolidating: Desktop + Mobile + Chat Agents + Second Brain + UI Revamp + Infrastructure</strong></p>
+<hr />
+<h2 id="1-vision-invariants">1. Vision &amp; Invariants</h2>
+<h3 id="what-cherenkov-becomes">What CHERENKOV Becomes</h3>
+<p>From: <em>CLI-first API conformance testing tool with a dashboard</em></p>
+<p>To: <strong>AI-native QA platform</strong> that:
+- Runs on desktop (Tauri 2) or CLI or K8s
+- Tests APIs <strong>and</strong> mobile apps <strong>and</strong> visual UIs
+- Has a <strong>second brain</strong> that compounds knowledge across every run
+- Has a <strong>chat agent</strong> you can ask "why did this test fail?" and get evidence-linked answers
+- Is <strong>free to start</strong> (LocalAI/Docker Compose, zero cloud dependency)
+- Is <strong>local-first</strong> (all data stays on your machine by default)
+- Is <strong>contribution-ready</strong> (clean architecture, ports/adapters, behavioral contracts)</p>
+<h3 id="design-invariants-never-broken">Design Invariants (NEVER broken)</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Invariant</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D7</td>
+<td>Never auto-edit test code</td>
+<td>Validate/healing produce reports/suggestions only</td>
+</tr>
+<tr>
+<td>Anti-lock-in</td>
+<td>Tests must run without CHERENKOV</td>
+<td><code>eject</code> strips all imports; Maestro YAML runs standalone</td>
+</tr>
+<tr>
+<td>Suggest-only</td>
+<td>Healing never auto-commits</td>
+<td>Diagnoser produces text suggestions, never patches</td>
+</tr>
+<tr>
+<td>Spec-derived</td>
+<td>Expected HTTP status from OpenAPI spec</td>
+<td>Not hardcoded assumptions</td>
+</tr>
+<tr>
+<td>Build-over</td>
+<td>New capabilities extend existing seams</td>
+<td>No parallel <code>mobile/</code> module duplicating Substrate/RAG/Truth Model</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="2-architecture-overview">2. Architecture Overview</h2>
+<div class="highlight"><pre><span></span><code>┌─────────────────────────────────────────────────────────────────────────┐
+│                         Tauri 2 Desktop Host                             │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐    │
+│  │  Setup   │ │  Device  │ │  Chat    │ │  Mobile  │ │ Knowledge│    │
+│  │  Wizard  │ │  Manager │ │  Panel   │ │ Dashboard│ │ Explorer │    │
+│  └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘    │
+│       │             │            │             │             │           │
+│  ┌────▼─────────────▼────────────▼─────────────▼─────────────▼────┐    │
+│  │            NDJSON Sidecar Protocol / SSE / WebSocket            │    │
+│  └──────────────────────────┬──────────────────────────────────┘    │
+└─────────────────────────────┼────────────────────────────────────────┘
+                              │
+┌─────────────────────────────▼────────────────────────────────────────┐
+│                        FastAPI Backend (:8000)                        │
+│  ┌─────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐  │
+│  │ /healthz │ │ /api/v1/*│ │/api/v1/  │ │/api/v1/  │ │/api/v1/  │  │
+│  │          │ │  (exist) │ │chat/*    │ │mobile/*  │ │knowledge/*│  │
+│  └─────────┘ └──────────┘ └──────────┘ └──────────┘ └──────────┘  │
+└─────────────────────────────┬────────────────────────────────────────┘
+                              │
+┌─────────────────────────────▼────────────────────────────────────────┐
+│                    OrchestrationEngine (core/orchestrator.py)           │
+│  ┌────────────┐ ┌────────────┐ ┌────────────┐ ┌────────────┐        │
+│  │ Track A    │ │ Track B/C  │ │ Mobile     │ │ Chat Agent │        │
+│  │ Pipeline   │ │ Visual/    │ │ Pillot+   │ │ (Second    │        │
+│  │ INGEST→    │ │ Perf/Div   │ │ Maestro   │ │  Brain)    │        │
+│  │ PLAN→GEN→ │ │            │ │            │ │            │        │
+│  │ REVIEW     │ │            │ │            │ │            │        │
+│  └──────┬─────┘ └─────┬──────┘ └─────┬──────┘ └─────┬──────┘        │
+└─────────┼─────────────┼──────────────┼──────────────┼────────────────┘
+          │             │              │              │
+┌─────────▼─────────────▼──────────────▼──────────────▼────────────────┐
+│                        Shared Seam Layer                               │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐  │
+│  │ Sources  │ │ Substrate│ │ Agents   │ │ Stages   │ │ Oracle   │  │
+│  │ (Ingest+ │ │ (LLM+   │ │ (Pilot+  │ │ (Plan+   │ │ (Pixel+  │  │
+│  │  Mobile) │ │  VLM+   │ │  Explorer│ │  Generate+│ │  Semantic│  │
+│  │          │ │  Router) │ │  Chat)   │ │  Review) │ │  VLM)   │  │
+│  └──────────┘ └──────────┘ └──────────┘ └──────────┘ └──────────┘  │
+└──────────────────────────┬────────────────────────────────────────────┘
+                           │
+┌──────────────────────────▼────────────────────────────────────────────┐
+│                     Second Brain (Knowledge Layer)                     │
+│  ┌──────────────────────────────────────────────────────────────┐   │
+│  │                    EventBus (asyncio.Queue / Redis)           │   │
+│  │  VerdictRecorded | HITLDecisionMade | DivergenceFound |     │   │
+│  │  PilotObservation | ChatMessage                              │   │
+│  └──────┬──────────┬──────────┬──────────┬──────────┬──────────┘   │
+│         │          │          │          │          │                │
+│  ┌──────▼────┐ ┌──▼──────┐ ┌─▼───────┐ ┌▼─────────┐ ┌▼─────────┐ │
+│  │TruthModel │ │Verdict  │ │RAGIndex │ │HITL      │ │Feedback   │ │
+│  │(SQLite+   │ │Store    │ │(+Redis  │ │Queue     │ │Store      │ │
+│  │ persisted)│ │(SQLite) │ │ vector) │ │(SQLite)  │ │(→SQLite)  │ │
+│  └───────────┘ └─────────┘ └─────────┘ └──────────┘ └───────────┘ │
+└────────────────────────────────────────────────────────────────────────┘
+                           │
+┌──────────────────────────▼────────────────────────────────────────────┐
+│              Ports &amp; Adapters (Clean Architecture)                     │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐  │
+│  │Knowledge  │ │Inference │ │ Memory   │ │ Device   │ │ EventBus  │  │
+│  │Repo Port  │ │Port      │ │Port      │ │Port      │ │Port       │  │
+│  └─────┬─────┘ └─────┬────┘ └─────┬────┘ └─────┬────┘ └─────┬────┘  │
+│        │             │            │            │            │             │
+│  ┌─────▼─────┐ ┌────▼─────┐ ┌────▼─────┐ ┌────▼─────┐ ┌────▼─────┐  │
+│  │SQLite     │ │LocalAI   │ │SQLite    │ │Maestro   │ │NDJSON    │  │
+│  │Adapter    │ │Adapter   │ │Memory   │ │Device    │ │EventBus  │  │
+│  └───────────┘ │Ollama    │ │Adapter  │ │Adapter   │ │Adapter   │  │
+│  ┌───────────┐ │Adapter   │ └─────────┘ └─────────┘ └─────────┘  │
+│  │Redis      │ │OpenAI    │ ┌─────────┐ ┌─────────┐ ┌─────────┐  │
+│  │Adapter    │ │Adapter   │ │Redis    │ │Appium   │ │Redis    │  │
+│  │(optional) │ │(opt-in)  │ │Memory  │ │Device   │ │Streams  │  │
+│  └───────────┘ └─────────┘ │(optional)│ │Adapter  │ │(optional)│  │
+│                             └─────────┘ └─────────┘ └─────────┘  │
+└────────────────────────────────────────────────────────────────────────┘
+                           │
+┌──────────────────────────▼────────────────────────────────────────────┐
+│                    Infrastructure (Docker Compose)                     │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐  │
+│  │ LocalAI  │ │ Redis   │ │ MCP     │ │ Android  │ │ k3s      │  │
+│  │ (LLM+   │ │ Stack   │ │ Gateway │ │ Emulator │ │ (K8s     │  │
+│  │  VLM)   │ │ (cache+ │ │ (Docker │ │ (opt)   │ │  operator)│  │
+│  │          │ │  vector) │ │  AI)    │ │          │ │          │  │
+│  └──────────┘ └──────────┘ └──────────┘ └──────────┘ └──────────┘  │
+└────────────────────────────────────────────────────────────────────────┘
+</code></pre></div>
+<hr />
+<h2 id="3-technology-stack">3. Technology Stack</h2>
+<h3 id="core-stack-required">Core Stack (Required)</h3>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Technology</th>
+<th>Version</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Runtime</strong></td>
+<td>Python</td>
+<td>3.10+</td>
+<td>Backend, agents, pipeline</td>
+</tr>
+<tr>
+<td><strong>Frontend</strong></td>
+<td>React 19 + Vite 6 + TypeScript 5.8</td>
+<td>Existing</td>
+<td>Dashboard</td>
+</tr>
+<tr>
+<td><strong>Desktop</strong></td>
+<td>Tauri 2</td>
+<td>New</td>
+<td>Desktop host (Windows/macOS/Linux)</td>
+</tr>
+<tr>
+<td><strong>Sidecar</strong></td>
+<td>PyInstaller</td>
+<td>Existing</td>
+<td>Bundle Python + UI into desktop app</td>
+</tr>
+<tr>
+<td><strong>Data Stores</strong></td>
+<td>SQLite (WAL mode)</td>
+<td>Existing</td>
+<td>HITL, Verdicts, RAG, Knowledge</td>
+</tr>
+<tr>
+<td><strong>LLM (default)</strong></td>
+<td>LocalAI via Docker</td>
+<td>New</td>
+<td>OpenAI-compatible API, VLM, embeddings</td>
+</tr>
+<tr>
+<td><strong>LLM (fallback)</strong></td>
+<td>Ollama</td>
+<td>Existing</td>
+<td>For existing users who have it installed</td>
+</tr>
+<tr>
+<td><strong>LLM (opt-in)</strong></td>
+<td>OpenAI GPT-4o-mini</td>
+<td>Existing</td>
+<td>Cloud VLM, requires egress policy</td>
+</tr>
+<tr>
+<td><strong>Vector Search</strong></td>
+<td>SQLite brute-force → Redis RediSearch</td>
+<td>New (optional)</td>
+<td>RAG similarity, defaults to SQLite</td>
+</tr>
+<tr>
+<td><strong>Event Bus</strong></td>
+<td>asyncio.Queue → Redis Streams</td>
+<td>New (optional)</td>
+<td>Cross-module notifications</td>
+</tr>
+</tbody>
+</table>
+<h3 id="optional-stack-enhanced-mode">Optional Stack (Enhanced Mode)</h3>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Technology</th>
+<th>Purpose</th>
+<th>When Needed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Redis Stack</strong></td>
+<td><code>redis/redis-stack-server</code></td>
+<td>Vector search, pub/sub, session cache, JSON docs</td>
+<td>Multi-agent coordination, enhanced second brain</td>
+</tr>
+<tr>
+<td><strong>Docker MCP Gateway</strong></td>
+<td><code>docker/mcp-gateway</code></td>
+<td>Unified external agent access, auth, tool discovery</td>
+<td>When exposing CHERENKOV to external agents (Claude, Copilot)</td>
+</tr>
+<tr>
+<td><strong>Android Emulator</strong></td>
+<td>Android SDK + ADB</td>
+<td>Mobile testing on Android</td>
+<td><code>cherenkov eject init</code> optional setup</td>
+</tr>
+<tr>
+<td><strong>iOS Simulator</strong></td>
+<td>Xcode + simctl</td>
+<td>Mobile testing on iOS</td>
+<td>macOS only, optional</td>
+</tr>
+<tr>
+<td><strong>Maestro CLI</strong></td>
+<td><code>maestro</code></td>
+<td>Ejectable mobile test runtime</td>
+<td><code>cherenkov eject init</code> optional setup</td>
+</tr>
+<tr>
+<td><strong>Appium</strong></td>
+<td><code>appium-python-client</code></td>
+<td>Alternative mobile runtime for locked-down apps</td>
+<td>Optional, pip install cherenkov-qa[mobile]</td>
+</tr>
+<tr>
+<td><strong>Docker Compose AI</strong></td>
+<td><code>docker-compose.ai.yml</code></td>
+<td>One-command stack: LocalAI + Redis + CHERENKOV</td>
+<td><code>docker compose -f docker-compose.ai.yml up</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="mobile-stack-new-optional">Mobile Stack (New, Optional)</h3>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Technology</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Primary eject</strong></td>
+<td>Maestro YAML</td>
+<td>Mobile test runtime (anti-lock-in)</td>
+</tr>
+<tr>
+<td><strong>Fallback eject</strong></td>
+<td>Appium Python/TS</td>
+<td>For locked-down third-party apps</td>
+</tr>
+<tr>
+<td><strong>VLM</strong></td>
+<td>Qwen2.5-VL (via LocalAI)</td>
+<td>Screen understanding for Pilot agent</td>
+</tr>
+<tr>
+<td><strong>Device control</strong></td>
+<td>ADB + Maestro</td>
+<td>Android emulator/device control</td>
+</tr>
+<tr>
+<td><strong>Device control</strong></td>
+<td>simctl + Maestro</td>
+<td>iOS simulator control</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="4-module-structure">4. Module Structure</h2>
+<h3 id="new-modules">New Modules</h3>
+<div class="highlight"><pre><span></span><code>cherenkov/
+├── ports/                              # INTERFACES (no external deps)
+│   ├── __init__.py
+│   ├── knowledge.py                    # KnowledgeRepository protocol
+│   ├── inference.py                    # InferencePort (extends InferenceClient)
+│   ├── inference_streaming.py          # StreamingInferencePort
+│   ├── memory.py                       # MemoryPort — conversation sessions
+│   ├── device.py                       # DevicePort — Maestro/Appium/Playwright
+│   └── event_bus.py                    # EventBus — domain events + pub/sub
+│
+├── adapters/                           # IMPLEMENTATIONS (depend on external libs)
+│   ├── __init__.py
+│   ├── sqlite_knowledge.py            # SQLite adapter for KnowledgeRepository
+│   ├── redis_knowledge.py             # Redis adapter (optional, enhanced mode)
+│   ├── localai_inference.py           # LocalAI adapter for InferencePort
+│   ├── sqlite_memory.py               # SQLite adapter for MemoryPort
+│   ├── redis_memory.py                # Redis adapter (optional, enhanced mode)
+│   ├── maestro_device.py              # Maestro adapter for DevicePort
+│   ├── appium_device.py               # Appium adapter for DevicePort
+│   └── ndjson_event_bus.py            # NDJSON sidecar adapter for EventBus
+│
+├── knowledge/                          # SECOND BRAIN
+│   ├── __init__.py
+│   ├── repository.py                  # Unified KnowledgeRepository implementation
+│   ├── graph_rag.py                   # Hybrid vector + graph retrieval
+│   ├── bridges.py                     # HITL→Reflector, Feedback→RAG, Memory→RAG
+│   └── events.py                      # Domain events (VerdictRecorded, etc.)
+│
+├── chat/                               # CHAT AGENTS
+│   ├── __init__.py
+│   ├── memory.py                      # ConversationMemory (SQLite + optional Redis)
+│   ├── persona.py                     # PersonaRegistry — compose system prompts
+│   ├── agent.py                       # QAChatAgent — observe→reason→act→respond
+│   ├── tools.py                       # CHERENKOV-specific tools for agent
+│   └── streaming.py                  # SSE/streaming support
+│
+├── sources/                             # MOBILE SOURCES
+│   ├── __init__.py
+│   ├── adapter.py                      # SourceAdapter SPI
+│   └── mobile/
+│       ├── __init__.py
+│       ├── contracts.py               # MobileUIElement, MobileScreenState, etc.
+│       ├── android_dump.py
+│       ├── ios_dump.py
+│       ├── har_to_traffic.py
+│       └── adapter.py                 # MobileSourceAdapter
+│
+├── substrate/
+│   ├── vlm_provider.py                # NEW: VLMProvider ABC + implementations
+│   ├── vlm_router.py                  # NEW: Tier-aware VLM routing
+│   ├── provider.py                    # EXTEND: Register VLM + LocalAI tiers
+│   ├── router.py                       # Existing SubstrateRouter
+│   └── certification.py               # Existing model certification
+│
+├── agents/                             # AGENTS
+│   ├── __init__.py
+│   ├── pilot.py                       # Pilot agent (observe→reason→act)
+│   └── explorer_mobile.py            # Mobile-aware explorer
+│
+├── core/
+│   ├── devices.py                     # NEW: DeviceClass, VLMTier, DeviceTarget, recommend_vlm_tier()
+│   ├── config.py                      # EXTEND: VLM_TIER, MOBILE_EJECT_FORMAT, LOCALAI_*, DESKTOP_*
+│   ├── contracts.py                    # EXTEND: MobileSlice, MobileScenario, PilotAction, KnowledgeResult
+│   ├── orchestrator.py                # EXTEND: run_mobile_stage(), run_pilot(), process_all_scenarios()
+│   ├── truth_model.py                 # EXTEND: Add save()/load() via KnowledgeRepository
+│   ├── feedback_store.py             # EXTEND: Bridge to Reflector via EventBus
+│   ├── config_loader.py              # EXTEND: desktop profile, LocalAI profile, Redis support
+│   └── errors.py                      # Existing (no changes)
+│
+├── stages/
+│   ├── ingest.py                      # EXTEND: Mobile spec dispatch (.apk/.har/.maestro)
+│   ├── mobile_plan.py                # NEW: DETERMINISTIC mobile plan stage
+│   ├── mobile_generate.py            # NEW: Maestro YAML + Appium TS generation
+│   ├── mobile_review.py              # NEW: Mobile review stage
+│   ├── mobile_cmd.py                 # NEW: CLI surface for mobile commands
+│   └── doctor_cmd.py                 # EXTEND: check_adb, check_xcrun_simctl, check_vlm, check_localai
+│
+├── execution/
+│   ├── maestro_runner.py             # NEW: Maestro CLI wrapper (DevicePort adapter)
+│   └── appium_runner.py             # NEW: Appium fallback (DevicePort adapter)
+│
+├── oracle/
+│   ├── visual_oracle.py             # EXTEND: VisualOracleKind enum (pixel_diff/semantic_vlm/hybrid)
+│   └── visual_oracle_vlm.py         # NEW: SemanticVisualOracle (gated by self-play)
+│
+├── reflector/
+│   ├── reflector.py                  # EXTEND: Accept events from HITL bridge
+│   ├── store.py                       # Existing VerdictStore
+│   └── mobile_extensions.py          # NEW: MobileFailureClassifier
+│
+├── divergence/
+│   ├── skeptic.py                     # EXTEND: mobile_hypothesizer strategy
+│   ├── explorer.py                    # EXTEND: mobile_explorer mode
+│   ├── witness.py                     # EXTEND: pilot_reproduce method
+│   └── self_play.py                   # EXTEND: mobile assertion gate
+│
+├── rag/
+│   └── mobile_index.py               # NEW: Per-app RAG (mirrors rag/schema_index.py)
+│
+├── web/
+│   ├── api.py                         # EXTEND: /healthz, /api/v1/chat/*, /api/v1/mobile/*, /api/v1/knowledge/*
+│   ├── chat_routes.py                # NEW: Chat API endpoints + SSE streaming
+│   ├── mobile_routes.py              # NEW: Mobile API endpoints
+│   ├── divergences.py               # Existing
+│   └── ui/src/
+│       ├── components/
+│       │   ├── ChatPanel.tsx          # NEW: Chat UI component
+│       │   ├── MobileScreenViewer.tsx  # NEW: Screenshot+UI dump viewer
+│       │   ├── SetupScreen.tsx         # REVAMP: 7-step wizard
+│       │   ├── ReviewScreen.tsx        # EXTEND: mobile traces, chat button
+│       │   ├── HealingScreen.tsx       # EXTEND: structured suggestions
+│       │   ├── DivergencesScreen.tsx   # EXTEND: &quot;ask about this&quot; chat
+│       │   └── EjectScreen.tsx         # EXTEND: format selector
+│       ├── screens/
+│       │   ├── Mobile/                 # NEW: Mobile dashboard
+│       │   ├── Chat.tsx               # NEW: Full chat screen
+│       │   ├── KnowledgeExplorer.tsx   # NEW: Second brain browser
+│       │   └── DeviceManager.tsx      # NEW: Device detection &amp; management
+│       └── hooks/
+│           ├── useChatSession.ts       # NEW: React Query hook for chat
+│           └── useMobileSession.ts     # NEW: React Query hook for mobile
+│
+├── mcp/
+│   ├── handlers.py                   # EXTEND: +7 tools (4 mobile + 3 knowledge)
+│   ├── policy.py                      # EXTEND: mobile_* + knowledge_* policy entries
+│   ├── server.py                      # Existing stdio MCP server
+│   └── contracts.py                  # Existing JSON-RPC contracts
+│
+├── desktop/
+│   └── src-tauri/
+│       └── src/
+│           ├── main.rs               # REWRITE: Full Tauri 2 host with NDJSON
+│           ├── hardware.rs            # NEW: GPU/CPU/RAM detection → DeviceClass
+│           └── setup/
+│               ├── windows.rs         # NEW: Windows setup orchestration
+│               ├── macos.rs           # NEW: macOS setup orchestration
+│               └── linux.rs           # NEW: Linux setup orchestration
+│
+├── hitl/
+│   ├── store.py                      # EXTEND: +3 mobile classifications, event emission
+│   ├── cmd.py                        # Existing HITL CLI
+│   └── contracts.py                  # Existing HITL contracts
+│
+├── ai/
+│   ├── interface.py                  # EXTEND: chat() → streaming support
+│   ├── rag_index.py                  # EXTEND: multi-domain indexing + mobile traces
+│   ├── ollama_client.py              # Existing (keep as fallback)
+│   └── openai_client.py             # Existing (opt-in for frontier VLM)
+│
+└── packaging/
+    ├── launcher.py                   # EXTEND: NDJSON events, CHERENKOV_NO_BROWSER, signal handlers
+    ├── cherenkov.spec                 # EXTEND: desktop_logging hiddenimport, exclude tests/stub
+    └── build.ps1                      # Existing Windows build script
+</code></pre></div>
+<h3 id="new-files-outside-cherenkov">New Files Outside cherenkov/</h3>
+<div class="highlight"><pre><span></span><code>docker-compose.ai.yml                  # NEW: LocalAI + Redis + CHERENKOV stack
+cherenkov-policy.mobile.example.json   # NEW: Mobile MCP tools policy
+eject_fixtures/mobile/
+├── maestro_guest_checkout.yaml        # NEW: First ejected Maestro YAML
+└── README.md                          # NEW: &quot;How to run outside CHERENKOV&quot;
+tests/
+├── unit/
+│   ├── test_devices.py               # NEW: DeviceClass, VLMTier, DeviceTarget
+│   ├── test_mobile_source_adapter.py  # NEW: Mobile parsers
+│   ├── test_vlm_provider.py          # NEW: VLM provider contracts
+│   ├── test_pilot_agent.py           # NEW: Pilot loop with stubbed transport
+│   ├── test_mobile_rag_index.py      # NEW: Mobile RAG round-trip
+│   ├── test_semantic_visual_oracle.py # NEW: Anti-reward-hacking gate
+│   ├── test_ejector_mobile.py        # NEW: Maestro YAML zero-import test
+│   ├── test_mobile_failure_classifier.py # NEW
+│   ├── test_mcp_mobile_tools.py      # NEW: Mobile MCP tools blocked by default
+│   ├── test_knowledge_repository.py  # NEW: Knowledge port contracts
+│   ├── test_event_bus.py             # NEW: Event publishing and subscription
+│   ├── test_chat_agent.py            # NEW: Chat agent tool calling
+│   ├── test_conversation_memory.py   # NEW: Session persistence
+│   └── test_self_play_mobile.py      # NEW: Mobile anti-reward-hacking
+├── contracts/                         # NEW: Behavioral contract tests
+│   ├── test_knowledge_repository_contract.py
+│   ├── test_memory_repository_contract.py
+│   └── test_device_port_contract.py
+└── smoke/
+    └── smoke_test_mobile.py          # NEW: End-to-end mobile smoke test
+</code></pre></div>
+<hr />
+<h2 id="5-revised-flows-consolidated">5. Revised Flows (Consolidated)</h2>
+<h3 id="51-first-run-flow-new-7-step-wizard">5.1 First-Run Flow (NEW: 7-Step Wizard)</h3>
+<div class="highlight"><pre><span></span><code>User launches CHERENKOV desktop app
+│
+├─ Step 1: Welcome + language preference
+├─ Step 2: Hardware Detection
+│   ├─ GPU (NVIDIA/AMD/Apple Silicon/None) → DeviceClass → VLMTier
+│   ├─ RAM (total + available)
+│   ├─ OS (Windows/macOS/Linux)
+│   └─ Show: &quot;Your GPU: NVIDIA RTX 4070 → mid_vlm recommended&quot;
+├─ Step 3: Engine Selection
+│   ├─ Auto-detect LocalAI (Docker) or Ollama
+│   ├─ If neither: offer `docker compose -f docker-compose.ai.yml up`
+│   ├─ Offer cloud VLM (GPT-4o-mini) as opt-in with egress policy
+│   └─ Show: &quot;LocalAI detected with qwen2.5-vl:7b (4.8GB)&quot;
+├─ Step 4: VLM &amp; Model Setup
+│   ├─ Pull recommended model if not present
+│   ├─ Verify model responds to test prompt
+│   └─ Show: &quot;Model ready. VLM tier: mid_vlm&quot;
+├─ Step 5: Provisions Check
+│   ├─ Node.js ≥18, Playwright, Python ≥3.10
+│   ├─ ADB (optional, for Android), Xcode simctl (optional, for iOS)
+│   ├─ Maestro CLI (optional, for mobile testing)
+│   └─ Offer one-click install for missing items
+├─ Step 6: Device Targets
+│   ├─ Browser emulation (zero setup): iPhone 15, Galaxy S24, iPad Air
+│   ├─ Android emulator (ADB + Maestro): Pixel 8, Galaxy S24
+│   ├─ iOS simulator (Xcode + Maestro): iPhone 15 Pro, iPad Air (macOS only)
+│   ├─ Physical device (ADB/USB): any connected device
+│   └─ Show: &quot;Selected: Browser + Android emulator&quot; or &quot;No mobile targets (API-only mode)&quot;
+├─ Step 7: Project Bootstrap
+│   ├─ Find OpenAPI spec (local files or URL)
+│   ├─ Or use demo Petstore spec
+│   ├─ Write cherenkov.toml with all detected config
+│   ├─ Start LocalAI + Redis (if Docker Compose available)
+│   └─ Open dashboard → &quot;Setup complete!&quot;
+</code></pre></div>
+<p>CLI equivalent: <code>cherenkov onboard</code> (zero-config first run)</p>
+<h3 id="52-pipeline-flow-revised-all-scenarios-mobile-events">5.2 Pipeline Flow (Revised: All Scenarios + Mobile + Events)</h3>
+<div class="highlight"><pre><span></span><code>User starts pipeline (dashboard &quot;New Spec Run&quot; or CLI: cherenkov validate/api)
+│
+├─ INGEST
+│   ├─ .yaml/.json → IngestStage (existing)
+│   └─ .apk/.ipa/.har/.maestro → MobileSourceAdapter.ingest()
+│
+├─ PLAN
+│   ├─ IngestOutput → PlanStage (existing, deterministic)
+│   └─ MobileIngestOutput → MobilePlanStage (deterministic, no LLM)
+│
+├─ GENERATE (per scenario, with retry ladder + D2 feedback)
+│   ├─ Scenario → GenerateStage (Playwright TS, existing)
+│   └─ MobileScenario → MobileGenerateStage (Maestro YAML + optional Appium TS)
+│
+├─ REVIEW (6 gates + semantic visual oracle)
+│   ├─ syntax → structure → AST → assertion → TSC → prism-dryrun
+│   ├─ Mobile: + semantic_visual gate (VLM-judged)
+│   ├─ VLM confidence &lt; 0.7 → escalate to HITL
+│   └─ Output: ReviewOutput or MobileReport with Verdict
+│
+├─ Decision Gate (per scenario, not just first):
+│   ├─ AUTO_APPROVE → Eject
+│   ├─ HITL → Queue → Human Review → Approve/Reject → Reflector learns
+│   └─ REGENERATE → Loop back (max 3, circuit breaker per endpoint)
+│
+├─ Domain Events Emitted (NEW):
+│   ├─ VerdictRecorded → KnowledgeRepository stores
+│   ├─ HITLDecisionMade → Reflector.ingest_human_verdict()
+│   └─ DivergenceFound → Skeptic hypothesizes
+│
+├─ PARALLEL (per DeviceTarget, if configured):
+│   ├─ Visual Regression: VisualStage with per-device viewport
+│   ├─ Performance: PerfStage with per-device thresholds
+│   └─ Mobile Execution: PilotTrace → SemanticOracle → MobileReport
+│
+└─ EJECT (format determined by Config.EJECT_FORMAT):
+    ├─ Playwright TS (existing)
+    ├─ Maestro YAML (new, anti-lock-in)
+    ├─ Appium TS (new, fallback)
+    └─ All: zero CHERENKOV imports verified
+</code></pre></div>
+<h3 id="53-hitl-review-flow-revised-second-brain-bridge">5.3 HITL Review Flow (Revised: Second Brain Bridge)</h3>
+<div class="highlight"><pre><span></span><code>User opens ReviewScreen
+│
+├─ Sees pending items (API tests + mobile traces + visual diffs)
+│
+├─ Reviews item:
+│   ├─ Approve → HITLDecisionMade event
+│   │   ├─ HitlQueue.approve() (atomic)
+│   │   ├─ Reflector.ingest_human_verdict(ACCEPT) (NEW)
+│   │   ├─ KnowledgeRepository stores context (NEW)
+│   │   └─ RAG indexes the decision (NEW)
+│   │
+│   ├─ Reject → HITLDecisionMade event
+│   │   ├─ HitlQueue.reject() (atomic)
+│   │   ├─ Reflector.ingest_human_verdict(REJECT) (NEW)
+│   │   ├─ Rejected fingerprint recorded (existing)
+│   │   └─ RAG indexes the reason (NEW)
+│   │
+│   ├─ Classify (extended):
+│   │   ├─ regression / intended / ignore (existing)
+│   │   ├─ mobile_bug / mobile_flaky / mobile_env (NEW)
+│   │   └─ Each → Reflector learns (NEW)
+│   │
+│   ├─ Edit → save modified test code (existing)
+│   │
+│   └─ Chat about this item (NEW):
+│       ├─ ChatPanel opens with item context
+│       ├─ QAChatAgent queries KnowledgeRepository
+│       ├─ Agent responds with evidence-linked explanation
+│       └─ Conversation stored in ConversationMemory
+│
+└─ Learning Loop Closed (NEW):
+    ├─ Every HITL decision feeds Reflector ✓
+    ├─ Every verdict feeds KnowledgeRepository ✓
+    └─ Future runs benefit from accumulated knowledge ✓
+</code></pre></div>
+<h3 id="54-chat-agent-flow-new">5.4 Chat Agent Flow (NEW)</h3>
+<div class="highlight"><pre><span></span><code>User opens ChatPanel (sidebar or full ChatScreen)
+│
+├─ Session starts:
+│   ├─ ConversationMemory.create_session()
+│   ├─ PersonaRegistry.compose(&quot;qa_expert&quot;):
+│   │   ├─ Base: &quot;You are CHERENKOV, a QA expert...&quot;
+│   │   ├─ + Project context: TruthModel.get_endpoints() summary
+│   │   ├─ + Recent idioms: Reflector.get_top_idioms(limit=5)
+│   │   └─ + Conversation history: Memory.get_context(session_id)
+│   └─ System prompt assembled
+│
+├─ User sends message: &quot;Why was POST /users rejected?&quot;
+│
+├─ QAChatAgent processes:
+│   ├─ Retrieve context: KnowledgeRepository.query(&quot;POST /users rejection&quot;)
+│   ├─ Compose LLM call (streaming SSE)
+│   ├─ Identify intent (question vs. action)
+│   └─ Stream response with evidence links
+│
+├─ User clicks evidence link → navigates to relevant screen
+│
+└─ Exchange stored in ConversationMemory for future context
+</code></pre></div>
+<h3 id="55-mobile-testing-flow-new">5.5 Mobile Testing Flow (NEW)</h3>
+<div class="highlight"><pre><span></span><code>User: cherenkov eject &quot;guest checkout&quot; 
+│
+├─ Setup: Device Manager → select target → verify ADB/Maestro → confirm VLM
+├─ Ingest: MobileSourceAdapter.ingest(.apk/.har/.maestro) → MobileIngestOutput
+├─ Plan: MobilePlanStage.run(slices) → MobilePlanOutput (deterministic, no LLM)
+├─ Generate: MobileGenerateStage.run(scenario) → Maestro YAML (or Appium TS)
+├─ Review: MobileReviewStage + SemanticVisualOracle → MobileReport + Verdict
+├─ Pilot (optional): observe→reason→act→assert→recover loop → PilotTrace
+│
+├─ Decision:
+│   ├─ PASS → Eject Maestro YAML → Verify zero CHERENKOV imports → Save evidence
+│   ├─ UNCERTAIN (VLM &lt; 0.7) → HITL queue → user classifies
+│   └─ FAIL → MobileFailureClassifier → Verdict feeds Reflector
+│
+└─ Learning: PilotTrace → KnowledgeRepository, Verdict → Reflector, VLM judgment → RAG
+</code></pre></div>
+<h3 id="56-second-brain-query-flow-new">5.6 Second Brain Query Flow (NEW)</h3>
+<div class="highlight"><pre><span></span><code>Any agent → KnowledgeRepository.query(&quot;Why does POST /users return 201?&quot;, domains=[&quot;verdicts&quot;, &quot;idioms&quot;, &quot;incidents&quot;], top_k=10)
+│
+├─ Vector Search: RAGIndex.query_similar() across all domains
+├─ Graph Traversal: TruthModel.get_edges() for related claims
+├─ Verdict Lookup: VerdictStore.query_recent() for recent verdicts
+├─ Idiom Lookup: VerdictStore.get_top_idioms() for confirmed patterns
+├─ Hybrid Ranking: vector_similarity*0.4 + graph_proximity*0.3 + recency*0.2 + idiom_overlap*0.1
+└─ Return: KnowledgeResult(items, scores, evidence_links)
+</code></pre></div>
+<hr />
+<h2 id="6-implementation-phases">6. Implementation Phases</h2>
+<h3 id="phase-0-p0-bug-fixes-clean-architecture-foundations-weeks-1-2">Phase 0: P0 Bug Fixes + Clean Architecture Foundations (Weeks 1-2)</h3>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Kill-Criterion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Fix pipeline to process ALL scenarios (not just first)</td>
+<td><code>run_pipeline()</code> processes every scenario in <code>plan.scenarios</code></td>
+</tr>
+<tr>
+<td>Fix <code>get_stats()</code> state mutation (separate <code>decay_idioms()</code>)</td>
+<td><code>get_stats()</code> is read-only, <code>decay_idioms()</code> called explicitly</td>
+</tr>
+<tr>
+<td>Wire mock API endpoints to real data</td>
+<td><code>/overview</code>, <code>/truth-map</code>, <code>/failures</code>, <code>/metrics</code> return real KnowledgeRepository data</td>
+</tr>
+<tr>
+<td>Persist Truth Model to SQLite</td>
+<td><code>truth_model.save()</code> and <code>truth_model.load()</code> work across restarts</td>
+</tr>
+<tr>
+<td>Add <code>KnowledgeResult</code> standardized envelope</td>
+<td>All CLI commands and API endpoints return <code>KnowledgeResult</code> JSON</td>
+</tr>
+<tr>
+<td>Define port interfaces (<code>ports/*.py</code>)</td>
+<td>All Protocol definitions type-check</td>
+</tr>
+<tr>
+<td>Add <code>CHERENKOVEvent</code> domain events</td>
+<td><code>VerdictRecorded</code>, <code>HITLDecisionMade</code>, <code>DivergenceFound</code> events defined</td>
+</tr>
+<tr>
+<td>Create <code>cherenkov/core/devices.py</code></td>
+<td><code>DeviceClass</code>, <code>VLMTier</code>, <code>DeviceTarget</code>, <code>recommend_vlm_tier()</code></td>
+</tr>
+<tr>
+<td>Extend <code>Config</code> with new fields</td>
+<td><code>VLM_TIER</code>, <code>MOBILE_EJECT_FORMAT</code>, <code>LOCALAI_*</code>, <code>DESKTOP_*</code></td>
+</tr>
+<tr>
+<td>Create <code>docker-compose.ai.yml</code></td>
+<td><code>docker compose -f docker-compose.ai.yml up</code> starts LocalAI + Redis + CHERENKOV</td>
+</tr>
+</tbody>
+</table>
+<h3 id="phase-1-second-brain-weeks-3-5">Phase 1: Second Brain (Weeks 3-5)</h3>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Kill-Criterion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Create <code>knowledge/repository.py</code> (SQLite adapter)</td>
+<td>Persist + retrieve claims across restarts</td>
+</tr>
+<tr>
+<td>Create <code>knowledge/graph_rag.py</code></td>
+<td>Vector search + Truth Model traversal returns relevant knowledge</td>
+</tr>
+<tr>
+<td>Bridge HITL → Reflector</td>
+<td>Human approve/reject → <code>Reflector.ingest_human_verdict()</code> fires automatically</td>
+</tr>
+<tr>
+<td>Expand RAG to multi-domain</td>
+<td><code>query_similar("auth timeout")</code> returns verdicts AND incidents AND idioms</td>
+</tr>
+<tr>
+<td>Index <code>agent_memory/*.md</code> into RAG</td>
+<td>Semantic search over agent memory</td>
+</tr>
+<tr>
+<td>Index feedback into RAG</td>
+<td>Human feedback is searchable</td>
+</tr>
+<tr>
+<td>Create <code>knowledge/bridges.py</code></td>
+<td>All 5 bridges (HITL→Reflector, Feedback→RAG, Memory→RAG, Verdict→RAG, Truth→SQLite)</td>
+</tr>
+<tr>
+<td>Create <code>adapters/sqlite_memory.py</code> (ConversationMemory)</td>
+<td>Create session, add messages, retrieve context, persist across restarts</td>
+</tr>
+<tr>
+<td>Add CLI command: <code>cherenkov explore</code></td>
+<td>Returns KnowledgeResult in JSON/text/pretty format</td>
+</tr>
+</tbody>
+</table>
+<h3 id="phase-2-substrate-vlm-localai-integration-weeks-3-4-parallel-with-phase-1">Phase 2: Substrate VLM + LocalAI Integration (Weeks 3-4, parallel with Phase 1)</h3>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Kill-Criterion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Create <code>substrate/vlm_provider.py</code> (ABC + LocalAI + Ollama + OpenAI)</td>
+<td><code>pytest tests/unit/test_vlm_provider.py</code> green; egress=none blocks OpenAI</td>
+</tr>
+<tr>
+<td>Create <code>substrate/vlm_router.py</code> (tier-aware routing)</td>
+<td>Correct provider selected for each VLM tier</td>
+</tr>
+<tr>
+<td>Register VLM in <code>provider.py</code></td>
+<td><code>provider_for_tier("vlm")</code> returns VLMProvider</td>
+</tr>
+<tr>
+<td>Test LocalAI Docker integration</td>
+<td><code>docker compose -f docker-compose.ai.yml up</code> + VLM request returns result in &lt;10s</td>
+</tr>
+<tr>
+<td>Add <code>/healthz</code> endpoint to <code>web/api.py</code></td>
+<td><code>GET /healthz</code> returns <code>{status, vlm_tier, localai_available, redis_available}</code></td>
+</tr>
+<tr>
+<td>Extend <code>packaging/launcher.py</code></td>
+<td>NDJSON events, <code>CHERENKOV_NO_BROWSER=1</code>, signal handlers</td>
+</tr>
+<tr>
+<td>Create <code>adapters/localai_inference.py</code></td>
+<td>LocalAI InferenceClient with streaming support</td>
+</tr>
+<tr>
+<td>Add <code>cherenkov doctor</code> / <code>--localai</code></td>
+<td>Shows VLM tier, LocalAI status, model availability</td>
+</tr>
+</tbody>
+</table>
+<h3 id="phase-3-desktop-host-setup-wizard-weeks-5-8">Phase 3: Desktop Host + Setup Wizard (Weeks 5-8)</h3>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Kill-Criterion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Rewrite <code>desktop/src-tauri/src/main.rs</code></td>
+<td>Tauri 2 host with NDJSON parsing, AppState, EngineHandle</td>
+</tr>
+<tr>
+<td>Create <code>desktop/src-tauri/src/hardware.rs</code></td>
+<td>GPU/CPU/RAM detection → DeviceClass → VLMTier recommendation</td>
+</tr>
+<tr>
+<td>Create <code>desktop/src-tauri/src/setup/{windows,macos,linux}.rs</code></td>
+<td>OS-specific prerequisite detection and installation</td>
+</tr>
+<tr>
+<td>Build 7-step setup wizard in React</td>
+<td>Wizard completes, writes config, starts engine</td>
+</tr>
+<tr>
+<td>Extend <code>OnboardingWizard.tsx</code> from 3 steps to 7</td>
+<td>All 7 steps functional with real detection</td>
+</tr>
+<tr>
+<td>Create <code>DeviceManagerScreen.tsx</code></td>
+<td>Shows available targets, SDK status, test connection</td>
+</tr>
+<tr>
+<td>Update <code>SettingsScreen.tsx</code></td>
+<td>VLM tier selector, device target config, Redis config, egress policy</td>
+</tr>
+</tbody>
+</table>
+<h3 id="phase-4-chat-agents-weeks-5-6-parallel-with-phase-3">Phase 4: Chat Agents (Weeks 5-6, parallel with Phase 3)</h3>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Kill-Criterion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Create <code>chat/persona.py</code></td>
+<td>PersonaRegistry composes system prompts from project context + idioms + Truth Model</td>
+</tr>
+<tr>
+<td>Create <code>chat/agent.py</code> (QAChatAgent)</td>
+<td>Multi-turn conversation with context window management</td>
+</tr>
+<tr>
+<td>Create <code>chat/tools.py</code></td>
+<td>Agent can call <code>query_verdicts</code>, <code>query_idioms</code>, <code>explain_divergence</code>, <code>run_test</code></td>
+</tr>
+<tr>
+<td>Create <code>chat/streaming.py</code> + FastAPI SSE</td>
+<td>Tokens stream to desktop app in real time</td>
+</tr>
+<tr>
+<td>Add MCP explore tools</td>
+<td><code>query_verdicts</code>, <code>query_idioms</code>, <code>query_truth_model</code> exposed via MCP</td>
+</tr>
+<tr>
+<td>Create <code>web/chat_routes.py</code></td>
+<td>4 endpoints: sessions, messages, stream, history</td>
+</tr>
+<tr>
+<td>Create <code>ChatPanel.tsx</code> component</td>
+<td>Chat renders in sidebar, shows streaming tokens</td>
+</tr>
+<tr>
+<td>Create <code>ChatScreen.tsx</code> full-screen view</td>
+<td>Chat with knowledge links, navigable to other screens</td>
+</tr>
+</tbody>
+</table>
+<h3 id="phase-5-mobile-testing-core-weeks-5-10-parallel-tail">Phase 5: Mobile Testing Core (Weeks 5-10, parallel tail)</h3>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Kill-Criterion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Create <code>sources/mobile/</code> (contracts, android_dump, ios_dump, har_to_traffic, adapter)</td>
+<td><code>pytest tests/unit/test_mobile_source_adapter.py</code> green</td>
+</tr>
+<tr>
+<td>Extend <code>stages/ingest.py</code> with <code>if is_mobile_spec(path)</code></td>
+<td>APK/HAR ingestion works</td>
+</tr>
+<tr>
+<td>Create <code>agents/pilot.py</code> with InMemoryRunner stub</td>
+<td><code>pytest tests/unit/test_pilot_agent.py</code> green</td>
+</tr>
+<tr>
+<td>Create <code>stages/mobile_{plan,generate,review,cmd}.py</code></td>
+<td>Maestro YAML generation with zero CHERENKOV imports</td>
+</tr>
+<tr>
+<td>Create <code>execution/maestro_runner.py</code> (interface + stub)</td>
+<td>Pilot loop works with stub</td>
+</tr>
+<tr>
+<td>Create <code>rag/mobile_index.py</code></td>
+<td>Per-app RAG round-trip works</td>
+</tr>
+<tr>
+<td>Create <code>oracle/visual_oracle_vlm.py</code> (SemanticVisualOracle)</td>
+<td>Anti-reward-hacking gate passes</td>
+</tr>
+</tbody>
+</table>
+<h3 id="phase-6-mobile-execution-semantic-oracle-weeks-9-11">Phase 6: Mobile Execution + Semantic Oracle (Weeks 9-11)</h3>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Kill-Criterion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Replace InMemoryRunner with real <code>MaestroRunner</code></td>
+<td>ADB commands work, screenshots captured</td>
+</tr>
+<tr>
+<td>Create <code>execution/appium_runner.py</code></td>
+<td>Appium fallback for locked-down apps</td>
+</tr>
+<tr>
+<td>Create <code>reflector/mobile_extensions.py</code></td>
+<td><code>MOBILE_OS_MODAL</code>, <code>MOBILE_NETWORK_BLIP</code>, <code>MOBILE_APP_BACKGROUNDED</code> classifications</td>
+</tr>
+<tr>
+<td>Extend <code>divergence/skeptic.py</code> with <code>mobile_hypothesizer</code></td>
+<td>D1/D3/D4 hypotheses for mobile context</td>
+</tr>
+<tr>
+<td>Extend <code>divergence/self_play.py</code> with mobile assertion gate</td>
+<td>Correct mock passes, broken one fails</td>
+</tr>
+<tr>
+<td>Add <code>make mobile-smoke</code> target</td>
+<td><code>make mobile-smoke</code> exits 0 with Android emulator, skips without</td>
+</tr>
+<tr>
+<td>Create <code>eject_fixtures/mobile/maestro_guest_checkout.yaml</code></td>
+<td><code>maestro test</code> runs green in clean tempdir</td>
+</tr>
+</tbody>
+</table>
+<h3 id="phase-7-dashboard-revamp-weeks-8-10-parallel-with-phase-6">Phase 7: Dashboard Revamp (Weeks 8-10, parallel with Phase 6)</h3>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Kill-Criterion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Wire mock endpoints to real KnowledgeRepository data</td>
+<td><code>/overview</code>, <code>/truth-map</code>, <code>/failures</code>, <code>/metrics</code> return real data</td>
+</tr>
+<tr>
+<td>Add MOCK DATA badges where not ready</td>
+<td>10/17 screens that still use mock data show a badge</td>
+</tr>
+<tr>
+<td>Wire "Initialize Pilot Run" to <code>POST /api/v1/run</code></td>
+<td>Button works end-to-end</td>
+</tr>
+<tr>
+<td>Add toast notifications for all error/loading states</td>
+<td>No silent <code>catch(console.warn)</code></td>
+</tr>
+<tr>
+<td>Create <code>MobileScreen.tsx</code> + <code>MobileScreenViewer.tsx</code></td>
+<td>Dashboard <code>/mobile</code> shows Pilot traces</td>
+</tr>
+<tr>
+<td>Create <code>KnowledgeExplorer.tsx</code></td>
+<td>Browse idioms, verdicts, incidents, Truth Model, chat history</td>
+</tr>
+<tr>
+<td>Create <code>DeviceManagerScreen.tsx</code></td>
+<td>Shows emulators/devices, SDK status, test connections</td>
+</tr>
+<tr>
+<td>Extend <code>ReviewScreen.tsx</code> with mobile + chat</td>
+<td>Mobile trace review, chat button per item</td>
+</tr>
+<tr>
+<td>Extend <code>HealingScreen.tsx</code> with structured suggestions</td>
+<td>Diagnosis shows <code>missing_fields</code>, <code>added_fields</code>, <code>suggested_fix</code></td>
+</tr>
+<tr>
+<td>Extend <code>EjectScreen.tsx</code> with format selector</td>
+<td>Playwright/Maestro/Appium/All format choice</td>
+</tr>
+<tr>
+<td>Extend <code>DivergencesScreen.tsx</code> with chat</td>
+<td>"Ask about this" button opens ChatPanel</td>
+</tr>
+<tr>
+<td>Extend <code>MemoryScreen.tsx</code> with interactive explorer</td>
+<td>Filter by endpoint, drill into pattern, edit decay</td>
+</tr>
+</tbody>
+</table>
+<h3 id="phase-8-k8s-cloud-validation-weeks-11-14">Phase 8: K8s + Cloud + Validation (Weeks 11-14)</h3>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Kill-Criterion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Fix K8s Phase 0 issues (F1-F5)</td>
+<td><code>make k3d-up &amp;&amp; make k3d-test</code> green</td>
+</tr>
+<tr>
+<td>Extend ConformanceCheck CRD with DeviceTarget + VisualConfig</td>
+<td><code>kubectl apply</code> succeeds</td>
+</tr>
+<tr>
+<td>Extend operator to pass device env vars to Job spec</td>
+<td>Job passes DeviceTarget to runner</td>
+</tr>
+<tr>
+<td>Add cloud device farm integration (Kobiton/BrowserStack via MCP)</td>
+<td>Remote device test runs</td>
+</tr>
+<tr>
+<td>5-QA validation gate (desktop + mobile + chat)</td>
+<td>Evidence ledger has ≥5 attributable "yes" verdicts</td>
+</tr>
+<tr>
+<td>Clean architecture docs + contributor guide</td>
+<td>New contributor can add an adapter in &lt;30 minutes</td>
+</tr>
+<tr>
+<td>Open-source readiness (LICENSE, CODE_OF_CONDUCT, CONTRIBUTING.md, SECURITY.md)</td>
+<td>Repository meets community standards</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="7-bug-fixes-priority-order">7. Bug Fixes (Priority Order)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Bug</th>
+<th>Fix</th>
+<th>Priority</th>
+<th>Phase</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Pipeline only processes <code>plan.scenarios[0]</code></td>
+<td>Loop over all scenarios in <code>run_pipeline()</code></td>
+<td>P0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>get_stats()</code> mutates state</td>
+<td>Separate <code>decay_all_idioms()</code> from <code>get_stats()</code></td>
+<td>P0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Mock API endpoints return empty data</td>
+<td>Wire to real KnowledgeRepository</td>
+<td>P0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>4</td>
+<td>HITL decisions don't feed Reflector</td>
+<td>Emit event → <code>Reflector.ingest_human_verdict()</code></td>
+<td>P0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Healing suggestions are text-only</td>
+<td>Add structured <code>DiagnosisResult</code> output</td>
+<td>P1</td>
+<td>7</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Cache/accounting stats only to stdout</td>
+<td>Persist to <code>events.jsonl</code> + KnowledgeRepository</td>
+<td>P1</td>
+<td>0</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Two review servers (port 8080 + 8000)</td>
+<td>Deprecate <code>review_serve.py</code>, FastAPI only</td>
+<td>P1</td>
+<td>7</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Eject only produces one test file</td>
+<td>Eject all scenarios in <code>stub/generated_tests/</code></td>
+<td>P1</td>
+<td>5</td>
+</tr>
+<tr>
+<td>9</td>
+<td>RAG only indexes incidents</td>
+<td>Expand to multi-domain</td>
+<td>P2</td>
+<td>1</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Truth Model in-memory only</td>
+<td>Add <code>save()</code>/<code>load()</code> via KnowledgeRepository</td>
+<td>P2</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="8-cli-commands-full-map">8. CLI Commands (Full Map)</h2>
+<h3 id="existing-unchanged">Existing (Unchanged)</h3>
+<div class="highlight"><pre><span></span><code>cherenkov<span class="w"> </span>validate<span class="w">          </span><span class="c1"># Track A pipeline</span>
+cherenkov<span class="w"> </span>init<span class="w">             </span><span class="c1"># Project setup (extended with )</span>
+cherenkov<span class="w"> </span>doctor<span class="w">            </span><span class="c1"># Health checks (extended with )</span>
+cherenkov<span class="w"> </span>review<span class="w">           </span><span class="c1"># Start dashboard</span>
+cherenkov<span class="w"> </span>hitl<span class="w"> </span>list/show/approve/reject/classify/explain
+cherenkov<span class="w"> </span>eject<span class="w">            </span><span class="c1"># Eject test suite (extended with )</span>
+cherenkov<span class="w"> </span>visual<span class="w">           </span><span class="c1"># Visual regression (extended with )</span>
+cherenkov<span class="w"> </span>perf<span class="w">             </span><span class="c1"># Performance baseline</span>
+cherenkov<span class="w"> </span>map<span class="w">              </span><span class="c1"># Truth model</span>
+cherenkov<span class="w"> </span>daemon<span class="w">            </span><span class="c1"># Continuous watch</span>
+cherenkov<span class="w"> </span>explore<span class="w">           </span><span class="c1"># Live surface crawl</span>
+cherenkov<span class="w"> </span>author<span class="w">            </span><span class="c1"># Author by intent</span>
+cherenkov<span class="w"> </span>governance<span class="w">        </span><span class="c1"># KPI panel</span>
+cherenkov<span class="w"> </span>certify<span class="w">           </span><span class="c1"># Model certification</span>
+cherenkov<span class="w"> </span>profile<span class="w">           </span><span class="c1"># Autonomy ladder</span>
+cherenkov<span class="w"> </span>self-test<span class="w">         </span><span class="c1"># Deterministic dry-run</span>
+cherenkov<span class="w"> </span>report<span class="w">            </span><span class="c1"># Generate report</span>
+cherenkov<span class="w"> </span>mcp<span class="w"> </span>serve<span class="w">         </span><span class="c1"># MCP server</span>
+</code></pre></div>
+<h3 id="new-commands">New Commands</h3>
+<div class="highlight"><pre><span></span><code>cherenkov<span class="w"> </span>eject<span class="w"> </span>init<span class="w">      </span><span class="c1"># Set up mobile testing (detect ADB, install Maestro, pull model)</span>
+cherenkov<span class="w"> </span>eject<span class="w">       </span><span class="c1"># Run Pilot agent on device target</span>
+cherenkov<span class="w"> </span>eject<span class="w">     </span><span class="c1"># Eject mobile test suite (Maestro/Appium/All)</span>
+cherenkov<span class="w"> </span>eject<span class="w"> </span>trace-list<span class="w">  </span><span class="c1"># List Pilot traces</span>
+cherenkov<span class="w"> </span>dashboard<span class="w">             </span><span class="c1"># Interactive chat with QA agent</span>
+cherenkov<span class="w"> </span>explore<span class="w">  </span><span class="c1"># Query second brain</span>
+cherenkov<span class="w"> </span>knowledge<span class="w"> </span>idioms<span class="w"> </span><span class="c1"># List top idioms for endpoint</span>
+cherenkov<span class="w"> </span>status<span class="w">           </span><span class="c1"># Single source of truth (doctor + run state + queue + last finding)</span>
+cherenkov<span class="w"> </span>onboard<span class="w">          </span><span class="c1"># Zero-config first-run (init + doctor + first run with petstore)</span>
+</code></pre></div>
+<h3 id="aliases-shortcuts-dont-replace-originals">Aliases (Shortcuts, Don't Replace Originals)</h3>
+<div class="highlight"><pre><span></span><code>cherenkov<span class="w"> </span>api<span class="w">              </span><span class="c1"># alias for: validate</span>
+cherenkov<span class="w"> </span>system<span class="w">           </span><span class="c1"># alias for: init/doctor/daemon</span>
+cherenkov<span class="w"> </span>system<span class="w"> </span>status<span class="w">    </span><span class="c1"># alias for: status</span>
+</code></pre></div>
+<h3 id="global-flags-add-to-all-commands">Global Flags (Add to ALL Commands)</h3>
+<div class="highlight"><pre><span></span><code>--format<span class="w"> </span>json<span class="p">|</span>text<span class="p">|</span>pretty<span class="w">  </span><span class="c1"># Output format (standardized envelope)</span>
+--verbose<span class="w">                  </span><span class="c1"># Debug logging</span>
+--config<span class="w"> </span>PATH<span class="w">             </span><span class="c1"># Config file override</span>
+--profile<span class="w"> </span>NAME<span class="w">            </span><span class="c1"># Configuration profile (laptop/ci/enterprise/frontier-cloud)</span>
+</code></pre></div>
+<hr />
+<h2 id="9-api-endpoints-full-map">9. API Endpoints (Full Map)</h2>
+<h3 id="existing-unchanged_1">Existing (Unchanged)</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET</td>
+<td><code>/api/v1/health</code></td>
+<td>Liveness + Ollama detection</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/v1/ingest</code></td>
+<td>Parse OpenAPI spec</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/v1/run</code></td>
+<td>Trigger pipeline</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/v1/tests</code></td>
+<td>Retrieve generated tests</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/v1/review/approve</code></td>
+<td>Approve HITL item</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/v1/review/reject</code></td>
+<td>Reject HITL item</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/v1/review/explain</code></td>
+<td>AI explanation</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/v1/review/edit</code></td>
+<td>Save edited test code</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/v1/review/queue</code></td>
+<td>List HITL queue</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/v1/review/classify</code></td>
+<td>Classify HITL item</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/v1/validate</code></td>
+<td>Run Playwright validation</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/v1/eject</code></td>
+<td>Export standalone suite</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/v1/divergences</code></td>
+<td>List divergences</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/v1/divergences/act</code></td>
+<td>Act on divergence</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/v1/settings</code></td>
+<td>Load settings</td>
+</tr>
+<tr>
+<td>PUT</td>
+<td><code>/api/v1/settings</code></td>
+<td>Save settings</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/v1/doctor</code></td>
+<td>System health checks</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/v1/projects</code></td>
+<td>List projects</td>
+</tr>
+<tr>
+<td>WS</td>
+<td><code>/ws/live</code></td>
+<td>Real-time event stream</td>
+</tr>
+</tbody>
+</table>
+<h3 id="new-endpoints">New Endpoints</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET</td>
+<td><code>/api/v1/healthz</code></td>
+<td>Sidecar health (distinct from <code>/health</code>; includes <code>vlm_tier</code>, <code>device_class</code>, <code>redis_available</code>)</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/v1/chat/sessions</code></td>
+<td>Create chat session</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/v1/chat/{id}/messages</code></td>
+<td>Send message to chat agent</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/v1/chat/{id}/stream</code></td>
+<td>SSE stream for chat responses</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/v1/chat/{id}/history</code></td>
+<td>Get conversation history</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/v1/knowledge/query</code></td>
+<td>Query second brain (multi-domain)</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/v1/knowledge/idioms</code></td>
+<td>Get top idioms for an endpoint</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/v1/knowledge/verdicts</code></td>
+<td>Get recent verdicts</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/v1/mobile/run</code></td>
+<td>Start mobile test run</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/v1/mobile/sessions</code></td>
+<td>List mobile sessions</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/v1/mobile/trace/{id}</code></td>
+<td>Get pilot trace</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/v1/mobile/trace/{id}/approve</code></td>
+<td>Approve mobile trace</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/v1/devices</code></td>
+<td>List available device targets</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/v1/devices/refresh</code></td>
+<td>Refresh device detection</td>
+</tr>
+</tbody>
+</table>
+<h3 id="revamped-endpoints-wire-to-real-data">Revamped Endpoints (Wire to Real Data)</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Change</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET</td>
+<td><code>/api/v1/overview</code></td>
+<td>Wire to KnowledgeRepository (was mocked)</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/v1/truth-map</code></td>
+<td>Wire to persisted Truth Model (was mocked)</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/v1/failures</code></td>
+<td>Wire to VerdictStore + Diagnoser (was mocked)</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/v1/metrics</code></td>
+<td>Wire to KnowledgeRepository (was mocked)</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/v1/memory</code></td>
+<td>Add query params for filtering</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="10-dashboard-screens-full-map">10. Dashboard Screens (Full Map)</h2>
+<h3 id="existing-screens-keep">Existing Screens (Keep)</h3>
+<table>
+<thead>
+<tr>
+<th>Screen</th>
+<th>Path</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ProjectsScreen</td>
+<td><code>/</code></td>
+<td>Keep as-is</td>
+</tr>
+<tr>
+<td>PipelineScreen</td>
+<td><code>/pipeline</code></td>
+<td>Extend: show all scenarios</td>
+</tr>
+<tr>
+<td>ReviewScreen</td>
+<td><code>/review</code></td>
+<td>Extend: mobile traces, chat button</td>
+</tr>
+<tr>
+<td>HealingScreen</td>
+<td><code>/healing</code></td>
+<td>Extend: structured suggestions</td>
+</tr>
+<tr>
+<td>EjectScreen</td>
+<td><code>/eject</code></td>
+<td>Extend: format selector</td>
+</tr>
+<tr>
+<td>SettingsScreen</td>
+<td><code>/settings</code></td>
+<td>Extend: VLM tier, device config, Redis, egress</td>
+</tr>
+<tr>
+<td>AuthorScreen</td>
+<td><code>/author</code></td>
+<td>Extend: device target selector</td>
+</tr>
+<tr>
+<td>SignalsScreen</td>
+<td><code>/signals</code></td>
+<td>Wire to real data</td>
+</tr>
+<tr>
+<td>GovernanceScreen</td>
+<td><code>/governance</code></td>
+<td>Wire to real data</td>
+</tr>
+<tr>
+<td>MemoryScreen</td>
+<td><code>/memory</code></td>
+<td>Extend: interactive idiom explorer</td>
+</tr>
+</tbody>
+</table>
+<h3 id="existing-screens-revamp">Existing Screens (Revamp)</h3>
+<table>
+<thead>
+<tr>
+<th>Screen</th>
+<th>Path</th>
+<th>Change</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OnboardingWizard</td>
+<td>(overlay)</td>
+<td>Expand from 3 steps to 7</td>
+</tr>
+<tr>
+<td>SetupScreen</td>
+<td><code>/setup</code></td>
+<td>Add mobile spec upload, device target selection</td>
+</tr>
+<tr>
+<td>OverviewScreen</td>
+<td><code>/overview</code></td>
+<td>Wire to real KnowledgeRepository data</td>
+</tr>
+<tr>
+<td>TruthMapScreen</td>
+<td><code>/truth-map</code></td>
+<td>Wire to persisted Truth Model</td>
+</tr>
+<tr>
+<td>DivergencesScreen</td>
+<td><code>/divergences</code></td>
+<td>Add mobile divergences, "ask about this" chat</td>
+</tr>
+</tbody>
+</table>
+<h3 id="new-screens">New Screens</h3>
+<table>
+<thead>
+<tr>
+<th>Screen</th>
+<th>Path</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ChatScreen</td>
+<td><code>/chat</code></td>
+<td>Full-screen chat with QA agent</td>
+</tr>
+<tr>
+<td>ChatPanel</td>
+<td>(overlay)</td>
+<td>Floating chat accessible from any screen</td>
+</tr>
+<tr>
+<td>MobileScreen</td>
+<td><code>/mobile</code></td>
+<td>Pilot trace list, replay, classify</td>
+</tr>
+<tr>
+<td>MobileScreenViewer</td>
+<td>(component)</td>
+<td>Screenshot + UI dump side-by-side</td>
+</tr>
+<tr>
+<td>DeviceManagerScreen</td>
+<td><code>/devices</code></td>
+<td>Detect emulators, install SDKs, test connections</td>
+</tr>
+<tr>
+<td>KnowledgeExplorer</td>
+<td><code>/knowledge</code></td>
+<td>Browse second brain: idioms, verdicts, incidents, Truth Model</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="10-cost-estimate">10. Cost Estimate</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Monthly Cost</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LocalAI (self-hosted)</td>
+<td><strong>$0</strong></td>
+<td>Docker Compose, runs on user's hardware</td>
+</tr>
+<tr>
+<td>Redis Stack (self-hosted)</td>
+<td><strong>$0</strong></td>
+<td><code>redis/redis-stack-server</code> Docker image</td>
+</tr>
+<tr>
+<td>Ollama (existing users)</td>
+<td><strong>$0</strong></td>
+<td>Already installed, works as fallback</td>
+</tr>
+<tr>
+<td>Android emulator</td>
+<td><strong>$0</strong></td>
+<td>Android Studio / command-line tools</td>
+</tr>
+<tr>
+<td>Maestro CLI</td>
+<td><strong>$0</strong></td>
+<td>Open-source</td>
+</tr>
+<tr>
+<td>ChromaDB (alternative to Redis)</td>
+<td><strong>$0</strong></td>
+<td><code>pip install chromadb</code></td>
+</tr>
+<tr>
+<td>Cloud VLM (opt-in)</td>
+<td>$0.01-0.10/call</td>
+<td>Only when egress enabled</td>
+</tr>
+<tr>
+<td>Cloud device farms (opt-in)</td>
+<td>$0.10-1.00/test</td>
+<td>Only when explicitly configured</td>
+</tr>
+<tr>
+<td><strong>Solo developer total</strong></td>
+<td><strong>$0/month</strong></td>
+<td>Everything free, local-first</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="11-open-questions">11. Open Questions</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Question</th>
+<th>Options</th>
+<th>Recommendation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>LocalAI or Ollama as default?</td>
+<td>LocalAI (Docker-native, OpenAI-compatible, VLM built-in) vs Ollama (simpler CLI, wider model support)</td>
+<td>LocalAI as default in Docker Compose, Ollama as standalone fallback</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Redis required or optional?</td>
+<td>Required (full second brain) vs Optional (SQLite fallback for solo users)</td>
+<td>Optional with graceful degradation</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Docker MCP Gateway: internal-only or external-facing?</td>
+<td>Internal (CHERENKOV MCP server stays stdio-only) vs External (Docker MCP Gateway for agents like Claude, Copilot)</td>
+<td>Start internal, upgrade to Docker MCP Gateway when multi-agent coordination is needed</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Airflow/Prefect for pipeline orchestration?</td>
+<td>Yes (formal DAG scheduling) vs No (use existing OrchestrationEngine)</td>
+<td>No — CHERENKOV is event-driven, not batch-scheduled. asyncio.Queue → Redis Streams is sufficient.</td>
+</tr>
+<tr>
+<td>5</td>
+<td>CLI restructuring: rename or alias?</td>
+<td>Rename (cleaner but breaks existing scripts) vs Alias (backward compatible)</td>
+<td>Alias only — never break existing commands</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Chat agent model: which for default?</td>
+<td>Local VLM (qwen2.5-vl:3b) vs Local text (qwen2.5-coder:7b) vs Cloud (GPT-4o-mini)</td>
+<td>Text for chat (qwen2.5-coder), VLM for visual (qwen2.5-vl), cloud opt-in for frontier</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p>This is the complete unified plan covering all 5 capabilities (desktop, mobile, chat, second brain, clean architecture) plus infrastructure (LocalAI, Redis, Docker Compose, MCP Gateway) plus UI revamp plus bug fixes. Shall I begin implementation, or do you want to adjust any decisions first?</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "toc.integrate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"current": "1.4", "versions": ["1.2", "1.3", "1.4"]}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../javascripts/version-banner.js"></script>
+      
+    
+  </body>
+</html>
