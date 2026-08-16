@@ -5,15 +5,15 @@
 >
 > The Track A user-validation gate had not happened when this was written.
 > It has since passed per owner decision on 2026-06-08 — see
-> **[docs/STATUS.md](../STATUS.md)** and **[docs/HANDOVER.md](../HANDOVER.md)**.
+> **[docs/STATUS.md](../STATUS.md)** and **[docs/HANDOVER.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/HANDOVER.md)**.
 >
 > The `track-b-c-deferred/` directory referenced below was fully
 > re-integrated into the live tree and **deleted** (see
-> [AGENTS.md](../../../../AGENTS.md)). The links in this file are broken.
+> [AGENTS.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/AGENTS.md)). The links in this file are broken.
 >
 > **Authoritative sources:**
 > - [docs/STATUS.md](../STATUS.md) — current state of every phase
-> - [docs/HANDOVER.md](../HANDOVER.md) — agent + contributor handover
+> - [docs/HANDOVER.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/HANDOVER.md) — agent + contributor handover
 > - [docs/PHASE_PLAN.md](../PHASE_PLAN.md) — consolidated Phase -1 → 8 plan
 >
 > Preserved below as a cautionary artifact of agent drift. Do not cite as

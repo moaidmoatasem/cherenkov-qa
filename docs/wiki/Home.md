@@ -66,10 +66,10 @@ openapi.yaml  ──▶  cherenkov validate  ──▶  Playwright tests  ──
 
 | | |
 |--|--|
-| **[README.md](../../README.md)** | Project overview, quick start, feature table |
+| **[README.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/README.md)** | Project overview, quick start, feature table |
 | **[docs/INDEX.md](../INDEX.md)** | Full documentation tree |
 | **[docs/STATUS.md](../STATUS.md)** | Canonical project status (single source of truth) |
 | **[docs/PHASE_PLAN.md](../PHASE_PLAN.md)** | Detailed phase plan — all phases, all tickets |
-| **[CONTRIBUTING.md](../../CONTRIBUTING.md)** | How to contribute (humans and agents) |
-| **[AGENTS.md](../../AGENTS.md)** | Rules for AI agents working on this project |
-| **[docs/adr/](../adr/)** | Architecture Decision Records |
+| **[CONTRIBUTING.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/CONTRIBUTING.md)** | How to contribute (humans and agents) |
+| **[AGENTS.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/AGENTS.md)** | Rules for AI agents working on this project |
+| **[docs/adr/](../adr)** | Architecture Decision Records |

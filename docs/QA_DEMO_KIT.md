@@ -105,9 +105,9 @@ If fewer than 3: Read the verbatim feedback. The gap between "no" and "yes" is y
 ## Recorded Sessions
 
 For pre-recorded walkthroughs of the same demo flows (Loom-ready scripts with voiceover, commands, and expected output):
-→ [docs/recordings/](recordings/) — 8 sessions covering developers, QA, managers, and DevOps.
+→ [docs/recordings/](recordings) — 8 sessions covering developers, QA, managers, and DevOps.
 
 ## Full Onboarding & KT Package
 
 For the complete onboarding and knowledge-transfer package (slide deck, video guide, harness):
-→ [docs/onboarding/](onboarding/) — sessions A/B/C, interactive HTML pitch deck, demo harness, FAQ, recording guide.
+→ [docs/onboarding/](onboarding) — sessions A/B/C, interactive HTML pitch deck, demo harness, FAQ, recording guide.

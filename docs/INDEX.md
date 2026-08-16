@@ -24,7 +24,7 @@ Welcome to the Cherenkov QA documentation hub. Content is organized according to
 *Step-by-step, linear guides designed to help new users build confidence and run their first tests.*
 
 - [Getting Started Guide](GETTING_STARTED.md): Install Cherenkov QA and execute your first local validation.
-- [Petstore Walkthrough](../QUICKSTART_PETSTORE.md): Interactive 5-minute tutorial running against a sample OpenAPI 3.1 Petstore API.
+- [Petstore Walkthrough](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/QUICKSTART_PETSTORE.md): Interactive 5-minute tutorial running against a sample OpenAPI 3.1 Petstore API.
 - [Knowledge Transfer Onboarding Script](KT_ONBOARDING_SCRIPT.md): Complete walkthrough script for new team members.
 
 ---
@@ -32,7 +32,7 @@ Welcome to the Cherenkov QA documentation hub. Content is organized according to
 ## 2. 🛠️ How-To Guides (Task-Oriented)
 *Problem-solving recipes for specific, real-world tasks.*
 
-- [GitHub Actions Setup](guides/github-actions-setup.md): Integrate Cherenkov into a CI pipeline. Templates for GitLab CI and Jenkins live in [`ci/`](../ci/).
+- [GitHub Actions Setup](guides/github-actions-setup.md): Integrate Cherenkov into a CI pipeline. Templates for GitLab CI and Jenkins live in [`ci/`](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/ci).
 - [Template & MCP Tool Publishing](README-MCP-PUBLISH.md): Package and publish custom test templates to local/remote registries.
 - [Kubernetes Deployment](guides/k8s-deployment.md): Deploy the operator and CRDs to a cluster.
 - [Migrating from Dredd](guides/migrating-from-dredd.md) · [Postman Migration](guides/postman-migration.md): Move an existing suite over.
@@ -65,6 +65,6 @@ Welcome to the Cherenkov QA documentation hub. Content is organized according to
 *High-level discussions on design philosophy, trade-offs, and vision.*
 
 - [System Design Document](SYSTEM_DESIGN.md): Technical architecture and modular decomposition.
-- [D7 Validation Invariants](../AGENTS.md): Core non-negotiable rules governing test generation and self-healing.
+- [D7 Validation Invariants](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/AGENTS.md): Core non-negotiable rules governing test generation and self-healing.
 - [Sync Driven Development (SDD)](engineering/SYNC_DRIVEN_DEV.md): Deep dive into token-efficient agent memory protocols.
 - [Autonomous Quality Fabric (AQE 2026 Vision)](VISION_AQE_2026.md): The 10-year vision for AI quality governance.

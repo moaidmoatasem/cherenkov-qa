@@ -8,7 +8,7 @@
 Huge OpenAPI specs bloat the LLM context. The bundled `stripe_spec.json` is
 **7.8 MB** (`stripe_spec.json`, 7,830,636 bytes). Today the only context
 control is **depth-limited `$ref` resolution** in
-[`cherenkov/stages/ingest.py`](../../cherenkov/stages/ingest.py):
+[`cherenkov/stages/ingest.py`](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/cherenkov/stages/ingest.py):
 
 ```python
 def resolve_refs_depth(node, schemas, resolved, depth, max_depth):  # ingest.py:16

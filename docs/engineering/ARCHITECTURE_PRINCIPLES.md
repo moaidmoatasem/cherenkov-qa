@@ -1,6 +1,6 @@
 # Architecture Principles
 
-The tenets every design and PR is judged against. They are **non-negotiable defaults**; violating one requires an [ADR](../adr/) that argues the exception.
+The tenets every design and PR is judged against. They are **non-negotiable defaults**; violating one requires an [ADR](../adr) that argues the exception.
 
 ---
 
@@ -50,7 +50,7 @@ flowchart LR
 ```
 
 - **The Architect owns the contracts and the SPIs**, not the features. Feature work is delegated; boundary changes are gated.
-- **ADRs are the memory.** Every decision that changes a tenet, a contract, or a seam is recorded in [`../adr/`](../adr/) so future agents inherit the *why*, not just the *what*.
+- **ADRs are the memory.** Every decision that changes a tenet, a contract, or a seam is recorded in [`../adr/`](../adr) so future agents inherit the *why*, not just the *what*.
 - **The Architect does not block velocity inside a seam** — only at seam boundaries. Builders move freely within their module.
 
 ---

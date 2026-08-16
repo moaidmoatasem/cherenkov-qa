@@ -3,7 +3,7 @@
 **Date:** 2026-08-04
 **Status:** Active
 **Applies to:** All autonomous coding agents and humans working the same repository
-**Related docs:** [WAYS_OF_WORKING.md](WAYS_OF_WORKING.md) · [SYNC_DRIVEN_DEV.md](SYNC_DRIVEN_DEV.md) · [CONTRIBUTING.md](../../CONTRIBUTING.md) · [AGENTS.md](../../AGENTS.md)
+**Related docs:** [WAYS_OF_WORKING.md](WAYS_OF_WORKING.md) · [SYNC_DRIVEN_DEV.md](SYNC_DRIVEN_DEV.md) · [CONTRIBUTING.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/CONTRIBUTING.md) · [AGENTS.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/AGENTS.md)
 
 ---
 

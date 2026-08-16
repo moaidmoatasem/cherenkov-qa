@@ -4,7 +4,7 @@
 Filename and content are artifacts of a multi-agent "war room" session.
 This is not a maintained spec. For the live desktop-host plan see
 [../../docs/PHASE_PLAN.md](../PHASE_PLAN.md) (Phase 3) and
-[../vision/18_DESKTOP_HOST.md](../vision/18_DESKTOP_HOST.md).
+[../vision/18_DESKTOP_HOST.md](18_DESKTOP_HOST.md).
 -->
 
 #agent1:

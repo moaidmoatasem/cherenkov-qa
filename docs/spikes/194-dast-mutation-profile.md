@@ -14,9 +14,9 @@ existing deterministic 400/422 boundary-mutation testing, not a new engine.
 ## Where it plugs in
 
 The mutation menu is built deterministically in
-[`cherenkov/stages/ingest.py`](../../cherenkov/stages/ingest.py) per endpoint
+[`cherenkov/stages/ingest.py`](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/cherenkov/stages/ingest.py) per endpoint
 (`happy_path`, `auth`, and per-field `validation` cases). Each is a
-`Mutation` contract ([`cherenkov/core/contracts.py:59`](../../cherenkov/core/contracts.py)):
+`Mutation` contract ([`cherenkov/core/contracts.py:59`](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/cherenkov/core/contracts.py)):
 
 ```python
 class Mutation(BaseModel):

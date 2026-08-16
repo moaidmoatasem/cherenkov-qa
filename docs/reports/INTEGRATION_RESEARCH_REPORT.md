@@ -1201,8 +1201,8 @@ class MiniGPTCherenkovTrainer:
 ### Appendix A: References
 
 **Internal CHERENKOV:**
-- [AGENTS.md](../../AGENTS.md) - Agent operating rules (AUTHORITATIVE)
-- [docs/HANDOVER.md](../../HANDOVER.md) - Handover report
+- [AGENTS.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/AGENTS.md) - Agent operating rules (AUTHORITATIVE)
+- [docs/HANDOVER.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/HANDOVER.md) - Handover report
 - [docs/vision/00_VISION.md](../vision/00_VISION.md) - Reality Engine vision
 - [docs/vision/01_ARCHITECTURE.md](../vision/01_ARCHITECTURE.md) - Core architecture
 - [docs/vision/06_AUTONOMOUS_QA_FABRIC.md](../vision/06_AUTONOMOUS_QA_FABRIC.md) - Autonomous agent roadmap
@@ -1262,9 +1262,9 @@ python -m cherenkov.substrate.vlm_provider --download-minigpt
 ## 📞 Support
 
 For questions about this report:
-- Check [AGENTS.md](../../AGENTS.md) for authoritative state
+- Check [AGENTS.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/AGENTS.md) for authoritative state
 - See [docs/vision/07_MASTER_PLAN.md](../vision/07_MASTER_PLAN.md) for roadmap
-- Review [CONTRIBUTING.md](../../CONTRIBUTING.md) for contribution guidelines
+- Review [CONTRIBUTING.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/CONTRIBUTING.md) for contribution guidelines
 
 ---
 

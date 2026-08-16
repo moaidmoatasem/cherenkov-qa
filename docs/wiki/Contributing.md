@@ -11,8 +11,8 @@ Everything you need to start contributing — from your first issue to your firs
 Read these first — in order:
 
 1. [docs/STATUS.md](../STATUS.md) — what is built, what is blocked, what is next
-2. [docs/HANDOVER.md](../../HANDOVER.md) — what is real vs fabricated; authoritative state
-3. [AGENTS.md](../../AGENTS.md) — if you are an AI agent, this is required reading
+2. [docs/HANDOVER.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/HANDOVER.md) — what is real vs fabricated; authoritative state
+3. [AGENTS.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/AGENTS.md) — if you are an AI agent, this is required reading
 
 ---
 
@@ -193,7 +193,7 @@ What did we decide?
 What are the positive and negative outcomes?
 ```
 
-Existing ADRs in [docs/adr/](../adr/).
+Existing ADRs in [docs/adr/](../adr).
 
 ---
 
@@ -244,11 +244,11 @@ pre-commit run --all-files
 
 - **Question about the codebase?** — Try `./bin/cherenkov dashboard` or open a discussion
 - **Stuck on a bug?** — Paste the full error in the issue; don't paraphrase
-- **Unsure if something is in scope?** — Read [HANDOVER.md](../../HANDOVER.md) or open an issue to discuss first
+- **Unsure if something is in scope?** — Read [HANDOVER.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/HANDOVER.md) or open an issue to discuss first
 - **Found a security issue?** — See [Security](Security.md) — do not open a public issue
 
 ---
 
 ## Recognition
 
-Every merged PR is recorded in [CHANGELOG.md](../../CHANGELOG.md). Contributors are listed in the GitHub contributors graph.
+Every merged PR is recorded in [CHANGELOG.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/CHANGELOG.md). Contributors are listed in the GitHub contributors graph.

@@ -257,6 +257,6 @@ Long-term vision: The sync layer enables agents that:
 
 ---
 
-*See [agent_memory/sync/MANIFEST.md](../../agent_memory/sync/MANIFEST.md) for the sync runtime files.*
-*See [skills/sync-driven-dev.md](../../skills/sync-driven-dev/SKILL.md) for the agent skill file.*
-*See [scripts/agent_sync.py](../../scripts/agent_sync.py) for the CLI tool.*
+*See [agent_memory/sync/MANIFEST.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/agent_memory/sync/MANIFEST.md) for the sync runtime files.*
+*See [skills/sync-driven-dev.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/skills/sync-driven-dev/SKILL.md) for the agent skill file.*
+*See [scripts/agent_sync.py](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/scripts/agent_sync.py) for the CLI tool.*

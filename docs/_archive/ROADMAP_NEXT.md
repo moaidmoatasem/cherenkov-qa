@@ -10,9 +10,9 @@
 
 **Date:** 2026-06-08 (consolidated plan) · **Status:** Authoritative for *what's next* (supersedes the disputed
 [ROADMAP_RECONCILIATION.md](ROADMAP_RECONCILIATION.md) for forward planning). Pairs with
-[HANDOVER.md](../HANDOVER.md) (status), [SCOPE_LEDGER.md](../SCOPE_LEDGER.md) (scope),
+[HANDOVER.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/HANDOVER.md) (status), [SCOPE_LEDGER.md](../SCOPE_LEDGER.md) (scope),
 [PHASE_PLAN.md](../PHASE_PLAN.md) (consolidated plan), and
-[../../../process/VALIDATION_EVIDENCE_LEDGER.md](../../../process/VALIDATION_EVIDENCE_LEDGER.md) (the gate).
+[../../../process/VALIDATION_EVIDENCE_LEDGER.md](../process/VALIDATION_EVIDENCE_LEDGER.md) (the gate).
 
 ---
 
@@ -39,7 +39,7 @@ All phases are tracked in GitHub issues (#277-#391). See [PHASE_PLAN.md](../PHAS
 detailed tickets, integration plans, parallel track layout, and agent guidance.
 
 **Validation gate:** PASSED per owner decision (2026-06-08). Evidence collection continues for
-attributable QA reviews. See [HANDOVER.md §5](../HANDOVER.md) for details.
+attributable QA reviews. See [HANDOVER.md §5](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/HANDOVER.md) for details.
 
 ---
 
@@ -278,7 +278,7 @@ See [PHASE_PLAN.md](../PHASE_PLAN.md) for full parallel track layout and integra
 
 ## 9. Triaged backlog from teammate-agent reviews (2026-06-05)
 
-Three teammate-agent reviews were assessed (archived in [reviews/](../../../reviews/README.md)). Strong
+Three teammate-agent reviews were assessed (archived in [reviews/](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/README.md)). Strong
 corroboration: one independently recommended a **lightweight local HITL triage UI** — exactly the
 golden-path FE in §2/§3. Triage rule: **validation-first** — adopt what makes the golden path real,
 frictionless, or credible; defer anything that assumes the (still-unpassed) gate.

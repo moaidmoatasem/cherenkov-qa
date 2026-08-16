@@ -866,7 +866,7 @@ Please review the plan and let me know if you'd like to:
 
 **Status:** Draft v0.1 · **Date:** 2026-06-08
 **Author:** Autonomous planning agent (response to `docs/vision/MOBILE_AUTOMATION_RESEARCH.md`)
-**SSOT anchors:** [`docs/HANDOVER.md`](../../HANDOVER.md) · [`docs/SCOPE_LEDGER.md`](../SCOPE_LEDGER.md) · [`docs/_archive/ROADMAP_NEXT.md`](../_archive/ROADMAP_NEXT.md) · [`docs/vision/00_VISION.md`](../vision/00_VISION.md) · [`docs/vision/01_ARCHITECTURE.md`](../vision/01_ARCHITECTURE.md) · [`docs/vision/06_AUTONOMOUS_QA_FABRIC.md`](../vision/06_AUTONOMOUS_QA_FABRIC.md)
+**SSOT anchors:** [`docs/HANDOVER.md`](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/HANDOVER.md) · [`docs/SCOPE_LEDGER.md`](../SCOPE_LEDGER.md) · [`docs/_archive/ROADMAP_NEXT.md`](../_archive/ROADMAP_NEXT.md) · [`docs/vision/00_VISION.md`](00_VISION.md) · [`docs/vision/01_ARCHITECTURE.md`](01_ARCHITECTURE.md) · [`docs/vision/06_AUTONOMOUS_QA_FABRIC.md`](06_AUTONOMOUS_QA_FABRIC.md)
 
 > **Anti-drift reminder (HANDOVER §2).** No "v3.1 + delta", no fabricated
 > tests, no "100% complete" claims. Every implementation step exits on
@@ -1769,7 +1769,7 @@ the §1 anti-drift reminder).
 
 **Status:** Draft v0.1 · **Date:** 2026-06-08
 **Author:** Autonomous planning agent (response to `docs/vision/MOBILE_AUTOMATION_RESEARCH.md`)
-**SSOT anchors:** [`docs/HANDOVER.md`](../../HANDOVER.md) · [`docs/SCOPE_LEDGER.md`](../SCOPE_LEDGER.md) · [`docs/_archive/ROADMAP_NEXT.md`](../_archive/ROADMAP_NEXT.md) · [`docs/vision/00_VISION.md`](../vision/00_VISION.md) · [`docs/vision/01_ARCHITECTURE.md`](../vision/01_ARCHITECTURE.md) · [`docs/vision/06_AUTONOMOUS_QA_FABRIC.md`](../vision/06_AUTONOMOUS_QA_FABRIC.md)
+**SSOT anchors:** [`docs/HANDOVER.md`](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/HANDOVER.md) · [`docs/SCOPE_LEDGER.md`](../SCOPE_LEDGER.md) · [`docs/_archive/ROADMAP_NEXT.md`](../_archive/ROADMAP_NEXT.md) · [`docs/vision/00_VISION.md`](00_VISION.md) · [`docs/vision/01_ARCHITECTURE.md`](01_ARCHITECTURE.md) · [`docs/vision/06_AUTONOMOUS_QA_FABRIC.md`](06_AUTONOMOUS_QA_FABRIC.md)
 
 > **Anti-drift reminder (HANDOVER §2).** No "v3.1 + delta", no fabricated
 > tests, no "100% complete" claims. Every implementation step exits on

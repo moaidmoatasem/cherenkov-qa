@@ -194,4 +194,4 @@ Open a [GitHub issue](https://github.com/moaidmoatasem/cherenkov-qa/issues/new/c
 
 ### Can AI agents contribute?
 
-Yes. See [AGENTS.md](../../AGENTS.md). Same workflow as humans: pick a `status:ready` + `agent-ready` issue, open a PR with raw evidence, get human review.
+Yes. See [AGENTS.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/AGENTS.md). Same workflow as humans: pick a `status:ready` + `agent-ready` issue, open a PR with raw evidence, get human review.

@@ -6,7 +6,7 @@ Playwright tests in under 5 minutes.
 
 > **New here?** This doc is one of three entry points. Pick the one that fits:
 >
-> - **[../README.md](../README.md)** — 2-minute overview.
+> - **[../README.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/README.md)** — 2-minute overview.
 > - **[CLI_DEMO.md](CLI_DEMO.md)** — terminal walk-through of the full flow.
 > - This file — the full install + first run guide.
 >
@@ -577,7 +577,7 @@ mobile paths, `cargo` for the desktop host) are noted per command below.
 
 > Earlier docs described a separate `track-b-c-deferred/` directory. That
 > directory was fully re-integrated into the live tree and **deleted** — see
-> [AGENTS.md](../AGENTS.md). If you see a `track-b-c-deferred/` reference
+> [AGENTS.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/AGENTS.md). If you see a `track-b-c-deferred/` reference
 > elsewhere, treat it as stale and link to [docs/STATUS.md](STATUS.md).
 
 ---
@@ -1410,11 +1410,11 @@ Running `eject` strips all CHERENKOV-specific trace monkey-patching and hooks cl
 
 ## Next steps
 
-- **Want to see it live?** → [recordings/](recordings/) — 8 step-by-step Loom recording scripts with real test data and live evidence.
+- **Want to see it live?** → [recordings/](recordings) — 8 step-by-step Loom recording scripts with real test data and live evidence.
 - **Want the project state and roadmap?** → [STATUS.md](STATUS.md) and [PHASE_PLAN.md](PHASE_PLAN.md).
 - **Want the bigger picture?** → [INDEX.md](INDEX.md) maps the whole docs tree.
 - **Lost or hitting an issue?** Search [wiki/FAQ.md](wiki/FAQ.md) or open an issue.
-- **Agent or contributor?** Read [HANDOVER.md](../HANDOVER.md) and [AGENTS.md](../AGENTS.md) **before** any work.
+- **Agent or contributor?** Read [HANDOVER.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/HANDOVER.md) and [AGENTS.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/AGENTS.md) **before** any work.
 
 ---
 

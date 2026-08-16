@@ -281,4 +281,4 @@ Unknown config key 'substrate.tiers.mega' in cherenkov.toml.
 Known keys: artifacts.eject, artifacts.emitters, ...
 ```
 
-All known keys are listed in the [config schema](/cherenkov/core/config_loader.py).
+All known keys are listed in the [config schema](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/cherenkov/core/config_loader.py).

@@ -321,7 +321,7 @@ graph LR
 
 ## Clean Architecture Enforcement
 
-Per [ADR-004](../adr/), domain logic never imports from infrastructure:
+Per [ADR-004](../adr), domain logic never imports from infrastructure:
 
 ```
 Domain layer (pure Python, no I/O):
@@ -357,8 +357,8 @@ These rules are **non-negotiable** and tested in CI on every push.
 
 ## Further Reading
 
-- [ADR-001: Seam Widening](../adr/) — why we extend at seams, not cores
-- [ADR-004: Clean Architecture](../adr/) — the Ports/Adapters boundary
-- [ADR-005: Event-Driven Orchestration](../adr/) — why we use events
-- [ADR-006: Knowledge Mesh](../adr/) — why a graph, not just a vector store
+- [ADR-001: Seam Widening](../adr) — why we extend at seams, not cores
+- [ADR-004: Clean Architecture](../adr) — the Ports/Adapters boundary
+- [ADR-005: Event-Driven Orchestration](../adr) — why we use events
+- [ADR-006: Knowledge Mesh](../adr) — why a graph, not just a vector store
 - [docs/engineering/SYSTEM_DESIGN.md](../engineering/SYSTEM_DESIGN.md) — full system design doc

@@ -12,18 +12,18 @@
 What the code actually does now (verified 2026-07-07):
 
 - `run_proof()` chooses probes with:
-  `probes = PROOF_RUN_PROBES if spec is PETSTORE_SPEC_SUBSET else _derive_probes_from_spec(spec)` — [proof_run.py:336](../../cherenkov/divergence/proof_run.py).
-- `_derive_probes_from_spec()` ([proof_run.py:286](../../cherenkov/divergence/proof_run.py)) already walks an arbitrary spec and returns up to 5 `(path, method, operation, context)` tuples. So **endpoint selection for arbitrary specs is solved.**
+  `probes = PROOF_RUN_PROBES if spec is PETSTORE_SPEC_SUBSET else _derive_probes_from_spec(spec)` — [proof_run.py:336](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/cherenkov/divergence/proof_run.py).
+- `_derive_probes_from_spec()` ([proof_run.py:286](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/cherenkov/divergence/proof_run.py)) already walks an arbitrary spec and returns up to 5 `(path, method, operation, context)` tuples. So **endpoint selection for arbitrary specs is solved.**
 - The two probe→hypothesis paths diverge:
   - **LLM path** (`use_llm=True`): the `SkepticAgent` synthesises hypotheses from the operation fragment — works for arbitrary specs, but is non-deterministic, costs tokens, and needs a model/provider.
-  - **Offline path** (`use_llm=False`): `_offline_hypotheses(endpoint, method)` ([proof_run.py:375](../../cherenkov/divergence/proof_run.py)) only returns hypotheses when the endpoint literally matches Petstore paths (`/pet/findByStatus`, etc.). For any other spec it returns an **empty list** → zero probes → a green verdict that means "we didn't test anything," not "the API conforms."
+  - **Offline path** (`use_llm=False`): `_offline_hypotheses(endpoint, method)` ([proof_run.py:375](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/cherenkov/divergence/proof_run.py)) only returns hypotheses when the endpoint literally matches Petstore paths (`/pet/findByStatus`, etc.). For any other spec it returns an **empty list** → zero probes → a green verdict that means "we didn't test anything," not "the API conforms."
 
 This is the real remaining defect behind HANDOVER's P0 "R1 — Spec-derived probe planner." The honest framing: **offline `verify` against a non-Petstore API silently no-ops.** That is a *false-negative machine*, which is the one failure mode a trust/integrity tool cannot ship with. It also blocks **E0.3** (three practitioners complete the quickstart unaided) — practitioners point `verify` at their own API and, in demo/offline mode, get a meaningless PASS.
 
 Constraints shaping the decision:
 - **Determinism required.** The offline path exists precisely so CI and first-run/demo mode work with no model, no network to a provider, and reproducible output. Whatever we build must be deterministic.
 - **Differentiation (E0.4).** Our wedge vs Schemathesis is *integrity / reality checking*, not input fuzzing. A solution that reduces us to "a Schemathesis wrapper" erodes the positioning in `docs/NORTH_STAR.md §8`.
-- **Reuse over rebuild.** `coverage.py:_extract_endpoints()` ([coverage.py:47](../../cherenkov/divergence/coverage.py)) already walks paths/methods/operationIds; the hypothesis contract (`DivergenceHypothesis`, `DivergenceClass.D1_SPEC_CODE`) is stable ([contracts.py:294](../../cherenkov/core/contracts.py)).
+- **Reuse over rebuild.** `coverage.py:_extract_endpoints()` ([coverage.py:47](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/cherenkov/divergence/coverage.py)) already walks paths/methods/operationIds; the hypothesis contract (`DivergenceHypothesis`, `DivergenceClass.D1_SPEC_CODE`) is stable ([contracts.py:294](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/cherenkov/core/contracts.py)).
 - **Surface freeze in effect** — this is a bug-class fix inside `cherenkov/divergence/`, which is allowed; no new surfaces.
 
 ## Decision

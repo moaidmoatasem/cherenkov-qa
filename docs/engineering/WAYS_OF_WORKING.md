@@ -3,7 +3,7 @@
 **Date:** 2026-08-04
 **Status:** Active
 **Owner:** repo maintainers + all agents
-**Related docs:** [CONTRIBUTING.md](../../CONTRIBUTING.md) (long form) · [AGENTS.md](../../AGENTS.md) (operating card) · [GITHUB_PM.md](../process/GITHUB_PM.md) (tracking)
+**Related docs:** [CONTRIBUTING.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/CONTRIBUTING.md) (long form) · [AGENTS.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/AGENTS.md) (operating card) · [GITHUB_PM.md](../process/GITHUB_PM.md) (tracking)
 
 ---
 

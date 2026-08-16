@@ -120,7 +120,7 @@ cherenkov verify --url https://petstore3.swagger.io/api/v3 --spec ./openapi.yaml
 
 > **Known limitation:** offline `verify` currently probes built-in Petstore
 > hypotheses regardless of `--spec` (spec-derived probe planner is tracked as
-> R1 in [HANDOVER.md](../HANDOVER.md)). Point `verify` at the Petstore target
+> R1 in [HANDOVER.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/HANDOVER.md)). Point `verify` at the Petstore target
 > until that lands.
 
 ### `validate`
@@ -148,7 +148,7 @@ cherenkov validate --target http://localhost:8080 --spec ./openapi.yaml --fail-o
 ### `check-suite`
 Catch AI cheating in a test suite — detect WEAKENED, DELETED, or HALLUCINATED
 assertions via pure Python AST analysis (no LLM). See
-[demos/catch-the-ai-cheating](../demos/catch-the-ai-cheating/).
+[demos/catch-the-ai-cheating](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/demos/catch-the-ai-cheating).
 
 ```bash
 cherenkov check-suite --candidate ./tests --spec ./openapi.yaml --fail-on-finding

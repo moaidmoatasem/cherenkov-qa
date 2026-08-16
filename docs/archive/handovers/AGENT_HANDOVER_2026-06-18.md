@@ -40,7 +40,7 @@ Run this every session start:
 ```bash
 grep -n "_settings_lock" cherenkov/core/settings.py
 ```
-Must return a match. If absent, reapply from [`cherenkov/core/settings.py`](../../../../../../../cherenkov/core/settings.py) — the pattern is double-checked locking with `threading.Lock()`.
+Must return a match. If absent, reapply from [`cherenkov/core/settings.py`](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/cherenkov/core/settings.py) — the pattern is double-checked locking with `threading.Lock()`.
 
 ---
 

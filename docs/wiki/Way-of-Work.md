@@ -4,8 +4,8 @@
 
 How to contribute — humans and AI agents follow the same rules.
 
-> **Full reference:** [CONTRIBUTING.md](../../CONTRIBUTING.md)
-> **Read first:** [docs/STATUS.md](../STATUS.md) · [docs/HANDOVER.md](../../HANDOVER.md)
+> **Full reference:** [CONTRIBUTING.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/CONTRIBUTING.md)
+> **Read first:** [docs/STATUS.md](../STATUS.md) · [docs/HANDOVER.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/HANDOVER.md)
 
 ---
 
@@ -64,7 +64,7 @@ Never commit directly to `main`.
 
 - Reuse `cherenkov/core/contracts.py` — never fork core models
 - Add a versioned adapter/plugin at the seam — ADR-001 style
-- If you're unsure of the scope, check [HANDOVER.md](../../HANDOVER.md)
+- If you're unsure of the scope, check [HANDOVER.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/HANDOVER.md)
 
 ### 4. Test
 
@@ -152,8 +152,8 @@ Imperative mood: `add`, `fix`, `update` — not `added`, `fixed`.
 
 Extra rules on top of everything above:
 
-1. Read [AGENTS.md](../../AGENTS.md) before starting
-2. Read [HANDOVER.md](../../HANDOVER.md) — it says what is real vs fabricated
+1. Read [AGENTS.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/AGENTS.md) before starting
+2. Read [HANDOVER.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/HANDOVER.md) — it says what is real vs fabricated
 3. Only pick `agent-ready` issues
 4. Add a co-author trailer to your commit
 5. Paste raw terminal output in the PR body

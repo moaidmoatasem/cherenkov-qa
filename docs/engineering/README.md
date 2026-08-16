@@ -11,7 +11,7 @@ How CHERENKOV is built and how its contributors — human and autonomous agents 
 | [WAYS_OF_WORKING.md](WAYS_OF_WORKING.md) | Branching, PRs, reviews, CI gates, definition of ready/done. |
 | [AGENT_COLLABORATION_PROTOCOL.md](AGENT_COLLABORATION_PROTOCOL.md) | How multiple coding agents work in parallel without colliding. |
 | [BEST_PRACTICES.md](BEST_PRACTICES.md) | Coding, testing, error-handling, logging, security standards. |
-| [CODE_OF_CONDUCT.md](../../CODE_OF_CONDUCT.md) | Behaviour expected of all contributors and agents. |
+| [CODE_OF_CONDUCT.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/CODE_OF_CONDUCT.md) | Behaviour expected of all contributors and agents. |
 
 ## Consolidated Plan Docs (Phase -1 through Phase 8)
 

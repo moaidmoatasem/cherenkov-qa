@@ -4,7 +4,7 @@
 
 Security policies, vulnerability reporting, and secure usage guidelines.
 
-> **Formal security policy:** [SECURITY.md](../../SECURITY.md)
+> **Formal security policy:** [SECURITY.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/SECURITY.md)
 
 ---
 

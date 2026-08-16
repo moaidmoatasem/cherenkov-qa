@@ -1,6 +1,6 @@
 # CHERENKOV — Project Management, ALM & GitHub Way-of-Work
 
-**Authority:** subordinate to the repo-root [`HANDOVER.md`](../../HANDOVER.md) and [`AGENTS.md`](../../AGENTS.md). If this doc contradicts the handover, the handover wins.
+**Authority:** subordinate to the repo-root [`HANDOVER.md`](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/HANDOVER.md) and [`AGENTS.md`](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/AGENTS.md). If this doc contradicts the handover, the handover wins.
 **Purpose:** one place for how work is tracked, reviewed, and shipped through GitHub — milestones, labels, tickets, branch rules, ALM cadence, and the architecture/design standards every contributor (human or agent) follows.
 
 ---
@@ -9,8 +9,8 @@
 
 Two facts from the SSOT decide priority and override any roadmap enthusiasm:
 
-1. **The real blocker is not code — it's the Track A validation gate.** Show the tool to 5 QA professionals; **3 of 5 "yes" = Track A shipped** ([`HANDOVER.md` §5](../../HANDOVER.md)). This is an **owner task**, and it is **issue #1**.
-2. **`track-b-c-deferred/` (incl. the React dashboard) is quarantined.** Do not extend or import it **until Track A validates** ([`HANDOVER.md` §4](../../HANDOVER.md)).
+1. **The real blocker is not code — it's the Track A validation gate.** Show the tool to 5 QA professionals; **3 of 5 "yes" = Track A shipped** ([`HANDOVER.md` §5](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/HANDOVER.md)). This is an **owner task**, and it is **issue #1**.
+2. **`track-b-c-deferred/` (incl. the React dashboard) is quarantined.** Do not extend or import it **until Track A validates** ([`HANDOVER.md` §4](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/HANDOVER.md)).
 
 **Consequence for the expansion work in this repo's `docs/vision/` (Reality Engine, E7–E13) and `docs/dashboard/FE_REDESIGN.md`:** these are **gated backlog**. They are captured as tickets so the plan is visible, but every one carries the label `blocked:validation-gate` and stays closed-to-start until the gate passes. We document the dependency rather than silently ignore it. The owner may override — but the dependency is explicit.
 
@@ -77,7 +77,7 @@ Each gated epic body must start: *"BLOCKED by #GATE (Track A validation). Captur
 | **M4 · Author & Trust** | E10 Copilot, E11 SDET, E12 governance | EPIC E10–E12 |
 | **M5 · Pairing & FE** | E13 + dashboard redesign | EPIC E13, EPIC FE |
 
-Post-gate order follows [`HANDOVER.md` §6.3](../../HANDOVER.md): Visual → Perf → Diagnostics/RAG → Jira/compliance/dashboard.
+Post-gate order follows [`HANDOVER.md` §6.3](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/HANDOVER.md): Visual → Perf → Diagnostics/RAG → Jira/compliance/dashboard.
 
 ---
 
@@ -154,4 +154,4 @@ The script is **idempotent**: it ensures labels + milestones, creates missing is
 - **Quality:** every module ships unit + smoke; show raw evidence; CI green; docs-drift gate passes.
 - **Security:** CodeQL on PR; secrets never in prompts/commits; quarantined code stays quarantined.
 
-See [`CONTRIBUTING.md`](../../CONTRIBUTING.md) for the contributor/agent way-of-work and [`CODE_OF_CONDUCT.md`](../../CODE_OF_CONDUCT.md).
+See [`CONTRIBUTING.md`](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/CONTRIBUTING.md) for the contributor/agent way-of-work and [`CODE_OF_CONDUCT.md`](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/CODE_OF_CONDUCT.md).
