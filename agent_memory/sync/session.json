@@ -1,25 +1,18 @@
 {
   "session": {
-    "id": "sess_20260815235834_9fc477",
+    "id": "sess_20260816001830_09ed30",
     "status": "open",
-    "task": "challenge_docs_links_banners",
-    "started_at": "2026-08-15T23:58:34.679173+00:00",
+    "task": "worker_mkdocs_git_pr",
+    "started_at": "2026-08-16T00:18:30.730002+00:00",
     "ended_at": null,
-    "findings_count": 1,
+    "findings_count": 0,
     "token_total": 0,
     "summary": null,
     "compacted": false,
-    "task_type": "challenge_docs_links_banners",
+    "task_type": "worker_mkdocs_git_pr",
     "source": "cherenkov"
   },
   "previous_sessions": [
-    {
-      "id": "sess_20260815234518_02e80c",
-      "task": "survey_visuals_git",
-      "ended_at": null,
-      "summary": null,
-      "token_total": 0
-    },
     {
       "id": "sess_20260815234523_110053",
       "task": "survey_docs_content",
@@ -82,7 +75,14 @@
       "ended_at": null,
       "summary": null,
       "token_total": 0
+    },
+    {
+      "id": "sess_20260815235834_9fc477",
+      "task": "challenge_docs_links_banners",
+      "ended_at": null,
+      "summary": null,
+      "token_total": 0
     }
   ],
-  "sessions_since_compact": 55
+  "sessions_since_compact": 56
 }
