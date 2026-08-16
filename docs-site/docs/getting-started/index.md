@@ -51,7 +51,7 @@ And then runs it against your live server — catching drift between spec and re
 
 **Current status:** v1.4.0, production-ready core.
 
-![CHERENKOV-QA CLI Execution](../assets/quickstart-cli.svg)
+![CHERENKOV-QA Quickstart Execution](../assets/getting_started.png)
 *Figure: Automated OpenAPI conformance verification and certificate generation via CHERENKOV-QA CLI.*
 
 | Capability | Status |

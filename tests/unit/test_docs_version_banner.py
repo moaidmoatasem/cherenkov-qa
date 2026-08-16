@@ -29,6 +29,13 @@ def test_root_overrides_outdated_block():
     assert "https://moaidmoatasem.github.io/cherenkov-qa/1.4/" in content
 
 
+class _RelaxedYamlLoader(yaml.SafeLoader):
+    pass
+
+_RelaxedYamlLoader.add_multi_constructor("!", lambda loader, suffix, node: None)
+_RelaxedYamlLoader.add_multi_constructor("tag:", lambda loader, suffix, node: None)
+
+
 def test_mkdocs_configurations_version_1_4():
     """Verify root mkdocs.yml and docs-site/mkdocs.yml have version 1.4 set as current."""
     root_cfg_path = REPO_ROOT / "mkdocs.yml"
@@ -37,8 +44,8 @@ def test_mkdocs_configurations_version_1_4():
     assert root_cfg_path.is_file()
     assert site_cfg_path.is_file()
 
-    root_cfg = yaml.safe_load(root_cfg_path.read_text(encoding="utf-8"))
-    site_cfg = yaml.safe_load(site_cfg_path.read_text(encoding="utf-8"))
+    root_cfg = yaml.load(root_cfg_path.read_text(encoding="utf-8"), Loader=_RelaxedYamlLoader)
+    site_cfg = yaml.load(site_cfg_path.read_text(encoding="utf-8"), Loader=_RelaxedYamlLoader)
 
     assert root_cfg.get("extra", {}).get("version", {}).get("current") == "1.4"
     assert "1.4" in root_cfg.get("extra", {}).get("version", {}).get("versions", [])
