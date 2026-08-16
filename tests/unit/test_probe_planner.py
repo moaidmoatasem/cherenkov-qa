@@ -18,6 +18,7 @@ from collections.abc import Generator
 from contextlib import contextmanager
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import parse_qs, urlparse
+from unittest.mock import patch
 
 from cherenkov.divergence.probe_planner import (
     UnprobedEndpoint,
@@ -404,8 +405,9 @@ class TestPetstoreDemoRegression:
 
     def test_spec_none_uses_demo_probes_without_error(self) -> None:
         # Dead port: every reproduction fails to execute → no reports, no raise.
-        reports = run_proof(base_url="http://127.0.0.1:1", spec=None, use_llm=False)
-        assert reports == []
+        with patch("cherenkov.divergence.witness.WitnessAgent._execute", side_effect=RuntimeError("Connection refused")):
+            reports = run_proof(base_url="http://127.0.0.1:1", spec=None, use_llm=False)
+            assert reports == []
 
 
 # ── unprobed coverage reporting ───────────────────────────────────────────────

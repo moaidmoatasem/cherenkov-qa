@@ -98,6 +98,8 @@ def test_init_next_steps_do_not_reference_a_repo_only_path(tmp_path, monkeypatch
     """`./bin/cherenkov` exits 127 in a fresh project — the audience this text targets."""
     from cherenkov.stages.init_cmd import run_init
 
+    monkeypatch.setattr("cherenkov.stages.init_cmd.detect_device", lambda: "CPU")
+    monkeypatch.setattr("cherenkov.stages.init_cmd.detect_ollama", lambda: (False, "Ollama is not running"))
     monkeypatch.chdir(tmp_path)
     run_init()
     out = capsys.readouterr().out
