@@ -137,9 +137,19 @@ Please replace with a meaningful description.
         self.assertFalse(os.path.exists(workspace))
 
 
+def _docker_daemon_running() -> bool:
+    if shutil.which("docker") is None:
+        return False
+    try:
+        res = subprocess.run(["docker", "info"], capture_output=True, timeout=2)
+        return res.returncode == 0
+    except Exception:
+        return False
+
+
 @unittest.skipUnless(
-    shutil.which("docker") is not None,
-    "Docker not available — skipping Docker sandbox tests",
+    _docker_daemon_running(),
+    "Docker daemon not running — skipping Docker sandbox tests",
 )
 class TestDockerSandboxProvider(unittest.TestCase):
     def setUp(self):

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import unittest
+from unittest.mock import patch
 
 from cherenkov.langchain.tool import CherenkovValidateTool
 
@@ -29,11 +30,12 @@ Please replace with a meaningful description.
                 "workers": 1,
             }
         )
-        result = self.tool._run(query)
-        # Validation may fail because no server is running, but the tool should
-        # return a string response, not raise.
-        self.assertIsInstance(result, str)
-        self.assertIn("Validation", result)
+        with patch("cherenkov.execution.validate.ValidationEngine.validate_suite", return_value={"summary": "Validation complete", "reports": []}):
+            result = self.tool._run(query)
+            # Validation may fail because no server is running, but the tool should
+            # return a string response, not raise.
+            self.assertIsInstance(result, str)
+            self.assertIn("Validation", result)
 
     def test_generate_tests_returns_guidance(self):
         """Placeholder docstring.

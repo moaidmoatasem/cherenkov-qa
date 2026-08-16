@@ -21,7 +21,7 @@ Please replace with a meaningful description.
 """
         # Use absolute path to stripe_spec.json
         stripe_spec_path = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "stripe_spec.json"
+            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "demos", "live-case-data", "stripe_spec.json"
         )
         sources = {"openapi": [stripe_spec_path]}
         tm = build_truth_model(sources)
@@ -72,7 +72,7 @@ Please replace with a meaningful description.
 """
         # Use absolute path to stripe_spec.json
         stripe_spec_path = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "stripe_spec.json"
+            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "demos", "live-case-data", "stripe_spec.json"
         )
         sources = {"openapi": [stripe_spec_path]}
         tm = build_truth_model(sources)
@@ -88,7 +88,7 @@ Please replace with a meaningful description.
 """
         # Use absolute path to stripe_spec.json
         stripe_spec_path = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "stripe_spec.json"
+            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "demos", "live-case-data", "stripe_spec.json"
         )
         sources = {"openapi": [stripe_spec_path]}
         tm = build_truth_model(sources)
