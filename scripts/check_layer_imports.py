@@ -56,7 +56,7 @@ def _violations(path: Path, repo_root: Path) -> list[tuple[int, str]]:
         tree = ast.parse(path.read_text(encoding="utf-8"))
     except SyntaxError as exc:
         raise SystemExit(
-            f"[layer-guard] {path.relative_to(repo_root)} does not parse: {exc}"
+            f"[layer-guard] {path.relative_to(repo_root).as_posix()} does not parse: {exc}"
         ) from exc
 
     found: list[tuple[int, str]] = []
@@ -85,7 +85,7 @@ def check(repo_root: Path) -> list[str]:
             continue
         for path in sorted(layer_dir.rglob("*.py")):
             for lineno, module in _violations(path, repo_root):
-                rel = path.relative_to(repo_root)
+                rel = path.relative_to(repo_root).as_posix()
                 problems.append(
                     f"LAYER    {rel}:{lineno} imports `{module}` — "
                     f"{layer} may not depend on infrastructure (ADR-004)"

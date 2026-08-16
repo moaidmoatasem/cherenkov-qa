@@ -23,6 +23,10 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 # output, virtualenvs, caches, and the brain map's own generated artefacts.
 SKIP_DIRS = {
     ".git",
+    ".claude",
+    ".agents",
+    ".freebuff",
+    ".qwen",
     ".brainmap",
     ".mypy_cache",
     ".pytest_cache",
