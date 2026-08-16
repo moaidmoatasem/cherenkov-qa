@@ -1,5 +1,18 @@
 # CHERENKOV -- Session Handover
 
+## Alignment & Test Stabilization Sweep (2026-08-16)
+
+Full tree alignment against `origin/main` following PR #1002 (docs consolidation) and test suite stabilization across Windows/WSL environments.
+
+**Commits pushed to `origin/main`:**
+1. `4c016174`: `chore(sdd)`: Synchronize SDD agent memory state and briefing docs.
+2. `9ec2df6b`: `fix(docs)`: Correct 3 fabricated CLI invocations in 1.4 docs (`routine list`, `routine get`, `docs generate`) and fix Windows path separator in `test_check_cli_flags_ci.py`.
+3. `b44f936b`: `fix(tests)`: Eliminate WSL-environment test hangs — `subprocess_executor.py` timeout recovery, mark slow subprocess sleep tests in `test_hooks.py`, mock `RAGIndex` SQLite in `test_mcp_surface_drift.py`, mock detector functions in `test_doctor.py`.
+4. `f4a06370`: `fix(tests)`: Mock dead-port socket connect in `test_probe_planner.py`, mock device/ollama in `test_cli_help_quality.py`.
+5. `3a22bc2f`: `fix(tests)`: Mock validation engine in `test_asyncapi_support.py`, fix patch target and add `--simple` in `test_coverage.py`.
+
+**Test Status:** All individual target test suites pass with 0 failures. Full fast suite (`pytest tests/unit/ -m "not slow and not integration and not e2e and not ollama"`) running cleanly.
+
 ## Held-out audit found three detector bugs the corpus scored 100% through (2026-08-13)
 
 Ran the newly-calibrated integrity detector over **594 real test files** in this
