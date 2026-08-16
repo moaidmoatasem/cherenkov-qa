@@ -67,7 +67,7 @@ def test_catches_bogus_flag_on_a_single_line_invocation(run_guard):
     )
     assert code == 1
     assert "--not-a-real-flag" in out
-    assert "ci/gitlab.yml" in out
+    assert "ci/gitlab.yml" in out.replace("\\", "/")
 
 
 def test_catches_bogus_flag_across_a_shell_continuation(run_guard):

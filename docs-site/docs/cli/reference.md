@@ -350,7 +350,7 @@ cherenkov docs check-suite
 cherenkov docs --json
 
 # One topic, structured
-cherenkov docs verify --json
+cherenkov docs --json
 ```
 
 An unknown topic exits non-zero and lists the real ones.
@@ -481,13 +481,12 @@ Manage autonomous background routines.
 
 ```bash
 # List active routines
-cherenkov routine list
+cherenkov routine routine list
 
-# Start a scheduled routine
-cherenkov routine start drift-check --schedule "0 */6 * * *"
-
-# Stop a routine
-cherenkov routine stop <routine-id>
+# Create, toggle, or trigger routines
+cherenkov routine routine create
+cherenkov routine routine toggle
+cherenkov routine routine trigger
 ```
 
 ### `check-stale`

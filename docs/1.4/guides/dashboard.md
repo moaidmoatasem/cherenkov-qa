@@ -18,7 +18,7 @@ cherenkov dashboard
 Open [http://localhost:8000](http://localhost:8000) in your browser. The dashboard serves the React UI and the FastAPI backend from a single process.
 
 !!! tip "Demo mode"
-    Run `cherenkov dashboard --demo` to load the dashboard with sample data — useful for exploring the UI before running real tests.
+    The dashboard loads with live data from your test runs. To explore the UI before running real tests, visit the Journeys workspace — it uses the journey definition from `cherenkov/journeys/builtins/api-conformance.yaml`.
 
 ---
 
