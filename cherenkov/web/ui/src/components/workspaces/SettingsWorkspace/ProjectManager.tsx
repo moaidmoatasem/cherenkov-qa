@@ -61,7 +61,7 @@ export const ProjectManager: React.FC = () => {
             <span>Workspace & Project Manager</span>
           </h2>
           <p className="text-xs text-text-muted mt-0.5">
-            Manage projects and targets connected to <code className="font-mono">/api/v1/projects</code>.
+            The projects and target APIs this instance knows about.
           </p>
         </div>
         <button

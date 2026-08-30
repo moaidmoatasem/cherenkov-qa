@@ -59,7 +59,7 @@ export const GovernanceSettings: React.FC = () => {
             <span>Governance Rules & Engine Settings</span>
           </h2>
           <p className="text-xs text-text-muted mt-0.5 font-sans">
-            System configuration from <code className="font-mono">/api/v1/settings</code> and governance score from <code className="font-mono">/api/v1/governance</code>.
+            System configuration and your current governance score.
           </p>
         </div>
         <button

@@ -50,7 +50,7 @@ export const KnowledgeGraphExplorer: React.FC = () => {
           <span>GraphRAG Second Brain Knowledge Explorer</span>
         </h2>
         <p className="text-xs text-text-muted mt-0.5">
-          Query the GraphRAG Second Brain knowledge mesh via <code className="font-mono">/api/v1/knowledge/query</code>.
+          Search what Cherenkov has learned about your API from past runs.
         </p>
       </div>
 

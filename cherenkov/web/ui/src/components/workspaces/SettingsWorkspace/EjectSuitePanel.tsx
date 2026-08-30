@@ -47,7 +47,7 @@ export const EjectSuitePanel: React.FC = () => {
             <span>Plain Playwright Suite Exporter (Zero Lock-in)</span>
           </h2>
           <p className="text-xs text-text-muted mt-0.5 font-sans">
-            Export 100% compliant Playwright code repositories without vendor lock-in via <code className="font-mono">/api/v1/eject</code>.
+            Export your tests as a standalone Playwright project that runs without Cherenkov.
           </p>
         </div>
       </div>

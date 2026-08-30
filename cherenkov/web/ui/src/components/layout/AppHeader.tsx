@@ -7,7 +7,7 @@ import React, { useEffect, useState } from 'react';
 import CherenkovLogo from '../CherenkovLogo';
 import { Project } from '../../types';
 import { fetchProjects, fetchMetricsData, checkBackendHealth, fetchSettings, SystemSettings } from '../../lib/api';
-import { ChevronDown, RefreshCw, Cpu, Activity, Shield, Zap, Settings } from 'lucide-react';
+import { ChevronDown, RefreshCw, Cpu, Activity, Shield, Zap, Settings, Menu, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface AppHeaderProps {
@@ -18,6 +18,9 @@ interface AppHeaderProps {
   tokenUsagePercent?: number;
   totalSpentEstimated?: number;
   online?: boolean;
+  /** Mobile nav drawer controls. Hidden from lg up, where the sidebar is static. */
+  navOpen?: boolean;
+  onToggleNav?: () => void;
 }
 
 export const AppHeader: React.FC<AppHeaderProps> = ({
@@ -28,6 +31,8 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   tokenUsagePercent = 0,
   totalSpentEstimated = 0,
   online = true,
+  navOpen = false,
+  onToggleNav,
 }) => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [settings, setSettings] = useState<SystemSettings | null>(null);
@@ -77,8 +82,31 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
     <header className="ds-header">
       {/* Brand & Active Workspace Context */}
       <div className="ds-flex-row ds-gap-lg">
+        {onToggleNav && (
+          <button
+            type="button"
+            onClick={onToggleNav}
+            aria-expanded={navOpen}
+            aria-controls="primary-navigation"
+            aria-label={navOpen ? 'Close navigation' : 'Open navigation'}
+            data-testid="nav-drawer-toggle"
+            className="lg:hidden p-2 -ml-1 rounded-lg text-text-primary hover:bg-white/10 transition shrink-0"
+          >
+            {navOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        )}
         <div className="ds-flex-row ds-gap-sm">
-          <CherenkovLogo className="w-7 h-7" style={{ color: 'var(--primary)' }} />
+          {/* `variant` defaults to "full", which renders the CHERENKOV /
+              THE FORENSIC QA PROTOCOL wordmark. Inside this 28px box that text
+              overflowed and sat on top of the "CHERENKOV QA" title beside it,
+              swallowing pointer events across the header. The header already
+              spells out the name, so the mark only needs the icon. */}
+          <CherenkovLogo
+            variant="icon"
+            size={28}
+            className="w-7 h-7 pointer-events-none"
+            style={{ color: 'var(--primary)' }}
+          />
           <div className="ds-flex-col">
             <span className="ds-title ds-text-gradient ds-flex-row ds-gap-sm">
               CHERENKOV <span style={{ fontSize: '10px', padding: '2px 6px', borderRadius: '4px', background: 'rgba(14, 165, 233, 0.1)', border: '1px solid rgba(14, 165, 233, 0.2)' }}>QA</span>
@@ -86,14 +114,16 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
           </div>
         </div>
 
-        <div style={{ width: '1px', height: '24px', background: 'var(--border-glass)' }} />
+        <div className="hidden md:block" style={{ width: '1px', height: '24px', background: 'var(--border-glass)' }} />
 
         {/* Workspace Title — persistent chrome, and a duplicate of the same
             title rendered by each workspace's PageHeader. Two h1s carrying the
             same text give a screen-reader user two competing page headings, so
             this one is a plain element (identical classes, no visual change)
             and the one inside the main content stays the page's single h1. */}
-        <div>
+        {/* Redundant on narrow screens -- the workspace renders the same
+            title as its own h1 -- and it was pushing the header off-screen. */}
+        <div className="hidden md:block min-w-0">
           <div className="ds-title ds-flex-row ds-gap-sm" aria-hidden="true">
             {activeWorkspaceTitle}
           </div>
@@ -175,7 +205,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
               ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20'
               : 'bg-rose-500/10 border-rose-500/30 text-rose-400 hover:bg-rose-500/20'
           }`}
-          title="Click to probe /api/v1/health"
+          title="Check the connection to the Cherenkov engine"
           data-testid="backend-health-badge"
         >
           <Activity className={`w-3.5 h-3.5 ${isHealthChecking ? 'animate-spin' : ''}`} />

@@ -60,7 +60,7 @@ export default function OfflineOverlay({ checking, onRetry, lastCheckedAt }: Off
         </h2>
         <p className="text-xs text-[#7D8DA1] leading-relaxed">
           {isActuallyChecking
-            ? 'Probing the review API on /api/v1/health.'
+            ? 'Checking the connection to the Cherenkov engine.'
             : 'The FastAPI review engine is unreachable, so live data cannot load. Start it, then retry:'}
         </p>
         {!isActuallyChecking && (

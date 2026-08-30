@@ -77,8 +77,7 @@ export const ExplorePanel: React.FC = () => {
           <span>Live Surface Explorer</span>
         </h2>
         <p className="text-xs text-text-muted mt-0.5">
-          Crawl a running service and surface anomalies from{' '}
-          <code className="font-mono">POST /api/v1/explore</code>. Findings are
+          Crawl a running service and surface anomalies. Findings are
           evidence for Triage — never auto-confirmed defects.
         </p>
       </div>

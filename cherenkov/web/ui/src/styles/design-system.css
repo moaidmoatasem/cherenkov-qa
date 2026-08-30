@@ -22,8 +22,8 @@
   --text-main: #f8fafc;
   --text-muted: #94a3b8;
   
-  --font-sans: 'Inter', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, Consolas, monospace;
   
   /* Spacing */
   --spacing-sm: 0.5rem;
@@ -155,4 +155,23 @@ body {
 
 .ds-animate-pulse:hover {
   animation: ds-pulse 1.5s infinite;
+}
+
+/* ── Keyboard focus ──────────────────────────────────────────────────────────
+   Interactive elements here carry Tailwind's `focus:outline-none` or rely on
+   the UA default, which the dark ground swallows: an audit found the first tab
+   stop computing `outline: auto 0px` with no box-shadow, so a keyboard user
+   could not see where they were (WCAG 2.4.7). `:focus-visible` keeps mouse
+   clicks clean while making every keyboard focus obvious. */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* The main region is a scroll container focused by the skip link; it should
+   accept focus without drawing a ring around the whole page. */
+main:focus,
+main:focus-visible {
+  outline: none;
 }

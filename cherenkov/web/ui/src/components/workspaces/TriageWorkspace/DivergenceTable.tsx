@@ -17,7 +17,7 @@ interface DivergenceTableProps {
   highlightId?: string;
 }
 
-const ROW_HEIGHT = 46;
+const ROW_HEIGHT = 64;
 const LIST_HEIGHT = 440;
 
 function confidenceBadge(confidence?: number) {
@@ -82,7 +82,7 @@ const DivergenceRow = ({
       title={div.reproSteps ? `Repro: ${div.reproSteps}` : undefined}
     >
       <span className="w-14 shrink-0 font-bold text-cyan-400">{div.divergenceClass}</span>
-      <span className="w-1/4 min-w-0 truncate font-semibold text-text-primary">{div.endpoint}</span>
+      <span className="w-44 shrink-0 min-w-0 truncate font-semibold text-text-primary">{div.endpoint}</span>
       <span
         className={`w-20 shrink-0 px-2 py-0.5 rounded text-[10px] font-bold uppercase text-center ${
           div.severity === 'critical' || div.severity === 'high'
@@ -95,8 +95,8 @@ const DivergenceRow = ({
       {hasConfidence && (
         <span className="w-16 shrink-0 flex justify-center">{confidenceBadge(div.confidence)}</span>
       )}
-      <span className="flex-1 min-w-0 truncate text-text-muted">{div.claimA}</span>
-      <span className="flex-1 min-w-0 truncate text-rose-300">{div.claimB}</span>
+      <span className="flex-[3] min-w-0 line-clamp-2 leading-snug text-text-muted" title={div.claimA}>{div.claimA}</span>
+      <span className="flex-[3] min-w-0 line-clamp-2 leading-snug text-rose-300" title={div.claimB}>{div.claimB}</span>
       <span className="shrink-0 flex items-center gap-1.5">
         <button
           onClick={(e) => {
@@ -104,9 +104,9 @@ const DivergenceRow = ({
             onAction && onAction(div.id, 'mark_intended');
           }}
           className="px-2 py-1 rounded bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px]"
-          title="Mark as intended change"
+          title="This difference is deliberate — stop flagging it"
         >
-          Intended
+          Expected
         </button>
         <button
           onClick={(e) => {
@@ -165,7 +165,7 @@ export const DivergenceTable: React.FC<DivergenceTableProps> = ({ onSelectDiverg
             <span>Risk-Scored Divergence Triage Table</span>
           </h2>
           <p className="text-xs text-text-muted mt-0.5">
-            API contract drift reports from <code className="font-mono">/api/v1/divergences</code>
+            Where your live API disagrees with its spec
             {hasConfidence ? ' with reproduction-stability confidence' : ''}.
           </p>
         </div>
@@ -214,11 +214,11 @@ export const DivergenceTable: React.FC<DivergenceTableProps> = ({ onSelectDiverg
           {/* Fixed header row -- stays put while the body virtualizes. */}
           <div className="flex items-center gap-3 px-3 py-2.5 bg-black/30 border-b border-white/10 text-text-muted uppercase text-[10px] font-mono">
             <span className="w-14 shrink-0">Class</span>
-            <span className="w-1/4 min-w-0 truncate">Endpoint</span>
+            <span className="w-44 shrink-0 min-w-0 truncate">Endpoint</span>
             <span className="w-20 shrink-0">Severity</span>
             {hasConfidence && <span className="w-16 shrink-0">Confidence</span>}
-            <span className="flex-1 min-w-0 truncate">Spec Claim (A)</span>
-            <span className="flex-1 min-w-0 truncate">Server Reality (B)</span>
+            <span className="flex-[3] min-w-0 truncate">Spec Claim (A)</span>
+            <span className="flex-[3] min-w-0 truncate">Server Reality (B)</span>
             <span className="shrink-0">Actions</span>
           </div>
 

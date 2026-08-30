@@ -120,7 +120,7 @@ export const ReleaseReadinessCard: React.FC<ReleaseReadinessCardProps> = ({ onNa
               </span>
               <span className="text-xs text-text-muted">Quality Grade</span>
             </div>
-            <p className="text-[10px] text-text-muted">From live /api/v1/overview</p>
+            <p className="text-[10px] text-text-muted">Across all runs in this project</p>
           </div>
 
           {/* Open Divergences */}
