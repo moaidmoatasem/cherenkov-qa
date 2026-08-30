@@ -102,7 +102,7 @@ export const HitlReviewQueue: React.FC = () => {
             <span>HITL Test Review Queue</span>
           </h2>
           <p className="text-xs text-text-muted mt-0.5">
-            Human-In-The-Loop review gate connected to <code className="font-mono">/api/v1/review/*</code>.
+            Generated tests waiting for your approval before they join the suite.
           </p>
         </div>
         <button

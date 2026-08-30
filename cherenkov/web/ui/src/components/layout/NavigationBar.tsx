@@ -20,6 +20,9 @@ export interface NavigationBarProps {
   onSelectWorkspace: (workspace: WorkspaceId) => void;
   pendingReviewCount?: number;
   onNewRun?: () => void;
+  /** Drawer state below the lg breakpoint. Ignored at desktop widths. */
+  mobileOpen?: boolean;
+  onCloseMobile?: () => void;
 }
 
 export interface WorkspaceNavItem {
@@ -64,6 +67,8 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({
   onSelectWorkspace,
   pendingReviewCount = 0,
   onNewRun,
+  mobileOpen = false,
+  onCloseMobile,
 }) => {
   // Order follows the journey the backend runs, so the nav cannot drift from
   // the loop the way a second hardcoded list did.
@@ -71,13 +76,11 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({
 
   const [pinned, setPinned] = useState<WorkspaceId[]>(readPinned);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() => {
-    const stored = readCollapsed();
-    // N-7: on narrow viewports the loop defaults collapsed, and stays that way
-    // once the user picks a side.
-    if (Object.keys(stored).length === 0 && window.innerWidth < 1024) {
-      return { workspaces: true, other: false };
-    }
-    return stored;
+    // The loop used to default collapsed on narrow viewports, back when the
+    // sidebar was always on screen and competing for width. Below lg it is now
+    // an off-canvas drawer that the user opens deliberately, so opening it to
+    // a collapsed list hides the only navigation there is.
+    return readCollapsed();
   });
 
   useEffect(() => {
@@ -106,7 +109,10 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({
     return (
       <div key={item.id} className="group relative">
         <button
-          onClick={() => onSelectWorkspace(item.id)}
+          onClick={() => {
+            onSelectWorkspace(item.id);
+            onCloseMobile?.();
+          }}
           className={`w-full flex items-start gap-3 p-3 rounded-xl transition-all duration-200 cursor-pointer text-left ${
             isActive
               ? 'bg-cyan-500/15 border border-cyan-500/40 text-cyan-400 shadow-glow-sm'
@@ -185,7 +191,16 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({
   const otherItems = OTHER_SURFACES.filter((id) => !pinned.includes(id)).map(navItem);
 
   return (
-    <nav className="w-64 bg-bg-surface/90 border-r border-border-subtle flex flex-col justify-between p-4 shrink-0 select-none z-10">
+    // Below lg the sidebar becomes an off-canvas drawer. It used to keep its
+    // fixed 16rem at every width, so at 375px it left ~120px of content and
+    // headings wrapped one word per line.
+    <nav
+      id="primary-navigation"
+      data-mobile-open={mobileOpen ? 'true' : 'false'}
+      className={`w-64 bg-bg-surface/90 max-lg:bg-bg-base max-lg:overflow-y-auto border-r border-border-subtle flex flex-col justify-between p-4 shrink-0 select-none z-40
+        max-lg:fixed max-lg:inset-y-0 max-lg:left-0 max-lg:shadow-2xl max-lg:transition-transform max-lg:duration-200 max-lg:motion-reduce:transition-none
+        ${mobileOpen ? 'max-lg:translate-x-0' : 'max-lg:-translate-x-full'}`}
+    >
       <div className="space-y-6">
         {/* Workspace Quick Actions */}
         {onNewRun && (

@@ -12,6 +12,7 @@ import DetectedChainsPanel from './DetectedChainsPanel';
 import ExplorePanel from './ExplorePanel';
 import VisionFallbackBanner from './VisionFallbackBanner';
 import { PageHeader } from '../../ui/PageHeader';
+import { runPipeline } from '../../../lib/api';
 import { EndpointRichness } from '../../../types';
 
 export interface AuthoringWorkspaceProps {
@@ -26,15 +27,38 @@ export const AuthoringWorkspace: React.FC<AuthoringWorkspaceProps> = ({
   const [activeSpecPath, setActiveSpecPath] = useState<string>('');
   const [activeEndpoints, setActiveEndpoints] = useState<EndpointRichness[]>([]);
   const [activeRunId, setActiveRunId] = useState<string | undefined>(undefined);
+  const [generating, setGenerating] = useState(false);
+  const [generateError, setGenerateError] = useState<string | null>(null);
 
   const handleSpecIngested = (path: string, endpoints: EndpointRichness[]) => {
     setActiveSpecPath(path);
     setActiveEndpoints(endpoints);
+    setGenerateError(null);
   };
 
   const handlePipelineStarted = (runId: string) => {
     setActiveRunId(runId);
     onRunStarted?.(runId);
+  };
+
+  /** Generate a suite for the whole ingested spec — no intent needed. */
+  const handleGenerate = async () => {
+    if (!activeSpecPath) return;
+    setGenerating(true);
+    setGenerateError(null);
+    try {
+      const res = await runPipeline({ spec_path: activeSpecPath });
+      if (res.run_id) handlePipelineStarted(res.run_id);
+      // The run's progress renders further down the page; move the user there
+      // rather than leaving them looking at an unchanged panel.
+      document
+        .getElementById('live-pipeline-monitor')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (err) {
+      setGenerateError((err as Error).message);
+    } finally {
+      setGenerating(false);
+    }
   };
 
   return (
@@ -46,11 +70,24 @@ export const AuthoringWorkspace: React.FC<AuthoringWorkspaceProps> = ({
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         {/* 1. Spec Ingestion Panel */}
-        <SpecIngestPanel onSpecIngested={handleSpecIngested} />
+        <SpecIngestPanel
+          onSpecIngested={handleSpecIngested}
+          onGenerate={handleGenerate}
+          generating={generating}
+        />
 
         {/* 2. Doctor Check Widget */}
         <DoctorCheckWidget />
       </div>
+
+      {generateError && (
+        <div
+          role="alert"
+          className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl text-xs font-mono text-rose-400"
+        >
+          Could not start generation: {generateError}
+        </div>
+      )}
 
       {/* 3. Intent-Driven Test Authoring */}
       <IntentAuthoringPanel
@@ -68,7 +105,9 @@ export const AuthoringWorkspace: React.FC<AuthoringWorkspaceProps> = ({
       <DetectedChainsPanel specPath={activeSpecPath} />
 
       {/* 6. Live Pipeline DAG & Log Monitor */}
-      <LivePipelineMonitor runId={activeRunId} />
+      <div id="live-pipeline-monitor">
+        <LivePipelineMonitor runId={activeRunId} />
+      </div>
     </div>
   );
 };
