@@ -53,7 +53,7 @@ memsearch>=0.1.0
 # Test tooling
 pytest>=9.1.1
 pytest-cov>=7.1.0
-anyio>=4.14.2
+anyio>=4.15.0
 
 # Templated prompts (GraphQL/accessibility) + CLI completion
 jinja2>=3.1.6
