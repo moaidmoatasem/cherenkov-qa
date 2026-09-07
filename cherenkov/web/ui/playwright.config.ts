@@ -51,9 +51,15 @@ export default defineConfig({
         ]
       : []),
   ],
+  // Tests run against the production build, not the dev server. Measured in
+  // this container: a `load`-gated navigation takes ~12.8s against `vite dev`
+  // (on-demand module transforms) and ~74ms against the built bundle. With
+  // bootstrapReal navigating once per test, that difference was ~13s of every
+  // single test -- the whole reason the suite took ~27s per test.
   webServer: {
-    command: 'npm run dev',
+    command: 'npm run build && npm run preview -- --port 3000 --strictPort',
     port: 3000,
     reuseExistingServer: !process.env.CI,
+    timeout: 180_000,
   },
 });

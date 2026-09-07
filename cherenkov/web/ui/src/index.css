@@ -1,4 +1,20 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Poppins:wght@400;500;600;700&display=swap');
+/* Fonts are NOT fetched from Google.
+ *
+ * This file used to open with an @import of fonts.googleapis.com. Two problems:
+ *
+ * 1. The product's headline claim is "100% private. No telemetry, no cloud
+ *    calls" and its whole posture is offline-first (local LLM, air-gapped
+ *    installs). The dashboard called out to a third party on every page load.
+ * 2. The stylesheet blocks the window `load` event. Measured in a sandboxed
+ *    environment with no route to Google: 12.5s per navigation before the
+ *    request finally reset -- which is where almost all of the E2E suite's
+ *    per-test time was going.
+ *
+ * The stacks below fall back to the platform UI and monospace faces, which are
+ * good on every target OS. To restore the exact Inter/Poppins/JetBrains Mono
+ * rendering, self-host the woff2 files under public/fonts and declare them with
+ * @font-face here -- that keeps the offline guarantee intact.
+ */
 @import "./styles/design-system.css";
 @import "tailwindcss";
 
@@ -49,9 +65,9 @@
   --color-yellow-400: #facc15;
   --color-yellow-500: #eab308;
 
-  --font-sans: "Inter", system-ui, sans-serif;
-  --font-display: "Poppins", "Inter", system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", monospace;
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Poppins", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
 
   --shadow-glow-sm: 0 0 12px rgba(34, 211, 238, 0.18);
 

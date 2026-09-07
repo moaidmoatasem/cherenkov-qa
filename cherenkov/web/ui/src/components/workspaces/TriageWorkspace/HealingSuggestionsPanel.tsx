@@ -56,8 +56,8 @@ export const HealingSuggestionsPanel: React.FC = () => {
             <span>Suggest-Only Healing</span>
           </h2>
           <p className="text-xs text-text-muted mt-0.5">
-            Failure records from <code className="font-mono">/api/v1/failures</code>; suggestions from{' '}
-            <code className="font-mono">/api/v1/healing/suggestions</code>.
+            What failed, and what Cherenkov suggests you change. It never edits
+            your code — you apply the fix.
           </p>
         </div>
         <button

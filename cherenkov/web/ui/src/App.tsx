@@ -67,6 +67,9 @@ function InnerApp() {
 
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  // Mobile nav drawer. Desktop ignores this entirely -- the sidebar is static
+  // from lg up.
+  const [navDrawerOpen, setNavDrawerOpen] = useState(false);
 
   // N-4: last-visited surfaces for the command palette "RECENT" section.
   const RECENTS_KEY = '[cherenkov] recent_workspaces';
@@ -236,6 +239,15 @@ function InnerApp() {
       />
       <ErrorBoundary>
         <div className="flex h-screen w-screen overflow-hidden bg-bg-base text-text-primary font-sans antialiased flex-col relative" id="cherenkov-app-core">
+          {/* Skip link: the sidebar plus the journey stepper put ~15 controls
+              ahead of the content on every page. */}
+          <a
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:px-4 focus:py-2 focus:rounded-lg focus:bg-cyan-400 focus:text-bg-base focus:font-mono focus:text-xs focus:font-bold"
+          >
+            Skip to main content
+          </a>
+
           {/* Background Gradient Orbs */}
           <div className="absolute top-[-200px] left-[-200px] w-[600px] h-[600px] bg-cyan-500/10 rounded-full blur-[120px] pointer-events-none z-0" />
           <div className="absolute bottom-[-100px] right-[-100px] w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[100px] pointer-events-none z-0" />
@@ -262,7 +274,6 @@ function InnerApp() {
           {!online && <OfflineOverlay checking={checking} onRetry={refresh} lastCheckedAt={lastCheckedAt} />}
 
           <KeyboardMapOverlay isOpen={showKeyboardMap} onClose={() => setShowKeyboardMap(false)} />
-
           {/* 1. App Header */}
           <AppHeader
             activeWorkspaceTitle={SURFACE_TITLES[activeWorkspace].title}
@@ -272,6 +283,8 @@ function InnerApp() {
             tokenUsagePercent={tokenUsagePercent}
             totalSpentEstimated={totalSpentEstimated}
             online={online}
+            navOpen={navDrawerOpen}
+            onToggleNav={() => setNavDrawerOpen((v) => !v)}
           />
 
           {/* 1b. Breadcrumbs below the top bar (N-1) */}
@@ -287,15 +300,26 @@ function InnerApp() {
           />
 
           {/* 3. Main Layout Body with NavigationBar & 5 Workspaces */}
-          <div className="flex-1 flex overflow-hidden">
+          <div className="flex-1 flex overflow-hidden relative">
+            {/* Backdrop for the mobile nav drawer. */}
+            {navDrawerOpen && (
+              <div
+                className="fixed inset-0 bg-black/60 z-30 lg:hidden"
+                onClick={() => setNavDrawerOpen(false)}
+                aria-hidden="true"
+              />
+            )}
+
             <NavigationBar
               activeWorkspace={activeWorkspace}
               onSelectWorkspace={handleSelectWorkspace}
               pendingReviewCount={reviewPendingCount}
               onNewRun={() => handleSelectWorkspace('authoring')}
+              mobileOpen={navDrawerOpen}
+              onCloseMobile={() => setNavDrawerOpen(false)}
             />
 
-            <main className="flex-1 overflow-hidden h-full">
+            <main id="main-content" tabIndex={-1} className="flex-1 overflow-hidden h-full min-w-0">
               <Suspense fallback={<WorkspaceFallback />}>
                 <Routes>
                   <Route

@@ -66,7 +66,7 @@ export const SddMemoryCockpit: React.FC = () => {
             <span>SDD Agent Cockpit & Memory Budget</span>
           </h2>
           <p className="text-xs text-text-muted mt-0.5">
-            Token pool metrics and memory retention from <code className="font-mono">/api/v1/sdd/status</code>.
+            How much context the agent is holding, and what it has retained.
           </p>
         </div>
         <button

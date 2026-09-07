@@ -1,5 +1,74 @@
 # CHERENKOV -- Session Handover
 
+## UX audit of the first-run path, and the four defects it found (2026-08-20)
+
+Ran the product rather than reading it — CLI executed, backend served, UI driven
+in Chromium at 1440x900 and 375x812, E2E suite run against a live backend. Four
+findings mattered enough to fix on the spot; two of them are the failure mode
+this product exists to prevent, turned inward.
+
+**1. `check-suite` returned a green verdict for checks that never ran.**
+WEAKENED and DELETED require `--baseline`, but the README's headline command
+omits it. Run that way against `golden_weakened.spec.ts` — a fixture that exists
+to be weakened — and the tool printed `PASS — no integrity violations found`.
+Correct (it cannot check weakening without a baseline) and dangerously
+misleading. It now prints `PASS (1/3 checks)` plus a `NOT_CHECKED:` block naming
+each skipped check and why. The demo certificate already did exactly this with
+its `NOT_checked:` line; the idea just had not reached the command people put in
+CI. `--json` gains `checks_run` / `checks_not_run`.
+
+**2. The README's flagship command did not run.**
+`check-suite --candidate ./tests` died with `[Errno 21] Is a directory` — the
+first real command after the demo. `--candidate` and `--baseline` now accept
+directories, walked recursively, paired by path relative to each root.
+
+**3. `test.skip` was invisible to the TypeScript detector.**
+Found while testing the above, and worse than either. `_RE_TS_TEST` matched only
+bare `test(`, so a baseline whose tests were all `test.skip(...)` parsed as
+*zero* tests — and a candidate that deleted every one of them reported clean.
+Verified before fixing. The regex now also matches `.skip/.only/.fixme/.failing`,
+and neutering a live baseline test with `.skip` is reported as DELETED, since it
+leaves the body in the diff while removing the test from the run. `.describe`
+stays excluded on purpose: matching it would swallow a whole block as one
+segment, the bug recorded above against the repo-audit detector.
+
+**4. The UI called Google on every page load.**
+`src/index.css` opened with a remote `@import` of `fonts.googleapis.com`, against
+a README claiming "100% private. No telemetry, no cloud calls" and an
+offline-first posture. It also blocks the window `load` event: 12.5s per
+navigation where Google is unreachable. Removed, with hardened local stacks.
+Self-hosting the woff2 files is the follow-up if the exact faces are wanted.
+
+**E2E suite: 27.5s per test → ~2s.** `tests/e2e/` went 22 min → 2.1 min. The
+cost was the font stylesheet above, paid twice per test because
+`bootstrap`/`bootstrapReal` did goto → set localStorage → reload. They now seed
+via `addInitScript` and navigate once, and Playwright's `webServer` runs the
+production build instead of `vite dev`. Note for anyone re-measuring: the 192
+`waitForTimeout` calls in the suite are a real fragility but were *not* the
+bottleneck — measure before attributing.
+
+**Also fixed:** spec ingestion dead-ended on success (endpoint richness bands
+were computed, lifted into `activeEndpoints` state, and never rendered — now
+they are the confirmation, above a "Generate test suite" button); the sidebar
+never collapsed, leaving ~120px of content at 375px (now an off-canvas drawer
+below `lg`); the header wordmark overflowed its 28px box and swallowed pointer
+events across the header (`AppHeader` was rendering `CherenkovLogo` at its
+default `variant="full"`); Triage ellipsised the Spec-Claim/Server-Reality
+columns that are the whole point of the screen; no visible keyboard focus and no
+skip link; onboarding was four blocking steps with no Esc and no skip; and 14
+panel subtitles narrated internal API routes at the user.
+
+**Test status.** 70 check-suite/TS/calibration/capability-claim tests pass, plus
+16 new regression tests. `tests/e2e/` is 43 passed / 6 failed; all 6 failures
+reproduce on the pre-change tree (verified by stashing and re-running) — they
+assert against UI that does not exist (`#cherenkov-app-header`, `"Tokens:"`) or
+depend on run history and GPU state absent in this environment. Those tests are
+worth a separate pass; they are not regressions from this work.
+
+**Not assessed:** detector accuracy on held-out corpora, LLM generation quality
+(no Ollama in this environment), K8s operator, Maestro device path, desktop
+build, federation, auth at scale, load behaviour.
+
 ## Documentation Consolidation, Strict Link Resolution & Live Deployment (2026-08-16)
 
 Full documentation reconciliation, broken link resolution, strict validation, and GitHub Pages live deployment completed.

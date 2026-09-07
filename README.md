@@ -30,9 +30,19 @@ Watch it catch the AI attempting to cheat by loosening assertions or deleting te
 **Then audit a real test suite, and verify your own API:**
 
 ```bash
+# Full audit — all three checks. --baseline is the known-honest suite to compare against.
+cherenkov check-suite --candidate ./tests --baseline ./tests-baseline --spec ./openapi.yaml --fail-on-finding
+
+# No baseline to hand? This still runs, but only HALLUCINATED can be checked —
+# the report says so explicitly and prints PASS (1/3 checks) rather than a bare PASS.
 cherenkov check-suite --candidate ./tests --spec ./openapi.yaml --fail-on-finding
+
 cherenkov verify --url http://localhost:8080 --spec ./openapi.yaml
 ```
+
+`--candidate` and `--baseline` each accept a single file or a directory; directories are walked recursively for `.py`/`.ts` suites and paired by their path relative to each root.
+
+> **Read the verdict, not just the exit code.** WEAKENED and DELETED need `--baseline`; HALLUCINATED needs `--spec`. Any check that could not run is listed under `NOT_CHECKED:` in the report and under `checks_not_run` in `--json`. A green run without a baseline means "no hallucinated fields", not "this suite is honest".
 
 ---
 

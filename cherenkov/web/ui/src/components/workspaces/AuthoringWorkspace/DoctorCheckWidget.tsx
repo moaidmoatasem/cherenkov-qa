@@ -41,7 +41,7 @@ export const DoctorCheckWidget: React.FC = () => {
             <span>OpenAPI & System Doctor Check</span>
           </h2>
           <p className="text-xs text-text-muted mt-0.5">
-            Richness & toolchain validation checks from <code className="font-mono">/api/v1/doctor</code>.
+            Whether this machine has what it needs to generate and run tests.
           </p>
         </div>
         <button

@@ -4,17 +4,20 @@ import { setupApiMocks } from '../api_mocks';
 const SETTLE = 400;
 const API = 'http://127.0.0.1:8001';
 
+// Seeding localStorage before the first navigation removes the goto+reload
+// pair these helpers used to need -- one page load per test instead of two.
+const SEED_COMMON = () => {
+  localStorage.setItem('[copilot] tour_seen', 'true');
+  localStorage.setItem('[cherenkov] onboarding_seen', 'true');
+  localStorage.setItem('[cherenkov] sidebar_mode', 'expert');
+};
+
 export async function bootstrap(page: Page, overrides?: (page: Page) => Promise<void>) {
   page.on('pageerror', err => console.error(`[UNCAUGHT] ${err.message}`));
   await setupApiMocks(page);
   if (overrides) await overrides(page);
+  await page.addInitScript(SEED_COMMON);
   await page.goto('/');
-  await page.evaluate(() => {
-    localStorage.setItem('[copilot] tour_seen', 'true');
-    localStorage.setItem('[cherenkov] onboarding_seen', 'true');
-    localStorage.setItem('[cherenkov] sidebar_mode', 'expert');
-  });
-  await page.reload();
   await page.waitForSelector('#cherenkov-app-core');
   await page.waitForTimeout(SETTLE);
 }
@@ -22,14 +25,13 @@ export async function bootstrap(page: Page, overrides?: (page: Page) => Promise<
 export async function bootstrapReal(page: Page, overrides?: (page: Page) => Promise<void>) {
   page.on('pageerror', err => console.error(`[UNCAUGHT] ${err.message}`));
   if (overrides) await overrides(page);
-  await page.goto('/');
-  await page.evaluate(() => {
+  await page.addInitScript(() => {
     localStorage.setItem('[copilot] tour_seen', 'true');
     localStorage.setItem('[cherenkov] onboarding_seen', 'true');
     localStorage.setItem('[cherenkov] sidebar_mode', 'expert');
     localStorage.setItem('[cherenkov] auth_token', 'demo-token');
   });
-  await page.reload();
+  await page.goto('/');
   await page.waitForSelector('#cherenkov-app-core');
   await page.waitForTimeout(SETTLE);
 }

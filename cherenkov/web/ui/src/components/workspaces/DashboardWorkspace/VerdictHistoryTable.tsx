@@ -55,7 +55,7 @@ export const VerdictHistoryTable: React.FC<VerdictHistoryTableProps> = ({ target
             <span>Verdict History & Run Records</span>
           </h2>
           <p className="text-xs text-text-muted mt-0.5">
-            Live test run history and historical grades from <code className="font-mono">/api/v1/runs</code>.
+            Every test run so far, with the grade it earned.
           </p>
         </div>
         <button

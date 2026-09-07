@@ -92,7 +92,17 @@ def _verdict(result) -> None:
     else:
         click.echo(f"  {result.test_id}: ✗ WEAKENED — CAUGHT")
         click.echo(f"    Reason: {result.reason}")
-        click.echo(f"    Correct mock: {result.passed_correct}  |  Broken impl: {result.failed_broken}")
+        # `failed_broken` is the field name, not the question a reader is
+        # asking. Printing it raw under a "Broken impl:" label read as "the
+        # test failed there" — the *good* outcome — when False means the
+        # opposite, and directly contradicted the Reason line above it.
+        passed = "yes" if result.passed_correct else "no"
+        killed = "yes" if result.failed_broken else "no"
+        click.echo(
+            f"    Passed correct server: {passed}  |  "
+            f"Failed broken server: {killed}"
+            f"{'' if result.failed_broken else '  ← should be yes'}"
+        )
 
 
 @click.command("demo")

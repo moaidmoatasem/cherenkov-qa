@@ -4,16 +4,30 @@
  */
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Upload, Globe, CheckCircle, AlertCircle, RefreshCw, Folder } from 'lucide-react';
+import { Upload, Globe, CheckCircle, AlertCircle, RefreshCw, Folder, ArrowRight } from 'lucide-react';
 import { Card } from '../../ui';
 import { ingestSpec, fetchProjects, IngestResponse } from '../../../lib/api';
 import { Project, EndpointRichness } from '../../../types';
 
 interface SpecIngestPanelProps {
   onSpecIngested?: (specPath: string, endpoints: EndpointRichness[]) => void;
+  /** Runs the pipeline for the spec just ingested. */
+  onGenerate?: () => void;
+  generating?: boolean;
 }
 
-export const SpecIngestPanel: React.FC<SpecIngestPanelProps> = ({ onSpecIngested }) => {
+/** Richness bands, worst first — a degraded endpoint is the one worth acting on. */
+const BANDS: { key: EndpointRichness['band']; label: string; className: string }[] = [
+  { key: 'degraded', label: 'degraded', className: 'text-rose-400' },
+  { key: 'inferred', label: 'inferred', className: 'text-amber-400' },
+  { key: 'full', label: 'full', className: 'text-emerald-400' },
+];
+
+export const SpecIngestPanel: React.FC<SpecIngestPanelProps> = ({
+  onSpecIngested,
+  onGenerate,
+  generating = false,
+}) => {
   const [dragActive, setDragActive] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
   const [specUrl, setSpecUrl] = useState('');
@@ -21,6 +35,10 @@ export const SpecIngestPanel: React.FC<SpecIngestPanelProps> = ({ onSpecIngested
   const [error, setError] = useState<string | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedRepoSpec, setSelectedRepoSpec] = useState<string>('');
+  // The ingest response scores every endpoint for richness. That was being
+  // computed, lifted to the workspace and then never rendered, so a successful
+  // ingest showed only "Ingestion complete" with no forward path.
+  const [endpoints, setEndpoints] = useState<EndpointRichness[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Auto-detect project spec paths from live /api/v1/projects
@@ -36,6 +54,7 @@ export const SpecIngestPanel: React.FC<SpecIngestPanelProps> = ({ onSpecIngested
     setLoading(true);
     setError(null);
     setFileName(name);
+    setEndpoints([]);
     try {
       const data: IngestResponse = await ingestSpec(file, url);
       const mappedEndpoints: EndpointRichness[] = (data.endpoints || []).map((ep: any, idx: number) => ({
@@ -47,6 +66,7 @@ export const SpecIngestPanel: React.FC<SpecIngestPanelProps> = ({ onSpecIngested
         missingElements: ep.missing_elements || [],
       }));
 
+      setEndpoints(mappedEndpoints);
       if (onSpecIngested) {
         onSpecIngested(data.spec_path, mappedEndpoints);
       }
@@ -176,6 +196,63 @@ export const SpecIngestPanel: React.FC<SpecIngestPanelProps> = ({ onSpecIngested
           )}
         </div>
       </div>
+
+      {/* What was actually ingested, and the way forward. A green "complete"
+          tick with no result and no next action left the primary workflow of
+          the primary screen dead-ending on success. */}
+      {!loading && endpoints.length > 0 && (
+        <div
+          className="p-4 bg-black/20 border border-white/10 rounded-xl space-y-3"
+          data-testid="ingest-summary"
+        >
+          <div className="flex items-baseline justify-between gap-3 flex-wrap">
+            <p className="text-xs font-mono text-text-primary">
+              <span className="text-lg font-bold text-cyan-400 tabular-nums">
+                {endpoints.length}
+              </span>{' '}
+              endpoint{endpoints.length === 1 ? '' : 's'} ready to generate from
+            </p>
+            <div className="flex gap-3 text-[10px] font-mono">
+              {BANDS.map(({ key, label, className }) => {
+                const n = endpoints.filter((e) => e.band === key).length;
+                if (!n) return null;
+                return (
+                  <span key={key} className={className}>
+                    {n} {label}
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+
+          {endpoints.some((e) => e.band === 'degraded') && (
+            <p className="text-[10px] font-mono text-text-muted leading-relaxed">
+              Degraded endpoints lack the response detail needed for strong
+              assertions — tests generated for them will be weaker.
+            </p>
+          )}
+
+          {onGenerate && (
+            <button
+              type="button"
+              onClick={onGenerate}
+              disabled={generating}
+              data-testid="generate-suite-btn"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-cyan-400 hover:bg-cyan-300 disabled:opacity-50 disabled:cursor-not-allowed text-bg-base rounded-lg text-xs font-mono font-bold transition"
+            >
+              {generating ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin" /> Generating suite...
+                </>
+              ) : (
+                <>
+                  Generate test suite <ArrowRight className="w-4 h-4" />
+                </>
+              )}
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Spec URL alternative */}
       <form onSubmit={handleUrlSubmit} className="flex gap-2">

@@ -79,14 +79,38 @@ export default function OnboardingWizard({ onComplete, onEnableDemo }: Onboardin
 
   const handleNext = () => setStep(s => s + 1);
 
+  // Esc dismissed nothing here, and there was no skip affordance, so the first
+  // thing the product did was block the user behind four modal steps with no
+  // way out.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onComplete();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onComplete]);
+
   const handleDemo = () => {
     onEnableDemo();
     handleNext();
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg-base/95 backdrop-blur-md">
-      <Card className="w-full max-w-2xl p-8 space-y-6 bg-surface-1/90 border border-white/10 shadow-2xl">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-bg-base/95 backdrop-blur-md"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Welcome to Cherenkov"
+    >
+      <Card className="relative w-full max-w-2xl p-8 space-y-6 bg-surface-1/90 border border-white/10 shadow-2xl">
+        <button
+          type="button"
+          onClick={onComplete}
+          data-testid="onboarding-skip"
+          className="absolute top-4 right-4 px-3 py-1.5 rounded-lg text-[11px] font-mono text-text-muted hover:text-text-primary hover:bg-white/5 transition"
+        >
+          Skip &amp; explore (Esc)
+        </button>
         {step === 1 && (
           <div className="space-y-4 text-center">
             <h1 className="text-3xl font-display font-bold text-text-primary">Welcome to CHERENKOV</h1>

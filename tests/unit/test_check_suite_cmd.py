@@ -324,3 +324,140 @@ Please replace with a meaningful description.
         )
         assert result.exit_code == 1
         assert json.loads(result.output)["clean"] is False, "the document must survive the gate"
+
+
+class TestVerdictStatesItsOwnScope:
+    """A green verdict must say which of the three checks actually ran.
+
+    Without `--baseline`, WEAKENED and DELETED cannot run at all. The command
+    used to print a bare `PASS — no integrity violations found`, which a user
+    reads as "my suite is clean" when it means "one of three checks passed".
+    That is the same vacuous-green this tool exists to catch elsewhere.
+    """
+
+    def test_missing_baseline_is_disclosed_in_the_human_report(self) -> None:
+        runner = CliRunner()
+        result = runner.invoke(check_suite_cmd, ["-c", str(GOOD), "-s", str(SPEC)])
+        assert result.exit_code == 0
+        assert "NOT_CHECKED" in result.output
+        assert "WEAKENED" in result.output
+        assert "DELETED" in result.output
+        assert "1/3 checks" in result.output
+
+    def test_missing_baseline_is_disclosed_in_json(self) -> None:
+        runner = CliRunner()
+        result = runner.invoke(
+            check_suite_cmd, ["-c", str(GOOD), "-s", str(SPEC), "--json"]
+        )
+        payload = json.loads(result.output)
+        assert payload["clean"] is True
+        assert payload["checks_run"] == ["HALLUCINATED"]
+        skipped = {e["check"] for e in payload["checks_not_run"]}
+        assert skipped == {"WEAKENED", "DELETED"}
+
+    def test_full_run_reports_all_three_and_no_not_checked_block(self) -> None:
+        runner = CliRunner()
+        result = runner.invoke(
+            check_suite_cmd, ["-c", str(GOOD), "-b", str(GOOD), "-s", str(SPEC), "--json"]
+        )
+        payload = json.loads(result.output)
+        assert payload["checks_not_run"] == []
+        assert sorted(payload["checks_run"]) == ["DELETED", "HALLUCINATED", "WEAKENED"]
+
+
+class TestCandidateAcceptsADirectory:
+    """The README's headline command passes a directory. It must work.
+
+    `check-suite --candidate ./tests --spec ./openapi.yaml` is the first real
+    command a user runs after the demo. It previously died with
+    `[Errno 21] Is a directory`.
+    """
+
+    def test_directory_is_walked_for_suites(self, tmp_path: Path) -> None:
+        suite_dir = tmp_path / "tests"
+        suite_dir.mkdir()
+        (suite_dir / "a.py").write_text(HALLUCINATED.read_text())
+        (suite_dir / "b.py").write_text(GOOD.read_text())
+
+        runner = CliRunner()
+        result = runner.invoke(
+            check_suite_cmd, ["-c", str(suite_dir), "-s", str(SPEC), "--json"]
+        )
+        assert result.exit_code == 0
+        payload = json.loads(result.output)
+        assert len(payload["files_checked"]) == 2
+        assert payload["clean"] is False
+        # Findings from a multi-file run name the file they came from.
+        assert any(f.startswith("a.py:") for f in payload["findings"])
+
+    def test_vendored_directories_are_skipped(self, tmp_path: Path) -> None:
+        suite_dir = tmp_path / "tests"
+        (suite_dir / "node_modules" / "pkg").mkdir(parents=True)
+        (suite_dir / "node_modules" / "pkg" / "index.ts").write_text("test('x', () => {});")
+        (suite_dir / "real.py").write_text(GOOD.read_text())
+
+        runner = CliRunner()
+        result = runner.invoke(
+            check_suite_cmd, ["-c", str(suite_dir), "-s", str(SPEC), "--json"]
+        )
+        payload = json.loads(result.output)
+        assert payload["files_checked"] == [str(suite_dir / "real.py")]
+
+    def test_empty_directory_fails_loudly(self, tmp_path: Path) -> None:
+        empty = tmp_path / "tests"
+        empty.mkdir()
+        runner = CliRunner()
+        result = runner.invoke(check_suite_cmd, ["-c", str(empty), "-s", str(SPEC)])
+        assert result.exit_code == 2
+        assert "No .py or .ts test suites found" in result.output
+
+
+class TestSkipIsTreatedAsDeletion:
+    """`test.skip` removes a test from the run as completely as deleting it.
+
+    The TypeScript test regex matched only bare `test(`, so a baseline whose
+    tests were all `test.skip(...)` parsed as *zero* tests — and a candidate
+    that deleted every one of them reported clean.
+    """
+
+    LIVE = "import { test, expect } from '@playwright/test';\ntest('get pets', async () => {\n  expect(res.status).toBe(200);\n});\n"
+    SKIPPED = LIVE.replace("test(", "test.skip(")
+    EMPTY = "import { test, expect } from '@playwright/test';\n"
+
+    def _run(self, tmp_path: Path, cand: str, base: str) -> list[str]:
+        c = tmp_path / "cand.ts"
+        b = tmp_path / "base.ts"
+        c.write_text(cand)
+        b.write_text(base)
+        runner = CliRunner()
+        result = runner.invoke(check_suite_cmd, ["-c", str(c), "-b", str(b), "--json"])
+        # The runner folds stderr into .output, and a .ts run always emits the
+        # regex-vs-AST warning there, so take the document from the first brace.
+        doc = result.output[result.output.index("{"):]
+        return json.loads(doc)["findings"]
+
+    def test_deletion_against_a_skipped_baseline_is_caught(self, tmp_path: Path) -> None:
+        findings = self._run(tmp_path, self.EMPTY, self.SKIPPED)
+        assert any("DELETED" in f and "get pets" in f for f in findings)
+
+    def test_neutering_a_live_test_with_skip_is_caught(self, tmp_path: Path) -> None:
+        findings = self._run(tmp_path, self.SKIPPED, self.LIVE)
+        assert any(".skip" in f for f in findings), findings
+
+    def test_an_already_skipped_test_is_not_flagged_again(self, tmp_path: Path) -> None:
+        assert self._run(tmp_path, self.SKIPPED, self.SKIPPED) == []
+
+    def test_describe_blocks_are_not_treated_as_tests(self, tmp_path: Path) -> None:
+        """Matching `test.describe` would swallow every test inside it as one
+        segment — the bug HANDOVER.md records against the repo-audit detector."""
+        code = (
+            "import { test, expect } from '@playwright/test';\n"
+            "test.describe('group', () => {\n"
+            "  test('a', async () => { expect(r.status).toBe(200); });\n"
+            "  test('b', async () => { expect(r.status).toBe(201); });\n"
+            "});\n"
+        )
+        assert self._run(tmp_path, code, code) == []
+        from cherenkov.cli.commands.check_suite import _ts_parse_suite
+
+        assert sorted(_ts_parse_suite(code)) == ["a", "b"]

@@ -43,7 +43,14 @@ _TS_DATA_NAMES = ("data", "body", "json", "payload")
 # an assertion about the array, not about a spec-defined field called `length`.
 # `status` is absent on purpose: it is a real petstore `Pet` property.
 _TS_NON_FIELD_ATTRS = {"length", "size"}
-_RE_TS_TEST = re.compile(r"""\btest\s*\(\s*['"`](?P<name>[^'"`]+)['"`]""")
+# Only the modifiers that *declare a test* belong here. `test.describe` is
+# deliberately absent: matching it would swallow every test inside the block as
+# one segment, which is the bug HANDOVER.md records against the repo-audit
+# detector. Hooks (`beforeEach`, `setTimeout`, …) are absent for the same
+# reason — they hold no assertions and would be scored as empty tests.
+_RE_TS_TEST = re.compile(
+    r"""\btest(?:\.(?P<mod>skip|only|fixme|failing))?\s*\(\s*['"`](?P<name>[^'"`]+)['"`]"""
+)
 _RE_TS_EXPECT = re.compile(
     r"""expect\(\s*(?P<subj>.*?)\s*\)\s*\.\s*"""
     r"""(?P<matcher>(?:not\.)?[A-Za-z]+)\s*\(\s*(?P<arg>[^)]*)\)"""
@@ -578,7 +585,9 @@ def _hallucinated_findings(
     "-c",
     required=True,
     type=click.Path(exists=True),
-    help="Path to the candidate test suite to check (Python .py or TypeScript .ts).",
+    help="Path to the candidate test suite to check — a single file "
+    "(Python .py or TypeScript .ts) or a directory, which is walked "
+    "recursively for .py/.ts suites.",
 )
 @click.option(
     "--baseline",
@@ -586,7 +595,9 @@ def _hallucinated_findings(
     default=None,
     type=click.Path(exists=True),
     help="Path to the known-honest baseline suite to compare against. "
-    "Required for WEAKENED and DELETED detection.",
+    "Required for WEAKENED and DELETED detection. When --candidate is a "
+    "directory, pass the matching baseline directory: files are paired by "
+    "their path relative to each root.",
 )
 @click.option(
     "--spec",
@@ -633,9 +644,13 @@ def check_suite_cmd(
 Runs fast static analysis (no execution, no server needed).
 
 
+All three checks need their inputs: WEAKENED and DELETED require --baseline,
+HALLUCINATED requires --spec. Whatever could not run is listed under
+NOT_CHECKED in the report, so a green verdict always states its own scope.
+
 Examples:
-  # Check a candidate against a baseline and spec:
-  cherenkov check-suite --candidate candidate.py --baseline baseline.py --spec openapi.yaml
+  # Full audit — all three checks. Both paths may be files or directories:
+  cherenkov check-suite --candidate ./tests --baseline ./tests-baseline --spec openapi.yaml
 
   # Baseline-only check (hallucinated detection requires --spec):
   cherenkov check-suite --candidate candidate.py --baseline baseline.py
@@ -657,6 +672,136 @@ Returns:
 
     cand_path = Path(candidate)
 
+    # A directory is what the README tells people to pass, and what anyone
+    # pointing this at a real `tests/` tree will try first. Walk it rather than
+    # failing with "Is a directory" on the product's own headline command.
+    if cand_path.is_dir():
+        cand_files = _collect_suite_files(cand_path)
+        if not cand_files:
+            click.echo(
+                f"[ERROR] No .py or .ts test suites found under {cand_path}.",
+                err=True,
+            )
+            sys.exit(2)
+    else:
+        cand_files = [cand_path]
+
+    base_path = Path(baseline) if baseline else None
+    if base_path is not None and base_path.is_dir() and not cand_path.is_dir():
+        click.echo(
+            "[ERROR] --baseline is a directory but --candidate is a single "
+            "file; pass a baseline file, or make both directories.",
+            err=True,
+        )
+        sys.exit(2)
+
+    findings: list[str] = []
+    per_file: list[dict] = []
+    # A class is "checked" only if at least one file could actually run it.
+    ran = {"WEAKENED": False, "DELETED": False, "HALLUCINATED": False}
+    skipped: dict[str, str] = {}
+
+    for cand_file in cand_files:
+        base_file = _pair_baseline(cand_file, cand_path, base_path)
+        file_findings = _check_one_file(cand_file, base_file, spec, ran, skipped)
+        # With many files the bare finding text loses track of which suite it
+        # came from, so prefix it once we are past the single-file case.
+        if len(cand_files) > 1:
+            rel = cand_file.relative_to(cand_path)
+            file_findings = [f"{rel}: {f}" for f in file_findings]
+        per_file.append({"file": str(cand_file), "findings": file_findings})
+        findings.extend(file_findings)
+
+    not_checked = _not_checked_reasons(ran, skipped)
+
+    payload = {
+        "candidate": candidate,
+        "findings": findings,
+        "clean": not findings,
+        # Additive: a consumer that only reads `clean` still works, but one
+        # that wants to know what the verdict actually covers now can.
+        "files_checked": [str(p) for p in cand_files],
+        "per_file": per_file,
+        "checks_run": sorted(k for k, v in ran.items() if v),
+        "checks_not_run": not_checked,
+    }
+
+    # --json owns stdout: a caller parsing this must not have to strip a banner.
+    # Warnings above already went to stderr, so they do not corrupt the document.
+    if as_json:
+        click.echo(json.dumps(payload, indent=2))
+    else:
+        label = (
+            cand_path.name
+            if len(cand_files) == 1
+            else f"{cand_path} ({len(cand_files)} suites)"
+        )
+        _print_findings(label, findings, sorted(k for k, v in ran.items() if v), not_checked)
+
+    if output:
+        Path(output).write_text(json.dumps(payload, indent=2))
+        if not as_json:
+            click.echo(f"\nFindings written to {output}")
+
+    if fail_on_finding and findings:
+        sys.exit(1)
+
+
+# Directories a test tree carries but never wants audited.
+_SKIP_DIRS = {"node_modules", ".git", "__pycache__", ".venv", "venv", "dist", "build"}
+
+
+def _collect_suite_files(root: Path) -> list[Path]:
+    """Every `.py`/`.ts` suite under `root`, sorted, minus vendored trees."""
+    out = [
+        p
+        for p in sorted(root.rglob("*"))
+        if p.suffix in (".py", ".ts")
+        and p.is_file()
+        and not any(part in _SKIP_DIRS for part in p.parts)
+    ]
+    return out
+
+
+def _pair_baseline(
+    cand_file: Path, cand_root: Path, base_path: Path | None
+) -> Path | None:
+    """Baseline file matching `cand_file`, or None when there is no pair.
+
+    Directory mode pairs on the path relative to each root, so
+    `tests/api/users.py` is compared against `baseline/api/users.py` and not
+    against some same-named file elsewhere in the tree.
+    """
+    if base_path is None:
+        return None
+    if not base_path.is_dir():
+        return base_path
+    candidate_rel = cand_file.relative_to(cand_root)
+    paired = base_path / candidate_rel
+    return paired if paired.is_file() else None
+
+
+def _not_checked_reasons(ran: dict[str, bool], skipped: dict[str, str]) -> list[dict]:
+    """`[{class, reason}]` for every violation class that never ran."""
+    return [
+        {"check": name, "reason": skipped.get(name, "not applicable to this suite")}
+        for name in ("WEAKENED", "DELETED", "HALLUCINATED")
+        if not ran[name]
+    ]
+
+
+def _check_one_file(
+    cand_path: Path,
+    base_path: Path | None,
+    spec: str | None,
+    ran: dict[str, bool],
+    skipped: dict[str, str],
+) -> list[str]:
+    """Run the detector over one suite file, recording which classes ran.
+
+    `ran` and `skipped` are accumulated across files by the caller, so a class
+    counts as checked if any file in the run was able to check it.
+    """
     # The `.ts` warning below used to be unreachable: `.ts` sat inside this
     # guard tuple, so the one audience that needed to hear "this is regex, not
     # AST" was the only audience never shown it. Split into two messages.
@@ -692,46 +837,53 @@ Returns:
         click.echo(f"[ERROR] Could not read candidate: {exc}", err=True)
         sys.exit(2)
 
+    # Record what this run can and cannot establish. A verdict that does not
+    # say which of the three checks actually ran is the exact failure this
+    # tool exists to catch in other people's suites.
+    if base_path is None:
+        skipped["WEAKENED"] = "no --baseline given (required to compare assertions)"
+        skipped["DELETED"] = "no --baseline given (required to detect removals)"
+    else:
+        ran["WEAKENED"] = True
+        ran["DELETED"] = True
+
+    spec_path = Path(spec) if spec else None
+    if spec_path is None:
+        skipped["HALLUCINATED"] = "no --spec given (required to resolve response fields)"
+
     if cand_path.suffix == ".ts":
+        if spec_path is not None:
+            ran["HALLUCINATED"] = True
         findings = _check_typescript(
             candidate_code,
-            Path(baseline).read_text(encoding="utf-8") if baseline else None,
-            Path(spec) if spec else None,
+            base_path.read_text(encoding="utf-8") if base_path else None,
+            spec_path,
         )
     else:
         baseline_code = ""
-        if baseline:
+        if base_path:
             try:
-                baseline_code = Path(baseline).read_text(encoding="utf-8")
+                baseline_code = base_path.read_text(encoding="utf-8")
             except Exception as exc:
                 click.echo(f"[ERROR] Could not read baseline: {exc}", err=True)
                 sys.exit(2)
 
-        spec_path = Path(spec) if spec else None
-        if spec_path is not None and not _spec_fields(spec_path):
-            click.echo(
-                "[WARNING] --spec defines no response-body 'properties'; "
-                "HALLUCINATED detection is inactive for this run.",
-                err=True,
-            )
+        if spec_path is not None:
+            if _spec_fields(spec_path):
+                ran["HALLUCINATED"] = True
+            else:
+                skipped["HALLUCINATED"] = (
+                    "--spec defines no response-body 'properties'"
+                )
+                click.echo(
+                    "[WARNING] --spec defines no response-body 'properties'; "
+                    "HALLUCINATED detection is inactive for this run.",
+                    err=True,
+                )
         findings = check_integrity(spec_path, baseline_code, candidate_code)
 
-    payload = {"candidate": candidate, "findings": findings, "clean": not findings}
+    return findings
 
-    # --json owns stdout: a caller parsing this must not have to strip a banner.
-    # Warnings above already went to stderr, so they do not corrupt the document.
-    if as_json:
-        click.echo(json.dumps(payload, indent=2))
-    else:
-        _print_findings(cand_path.name, findings)
-
-    if output:
-        Path(output).write_text(json.dumps(payload, indent=2))
-        if not as_json:
-            click.echo(f"\nFindings written to {output}")
-
-    if fail_on_finding and findings:
-        sys.exit(1)
 
 def _ts_normalise_subject(raw: str) -> str:
     """`(data as any).total` and `data.total` are the same subject."""
@@ -749,6 +901,15 @@ def _ts_field_of(subject: str) -> str | None:
             # reporting it HALLUCINATED punishes an honest length assertion.
             return None if m.group(1) in _TS_NON_FIELD_ATTRS else m.group(1)
     return None
+
+
+def _ts_skipped_tests(code: str) -> set[str]:
+    """Names of tests declared with a modifier that stops them executing."""
+    return {
+        m.group("name")
+        for m in _RE_TS_TEST.finditer(code)
+        if m.group("mod") in ("skip", "fixme")
+    }
 
 
 def _ts_parse_suite(code: str) -> dict[str, dict[str, set[str]]]:
@@ -801,9 +962,20 @@ def _check_typescript(
 
     if baseline_code:
         baseline = _ts_parse_suite(baseline_code)
+        base_skipped = _ts_skipped_tests(baseline_code)
+        cand_skipped = _ts_skipped_tests(candidate_code)
         for test_name, base_subjects in baseline.items():
             if test_name not in candidate:
                 findings.append(f"DELETED   test removed entirely: '{test_name}'")
+                continue
+            # Neutering a test with `.skip` leaves its body in the diff but
+            # removes it from the run just as completely as deleting it — and
+            # it reads as untouched to any check that only compares assertions.
+            if test_name in cand_skipped and test_name not in base_skipped:
+                findings.append(
+                    f"DELETED   test disabled with .skip: '{test_name}' "
+                    "(present in the file but never executed)"
+                )
                 continue
             cand_subjects = candidate[test_name]
             for subject, base_matchers in base_subjects.items():
@@ -862,13 +1034,30 @@ def _ts_test_paths(code: str) -> dict[str, set[str]]:
         out[name] = {m.group("path") for m in _RE_TS_REQUEST.finditer(code[start:end])}
     return out
 
-def _print_findings(label: str, findings: list[str]) -> None:
+def _print_findings(
+    label: str,
+    findings: list[str],
+    checks_run: list[str] | None = None,
+    not_checked: list[dict] | None = None,
+) -> None:
     width = 64
+    total = 3
+    n_run = len(checks_run) if checks_run is not None else total
     click.echo(f"\n{'=' * width}")
     click.echo(f"  check-suite: {label}")
     click.echo(f"{'=' * width}")
     if not findings:
-        click.echo(click.style("  PASS — no integrity violations found.", fg="green", bold=True))
+        # "PASS" alone overstates a run where two of three checks never
+        # executed. The scope rides along with the verdict, always.
+        scope = "" if n_run == total else f" ({n_run}/{total} checks)"
+        click.echo(
+            click.style(
+                f"  PASS{scope} — no integrity violations found"
+                f"{' in the checks that ran' if n_run != total else ''}.",
+                fg="green",
+                bold=True,
+            )
+        )
     else:
         click.echo(
             click.style(f"  FAIL — {len(findings)} integrity violation(s):", fg="red", bold=True)
@@ -877,4 +1066,13 @@ def _print_findings(label: str, findings: list[str]) -> None:
             tag = f.split()[0]
             colour = {"WEAKENED": "yellow", "DELETED": "red", "HALLUCINATED": "magenta"}.get(tag, "white")
             click.echo(f"    {click.style('[CAUGHT]', fg=colour, bold=True)} {f}")
+
+    # The certificate printed by `cherenkov demo` states the boundary of its
+    # guarantee via NOT_checked. This is that idea applied where it matters
+    # most — the command people put in CI.
+    if not_checked:
+        click.echo("")
+        click.echo(click.style("  NOT_CHECKED:", fg="yellow", bold=True))
+        for entry in not_checked:
+            click.echo(f"    {entry['check']:<14} {entry['reason']}")
     click.echo("")
