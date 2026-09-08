@@ -19,6 +19,19 @@ function authHeaders(extra: Record<string, string> = {}): Record<string, string>
   return token ? { Authorization: `Bearer ${token}`, ...extra } : extra;
 }
 
+// Every error response from this backend follows the structured envelope
+// documented in cherenkov/web/errors.py: {"error": {"code", "message", "detail?"}}.
+// There is no top-level `detail` field -- every call site below used to read
+// `err.detail`, which is always undefined against that contract, so every API
+// error in the app silently fell back to a generic templated message
+// ("Spec ingestion failed: 400") instead of the specific, actionable one the
+// backend actually sent ("Internal network URLs not allowed"). This reads the
+// real shape first and only falls back to the old field for any endpoint that
+// hasn't been migrated to the structured envelope yet.
+export function apiErrorMessage(err: any): string | undefined {
+  return err?.error?.message ?? err?.detail;
+}
+
 export interface IngestResponse {
   spec_path: string;
   endpoints: any[];
@@ -117,7 +130,7 @@ export async function ingestSpec(
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || `Spec ingestion failed: ${res.status}`);
+    throw new Error(apiErrorMessage(err) || `Spec ingestion failed: ${res.status}`);
   }
 
   return res.json();
@@ -135,7 +148,7 @@ export async function runPipeline(payload: RunPipelinePayload): Promise<RunPipel
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || `Failed to run generation pipeline: ${res.status}`);
+    throw new Error(apiErrorMessage(err) || `Failed to run generation pipeline: ${res.status}`);
   }
 
   return res.json();
@@ -219,7 +232,7 @@ export async function validateSuite(targetUrl: string): Promise<ValidationRespon
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || `Validation execution failed: ${res.status}`);
+    throw new Error(apiErrorMessage(err) || `Validation execution failed: ${res.status}`);
   }
 
   return res.json();
@@ -241,7 +254,7 @@ export async function ejectSuite(outputPath: string): Promise<EjectResponse> {
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || `Eject operation failed: ${res.status}`);
+    throw new Error(apiErrorMessage(err) || `Eject operation failed: ${res.status}`);
   }
 
   return res.json();
@@ -259,7 +272,7 @@ export async function fetchOverviewData(): Promise<OverviewData> {
   const res = await fetch(`${API_BASE}/overview`);
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || `Failed to fetch overview: ${res.status}`);
+    throw new Error(apiErrorMessage(err) || `Failed to fetch overview: ${res.status}`);
   }
   return res.json();
 }
@@ -280,7 +293,7 @@ export async function fetchTruthMapData(): Promise<TruthMapNode[]> {
   const res = await fetch(`${API_BASE}/truth-map`);
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || `Failed to fetch truth map: ${res.status}`);
+    throw new Error(apiErrorMessage(err) || `Failed to fetch truth map: ${res.status}`);
   }
   return res.json();
 }
@@ -289,7 +302,7 @@ export async function fetchFailuresData(): Promise<FailingTest[]> {
   const res = await fetch(`${API_BASE}/failures`);
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || `Failed to fetch failures: ${res.status}`);
+    throw new Error(apiErrorMessage(err) || `Failed to fetch failures: ${res.status}`);
   }
   return res.json();
 }
@@ -311,7 +324,7 @@ export async function fetchMetricsData(): Promise<MetricsData> {
   const res = await fetch(`${API_BASE}/metrics`);
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || `Failed to fetch metrics: ${res.status}`);
+    throw new Error(apiErrorMessage(err) || `Failed to fetch metrics: ${res.status}`);
   }
   return res.json();
 }
@@ -320,7 +333,7 @@ export async function fetchDivergencesData(): Promise<Divergence[]> {
   const res = await fetch(`${API_BASE}/divergences`);
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || `Failed to fetch divergences: ${res.status}`);
+    throw new Error(apiErrorMessage(err) || `Failed to fetch divergences: ${res.status}`);
   }
   return res.json();
 }
@@ -333,7 +346,7 @@ export async function submitReviewApprove(scenarioId: string): Promise<void> {
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || `Failed to approve scenario ${scenarioId}: ${res.status}`);
+    throw new Error(apiErrorMessage(err) || `Failed to approve scenario ${scenarioId}: ${res.status}`);
   }
 }
 
@@ -345,7 +358,7 @@ export async function submitReviewReject(scenarioId: string, reason: string): Pr
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || `Failed to reject scenario ${scenarioId}: ${res.status}`);
+    throw new Error(apiErrorMessage(err) || `Failed to reject scenario ${scenarioId}: ${res.status}`);
   }
 }
 
@@ -391,7 +404,7 @@ export async function fetchHealingSuggestion(verdictId: string): Promise<Healing
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || `Failed to generate healing suggestion: ${res.status}`);
+    throw new Error(apiErrorMessage(err) || `Failed to generate healing suggestion: ${res.status}`);
   }
   return res.json();
 }
@@ -627,6 +640,12 @@ export async function fetchMobilePilotStatus(): Promise<PilotStatus> {
 export async function startMobilePilot(): Promise<{ status: string }> {
   const res = await fetch(`${API_BASE}/mobile/pilot/start`, { method: 'POST', headers: authHeaders() });
   if (!res.ok) throw new Error(`Failed to start pilot: ${res.status}`);
+  return res.json();
+}
+
+export async function stopMobilePilot(): Promise<{ status: string }> {
+  const res = await fetch(`${API_BASE}/mobile/pilot/stop`, { method: 'POST', headers: authHeaders() });
+  if (!res.ok) throw new Error(`Failed to stop pilot: ${res.status}`);
   return res.json();
 }
 
@@ -975,7 +994,7 @@ export async function verifyCertificate(
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || `Certificate verification failed: ${res.status}`);
+    throw new Error(apiErrorMessage(err) || `Certificate verification failed: ${res.status}`);
   }
   return res.json();
 }
@@ -1120,7 +1139,7 @@ export async function runExplore(payload: {
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || `Failed to run exploration: ${res.status}`);
+    throw new Error(apiErrorMessage(err) || `Failed to run exploration: ${res.status}`);
   }
   return res.json();
 }
@@ -1251,7 +1270,7 @@ export async function exportBrainVault(): Promise<{ vault: string; notes_written
   const res = await fetch(`${API_BASE}/brainmap/export`, { method: 'POST', headers: authHeaders() });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || `Vault export failed: ${res.status}`);
+    throw new Error(apiErrorMessage(err) || `Vault export failed: ${res.status}`);
   }
   return res.json();
 }

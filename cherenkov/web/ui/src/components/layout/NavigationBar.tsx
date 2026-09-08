@@ -84,11 +84,19 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({
   });
 
   useEffect(() => {
-    localStorage.setItem(PIN_KEY, JSON.stringify(pinned));
+    try {
+      localStorage.setItem(PIN_KEY, JSON.stringify(pinned));
+    } catch {
+      /* storage full or blocked -- pins still work for the session */
+    }
   }, [pinned]);
 
   useEffect(() => {
-    localStorage.setItem(COLLAPSE_KEY, JSON.stringify(collapsed));
+    try {
+      localStorage.setItem(COLLAPSE_KEY, JSON.stringify(collapsed));
+    } catch {
+      /* storage full or blocked -- collapse state still works for the session */
+    }
   }, [collapsed]);
 
   const togglePin = (id: WorkspaceId) => {

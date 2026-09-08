@@ -578,6 +578,14 @@ class TestMobilePilot(unittest.TestCase):
     def setUp(self):
         self.client = _make_client()
 
+    def tearDown(self):
+        # The device registry backing /pilot/* is a module-level singleton, not
+        # per-client state -- a start left un-stopped here would leak a claimed
+        # "emulator-5554" into whatever test runs next in this process, which
+        # is exactly the class of bug /pilot/stop exists to let a real user
+        # recover from too.
+        self.client.post("/api/v1/mobile/pilot/stop")
+
     def test_status_returns_idle_by_default(self):
         r = self.client.get("/api/v1/mobile/pilot/status")
         self.assertEqual(r.status_code, 200)
@@ -589,6 +597,29 @@ class TestMobilePilot(unittest.TestCase):
         r = self.client.post("/api/v1/mobile/pilot/start")
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r.json()["status"], "started")
+
+    def test_stop_releases_the_lock(self):
+        # Before /pilot/stop existed, this was a one-way door: start claimed
+        # the hardcoded device forever, with no way for a real user -- or a
+        # second test -- to get it back.
+        r = self.client.post("/api/v1/mobile/pilot/start")
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(self.client.get("/api/v1/mobile/pilot/status").json()["status"], "running")
+
+        r = self.client.post("/api/v1/mobile/pilot/stop")
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.json()["status"], "idle")
+        self.assertEqual(self.client.get("/api/v1/mobile/pilot/status").json()["status"], "idle")
+
+        # Released for real, not just reported idle: a second start succeeds
+        # rather than 409ing against a claim that was never actually freed.
+        r = self.client.post("/api/v1/mobile/pilot/start")
+        self.assertEqual(r.status_code, 200)
+
+    def test_stop_is_idempotent_when_already_idle(self):
+        r = self.client.post("/api/v1/mobile/pilot/stop")
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.json()["status"], "idle")
 
 
 # ── Ingest edge cases ─────────────────────────────────────────────────────────

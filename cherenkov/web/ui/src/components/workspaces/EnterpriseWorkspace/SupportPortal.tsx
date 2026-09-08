@@ -1,10 +1,16 @@
 import React, { useState } from 'react';
 import { LifeBuoy, FileDown, Send, MessageSquare } from 'lucide-react';
+import { apiErrorMessage } from '../../../lib/api';
 
 const SupportPortal: React.FC = () => {
   const [ticketMsg, setTicketMsg] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<string | null>(null);
+  // Whether `result` describes success. Previously inferred from whether the
+  // text contained the literal word "Failed" -- the honest 501 message ("Support
+  // ticketing is not wired to a backend...") doesn't contain that word, so it
+  // rendered in success-green. Track it explicitly instead of parsing the copy.
+  const [resultOk, setResultOk] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,13 +31,16 @@ const SupportPortal: React.FC = () => {
         // returned a random UUID and this component reported "created successfully",
         // so the user was told their message had reached someone when it had not.
         // Surface the server's explanation instead of inventing success.
-        setResult(data?.detail ?? `Support ticketing is unavailable (HTTP ${res.status}).`);
+        setResult(apiErrorMessage(data) ?? `Support ticketing is unavailable (HTTP ${res.status}).`);
+        setResultOk(false);
         return;
       }
       setResult(`Ticket ${data.ticket_id} created successfully.`);
+      setResultOk(true);
       setTicketMsg('');
     } catch (e: any) {
       setResult(`Failed to create ticket: ${e.message}`);
+      setResultOk(false);
     } finally {
       setSubmitting(false);
     }
@@ -88,7 +97,7 @@ const SupportPortal: React.FC = () => {
             <div className="flex items-center justify-between">
               <span className="text-xs text-slate-500">
                 {result ? (
-                  <span className={result.includes('Failed') ? 'text-red-500' : 'text-green-500'}>
+                  <span data-testid="ticket-result" className={resultOk ? 'text-green-500' : 'text-red-500'}>
                     {result}
                   </span>
                 ) : 'Markdown supported.'}
