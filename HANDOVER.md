@@ -930,29 +930,35 @@ A workflow is now one declarative YAML description that the engine executes and 
 
 **Known limits, stated rather than papered over:** the rate limiter and APScheduler are per-process, so N replicas means N× the rate and N× the routine firings (now documented in those modules). The `JourneyRunner` port exists so a queue- or operator-backed runner can replace the in-process thread runner without touching the routes; only the thread implementation ships.
 
-## GitHub project management — reconciled 2026-08-05
+## GitHub project management — reconciled (second pass)
 
-The tracker had drifted badly from the roadmap: **19 milestones, every one of them 100% complete but still open, and all 44 open issues unmilestoned.** The milestone picker was therefore useless for planning and every open issue was invisible to milestone-based filtering. Reconciled as follows — the GitHub milestones now mirror `docs/ROADMAP_2026H2.md` 1:1, so the tracker and the roadmap can no longer silently diverge.
+The tracker had drifted badly from the roadmap: **19 milestones, every one of them 100% complete but still open, and all 44 open issues unmilestoned.** The milestone picker was therefore useless for planning and every open issue was invisible to milestone-based filtering. The GitHub milestones now mirror `docs/ROADMAP_2026H2.md`, so the tracker and the roadmap can no longer silently diverge.
 
-| Milestone | Due | Open | Contents |
-|---|---|---|---|
-| **M1** — Close Gate G0 (human validation) | 2026-08-26 | 1 | #816 (onboarding prep). **Owner: human** — no agent can complete this milestone. |
-| **M2** — Distribution (installable by a stranger) | 2026-09-09 | 1 | #792 (MCP registry publish — needs a human account) |
-| **M3** — One surface (PR-comment Action) | 2026-10-07 | 0 | #766 delivered; milestone checklist in the roadmap remains |
-| **M4** — Certificate adoption | 2026-10-28 | 0 | External-adoption milestone; no code issues by design |
-| **M5** — Continuous engine (Rung 2 depth) | 2026-12-09 | 7 | #764, #765, #768, #769, #772, #880, #882 |
-| **T** — Tech-debt track (continuous) | — | 9 | #755, #757, #759, #761, #847, #848, #878, #879, #881, #891 |
-| **Deferred — not in H2** | — | 23 | All of Phase 15 (#773-780) + Phase 16 (#781-789), plus #754, #756, #760, #762, #763, #790 |
+**Milestones carry no due dates by design.** They are gated by dependency and by explicit exit criteria — a milestone closes when its evidence exists, not when a date passes. Each milestone's GitHub description states its own gate and exit condition; do not re-add `due_on`.
 
-**What changed, and why:**
+| Milestone | Open | Gate / contents |
+|---|---|---|
+| **M0b** — Integrity of the integrity tool | 6 | **GATES M2.** #993-#998. Revives §0b of the roadmap. |
+| **M1** — Close Gate G0 (human validation) | 0 | **Owner: human** — no agent can complete it. Blocks M2. |
+| **M2** — Distribution (installable by a stranger) | 3 | #999, #1000, #1010 — fresh-install blockers. Blocked by M0b + M1. |
+| **M3** — One surface (PR-comment Action) | 0 | Roadmap checklist remains; depends on M1 + M2. |
+| **M4** — Certificate adoption | 0 | External-adoption milestone — cannot be closed by writing code. |
+| **M5** — Continuous engine (Rung 2 depth) | 0 | Scope re-derived from M1/M3 friction logs before committing. |
+| **T** — Tech-debt track (continuous) | 0 | Never blocks a milestone; pull from here when a milestone is human-gated. |
+| **Deferred — not in H2** | 9 | Phase 15/16 remainder. Parked ahead of adoption signal, not abandoned. |
+
+**M0b exists because the tool was caught misreporting its own results.** A product whose entire claim is *proving other people's tests are honest* cannot itself print success it did not achieve. The six issues are that class of defect — e.g. #993 (`validate` prints `0/10 [SUCCESS]` and exits 0 when every test failed), #994 (`generate` deletes a tracked fixture — a D7 violation), #1000 (`eject` advertises "100% standalone" output that fails `tsc` with 22 errors). Nothing ships from M2 while any of these are open; that ordering is the point of the gate.
+
+**Note that M2 is not "achieved" merely because it has few issues.** #1000 and #1010 are direct evidence its exit criterion — *installable and usable by a stranger* — is not met yet (`cherenkov visual` is unusable for pip-installed users because `stub/` never ships).
+
+**Earlier reconciliation decisions, still in force:**
 
 - **19 historical milestones closed** (Track A, Epochs 0-13, Validation Gate, Horizon 2, Ship, UX). All had 0 open issues; closing them is hygiene, not a scope change — no issue was touched.
-- **#767 (continuous conformance trend) and #771 (regression detection) closed as delivered.** Verified in code, not assumed: `coverage_map.conformance_trend()` / `conformance_summary()` / `detect_regressions()` plus three real endpoints under `/api/v1/coverage/*`, landed in `4c5b4f2` with 26 passing tests.
-- **Phase 15 + Phase 16 moved to `Deferred — not in H2`**, matching the roadmap's own "What we are deliberately NOT doing in H2" section and the independent finding in `docs/reviews/COMPETITIVE_POSITIONING_2026-08.md` that these shipped ahead of any external adoption signal. They are parked, not abandoned — do not start them without an explicit maintainer decision.
-- **#761 (Bring-Your-Own-LLM) placed in T, not Deferred** — it is substantially built already (8+ providers under `cherenkov/substrate/providers/`, now surfaced through `ModelProviderSettings`), so it is finishing work rather than new scope.
-- **#765 (Spec Guardian daemon) left open in M5.** T10 records the *CLI entrypoint* (#811) as done, but #765's broader Phase 14 scope was not verified this session — needs a human call before closing.
+- **#767 / #771 closed as delivered.** Verified in code, not assumed: `coverage_map.conformance_trend()` / `conformance_summary()` / `detect_regressions()` plus three real endpoints under `/api/v1/coverage/*`, with 26 passing tests.
+- **Phase 15 + Phase 16 parked in `Deferred`**, matching the roadmap's own "What we are deliberately NOT doing in H2" section and the independent finding in `docs/reviews/COMPETITIVE_POSITIONING_2026-08.md` that these shipped ahead of any external adoption signal. Do not start them without an explicit maintainer decision.
+- **#761 (Bring-Your-Own-LLM) tracked as finishing work, not new scope** — 8+ providers under `cherenkov/substrate/providers/`, surfaced through `ModelProviderSettings`.
 
-**Release state is already aligned:** `package.json`, `pyproject.toml`, and `.release-please-manifest.json` all read `1.3.0`, and `v1.3.0` is published. Per M2, **PyPI publish stays gated behind M1** — do not cut a `1.4.0` before Gate G0 closes.
+**Release state:** `package.json`, `pyproject.toml`, and `.release-please-manifest.json` all read `1.3.0`, and `v1.3.0` is published. Per M2, **PyPI publish stays gated behind M1** — and now behind M0b as well. Do not cut a `1.4.0` while the engine still misreports results.
 
 ## Round 2 swarm result (2026-08-01 night)
 
