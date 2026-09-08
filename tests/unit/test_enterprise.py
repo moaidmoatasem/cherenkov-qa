@@ -353,7 +353,7 @@ class TestSOC2ReportingPeriodDates(unittest.TestCase):
         from datetime import datetime, timezone
         from unittest.mock import patch
 
-        import cherenkov.enterprise.soc2 as soc2
+        from cherenkov.enterprise.soc2 import SOC2ReportGenerator
 
         frozen = datetime(2026, 8, 30, 12, 0, tzinfo=timezone.utc)
 
@@ -362,7 +362,10 @@ class TestSOC2ReportingPeriodDates(unittest.TestCase):
             def now(cls, tz=None):
                 return frozen
 
-        with patch.object(soc2, "datetime", _FrozenDatetime):
-            report = soc2.SOC2ReportGenerator().generate_report("TestOrg")
+        # Patched by string target rather than `import ... as soc2`: every
+        # other reference to this module in the file uses `from ... import`,
+        # and mixing the two forms is what CodeQL flags.
+        with patch("cherenkov.enterprise.soc2.datetime", _FrozenDatetime):
+            report = SOC2ReportGenerator().generate_report("TestOrg")
 
         self.assertEqual(report.reporting_period, "2026-02-28 to 2026-08-30")
