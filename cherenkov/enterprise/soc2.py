@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import calendar
 import json
 import os
 import time
@@ -14,6 +15,24 @@ from typing import Any
 from cherenkov.core.errors import get_logger
 
 log = get_logger(__name__)
+
+
+def _months_before(when: datetime, months: int) -> datetime:
+    """`when` shifted back by `months`, clamped to the target month's last day.
+
+    `datetime.replace(month=...)` keeps the day, so naively stepping back six
+    months from the 30th of August asks for "30 February" and raises
+    ValueError. That crashed `generate_report` — and 500'd
+    `GET /api/enterprise/soc2/report` — on 7 days a year (the 29th-31st,
+    whenever the target month is shorter). Clamping to the last valid day is
+    the conventional reading of "six months ago" and never raises.
+    """
+    m = when.month - months
+    y = when.year
+    while m <= 0:
+        m += 12
+        y -= 1
+    return when.replace(year=y, month=m, day=min(when.day, calendar.monthrange(y, m)[1]))
 
 
 class ControlCategory(str, Enum):
@@ -182,12 +201,7 @@ class SOC2ReportGenerator:
         report_id = f"soc2-{uuid.uuid4().hex[:8]}"
         report_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         period_end = datetime.now(timezone.utc)
-        m = period_end.month - 6
-        y = period_end.year
-        if m <= 0:
-            m += 12
-            y -= 1
-        period_start = period_end.replace(year=y, month=m)
+        period_start = _months_before(period_end, 6)
         reporting_period = f"{period_start.strftime('%Y-%m-%d')} to {report_date}"
 
         control_data = [
