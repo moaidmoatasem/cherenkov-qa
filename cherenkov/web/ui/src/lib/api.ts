@@ -643,6 +643,12 @@ export async function startMobilePilot(): Promise<{ status: string }> {
   return res.json();
 }
 
+export async function stopMobilePilot(): Promise<{ status: string }> {
+  const res = await fetch(`${API_BASE}/mobile/pilot/stop`, { method: 'POST', headers: authHeaders() });
+  if (!res.ok) throw new Error(`Failed to stop pilot: ${res.status}`);
+  return res.json();
+}
+
 // ── SDD Agent Cockpit API ─────────────────────────────────────────────
 
 export async function fetchSddStatus(): Promise<SddStatusResponse> {

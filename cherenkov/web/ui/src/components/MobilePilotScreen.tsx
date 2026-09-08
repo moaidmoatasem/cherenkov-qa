@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Play, Square, RotateCw, CheckCircle, XCircle, Clock, Loader2, AlertTriangle } from 'lucide-react';
 import { Card, PageHeader, EmptyState, Skeleton, useToast } from './ui';
-import { fetchMobilePilotStatus, startMobilePilot, PilotStatus, PilotStep } from '../lib/api';
+import { fetchMobilePilotStatus, startMobilePilot, stopMobilePilot, PilotStatus, PilotStep } from '../lib/api';
 
 const STATUS_ICONS: Record<string, React.ReactNode> = {
   passed: <CheckCircle className="w-4 h-4 text-[#3FB950]" />,
@@ -23,6 +23,7 @@ export default function MobilePilotScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isStarting, setIsStarting] = useState(false);
+  const [isStopping, setIsStopping] = useState(false);
   const { toast } = useToast();
 
   const poll = async () => {
@@ -60,6 +61,24 @@ export default function MobilePilotScreen() {
       toast(message, 'danger');
     } finally {
       setIsStarting(false);
+    }
+  };
+
+  // `/pilot/start` used to be a one-way door: the legacy status endpoint never
+  // progresses a session past RUNNING on its own, and the Start button only
+  // renders while `status === 'idle'`, so once it fired there was no control
+  // anywhere to get back to idle -- one click locked the shared demo device
+  // for every user of this backend until the process restarted.
+  const handleStop = async () => {
+    setIsStopping(true);
+    try {
+      await stopMobilePilot();
+      await poll();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to stop pilot';
+      toast(message, 'danger');
+    } finally {
+      setIsStopping(false);
     }
   };
 
@@ -101,6 +120,17 @@ export default function MobilePilotScreen() {
             >
               {isStarting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
               {isStarting ? 'Starting...' : 'Start Pilot'}
+            </button>
+          )}
+          {pilot && pilot.status !== 'idle' && (
+            <button
+              data-testid="pilot-stop-btn"
+              onClick={handleStop}
+              disabled={isStopping}
+              className="flex items-center gap-1.5 px-4 py-2 bg-[#F85149]/10 border border-[#F85149]/30 rounded-lg text-xs text-[#F85149] hover:bg-[#F85149]/20 transition cursor-pointer disabled:opacity-50"
+            >
+              {isStopping ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Square className="w-3.5 h-3.5" />}
+              {isStopping ? 'Stopping...' : 'Stop Pilot'}
             </button>
           )}
         </div>

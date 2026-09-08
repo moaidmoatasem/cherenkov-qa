@@ -319,3 +319,26 @@ async def start_mobile_pilot(_role=Depends(require_role(Role.reviewer))):
         raise HTTPException(status_code=409, detail=str(e)) from None
     except DeviceNotFoundError:
         raise HTTPException(status_code=503, detail="Default emulator not available") from None
+
+
+@router.post("/api/v1/mobile/pilot/stop")
+async def stop_mobile_pilot(_role=Depends(require_role(Role.reviewer))):
+    """Legacy: release whatever session `/pilot/start` claimed, back to idle.
+
+    `/pilot/start` had no counterpart -- once claimed, "emulator-5554" stayed
+    claimed forever (the legacy status endpoint never progresses a session past
+    RUNNING on its own), and MobilePilotScreen has no Start button once status
+    isn't idle. One click permanently took the Mobile Pilot workspace offline
+    for every user of this backend until the process restarted. This mirrors
+    `close_session` above but by device rather than session ID, since the
+    legacy UI only ever knows about "the" pilot, not a session ID.
+
+    Returns:
+        Dictionary confirming the resulting idle status. Idempotent: stopping
+        an already-idle pilot is a no-op, not an error.
+    """
+    registry = get_registry()
+    session = registry.session_for_device("emulator-5554")
+    if session:
+        registry.release(session.session_id)
+    return {"status": "idle", "session_id": None}
