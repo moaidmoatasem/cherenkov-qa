@@ -8,38 +8,41 @@
  *
  * What exploratory testing found, against the live backend:
  *
- *   1. "Start Pilot" is a one-way door. The legacy `/api/v1/mobile/pilot/start`
+ *   1. "Start Pilot" was a one-way door. The legacy `/api/v1/mobile/pilot/start`
  *      endpoint (cherenkov/web/routes/mobile_routes.py) claims the hardcoded
  *      device "emulator-5554" and flips its session straight to RUNNING --
- *      nothing ever drives it further, so the screen sits at "Running · 0/0
- *      steps · 0%" forever. MobilePilotScreen.tsx has no Stop/Cancel/Reset
+ *      nothing ever drives it further, so the screen sat at "Running · 0/0
+ *      steps · 0%" forever. MobilePilotScreen.tsx had no Stop/Cancel/Reset
  *      control anywhere, and the Start button itself only renders while
- *      `pilot.status === 'idle'`, so once it fires it never comes back. Because
- *      the claim lives in the backend's in-memory device registry, this is not
- *      per-browser-session state: it is shared, global, and -- from the UI --
- *      permanent. One click by anyone (a curious first-time visitor included)
- *      takes the Mobile Pilot workspace offline for the whole team until the
- *      backend process restarts. This is left as a documented finding, not
- *      fixed here -- recovering from it needs a real UI affordance (a
- *      Stop/Reset action wired to `registry.release`) and that's a product
- *      decision, not a one-line correction.
+ *      `pilot.status === 'idle'`, so once it fired it never came back. Because
+ *      the claim lives in the backend's in-memory device registry, this was
+ *      not per-browser-session state: it was shared, global, and -- from the
+ *      UI -- permanent. One click by anyone (a curious first-time visitor
+ *      included) took the Mobile Pilot workspace offline for the whole team
+ *      until the backend process restarted.
+ *
+ *      Fixed with a counterpart legacy endpoint, `POST /api/v1/mobile/pilot/stop`
+ *      (mirrors `close_session`'s `registry.release`, but looks the session up
+ *      by the hardcoded device id rather than a session id, since the legacy
+ *      UI never learns a session id), and a "Stop Pilot" button in
+ *      MobilePilotScreen.tsx that renders whenever status isn't idle. Verified
+ *      the claim is really released server-side, not just hidden client-side,
+ *      by re-checking from a second, unrelated page/tab below.
  *
  *   2. A failed `startMobilePilot()` call (device already claimed -> 409, no
  *      emulator registered -> 503) used to be swallowed outright: `setError`
  *      only rendered through the full-screen "Pilot Unavailable" empty state,
  *      which is gated on `!pilot`, and by the time a start can fail the initial
  *      status poll has already populated `pilot`. The button just silently
- *      re-enabled with zero explanation. Fixed alongside this file by also
- *      routing that failure through the app's toast system (see
- *      MobilePilotScreen.tsx), the same pattern App.tsx already uses for the
- *      demo-mode-enable failure.
+ *      re-enabled with zero explanation. Fixed by also routing that failure
+ *      through the app's toast system (see MobilePilotScreen.tsx), the same
+ *      pattern App.tsx already uses for the demo-mode-enable failure.
  *
- * Test order matters here and is deliberate: the "start" test runs before the
- * "second start conflicts" test in the same worker so the claim from the first
- * is what produces the 409 the second observes. Because the claim is real,
- * global backend state, this file's tests must not be reordered or run
- * `fullyParallel` against another spec that also starts a pilot -- exactly the
- * shared-state fragility that finding #1 above is about.
+ * Test order matters here and is deliberate: even with a working Stop button,
+ * a test that fails partway through (before it reaches its own cleanup) still
+ * leaves the real, shared device claimed for whichever test runs next. This
+ * file's tests must not be reordered or run `fullyParallel` against another
+ * spec that also starts a pilot.
  */
 import { test, expect } from '@playwright/test';
 import { bootstrapReal } from '../qa/page-objects';
@@ -69,7 +72,7 @@ test.describe.serial('Mobile Pilot — live backend, mobile viewport', () => {
     expect(box!.x + box!.width).toBeLessThanOrEqual(390);
   });
 
-  test('starting a pilot claims the device and has no way back', async ({ page }) => {
+  test('starting a pilot claims the device, and Stop actually releases it', async ({ page, context }) => {
     await bootstrapReal(page);
     await page.goto('/mobile');
     await page.waitForSelector('#mobile-pilot-screen');
@@ -80,11 +83,14 @@ test.describe.serial('Mobile Pilot — live backend, mobile viewport', () => {
     await expect(page.getByTestId('pilot-status-badge')).toBeVisible();
 
     const startBtn = page.getByTestId('pilot-start-btn');
-    // If a prior run in this environment already claimed the device, the
-    // button won't be idle-visible any more -- that is itself the finding.
+    // If a prior run in this environment already claimed the device and left
+    // it claimed (e.g. a previous failed run in this same suite), release it
+    // first so this test starts from the state it actually needs to prove
+    // anything -- rather than silently skipping, which used to be the only
+    // reasonable response when there was no way to release it.
     if (!(await startBtn.isVisible().catch(() => false))) {
-      await expect(page.getByTestId('pilot-status-badge')).not.toHaveText('Idle');
-      return;
+      await page.getByTestId('pilot-stop-btn').click();
+      await expect(startBtn).toBeVisible({ timeout: 5000 });
     }
 
     const startResponse = page.waitForResponse(
@@ -95,14 +101,35 @@ test.describe.serial('Mobile Pilot — live backend, mobile viewport', () => {
     await page.waitForTimeout(500);
 
     await expect(page.getByTestId('pilot-status-badge')).toHaveText('Running');
-    // No Start button any more, and nothing that could stop, cancel, or reset
-    // the session -- this is the "point of no return" this test documents.
     await expect(page.getByTestId('pilot-start-btn')).toHaveCount(0);
-    await expect(page.getByRole('button', { name: /stop|cancel|reset/i })).toHaveCount(0);
+    const stopBtn = page.getByTestId('pilot-stop-btn');
+    await expect(stopBtn).toBeVisible();
 
-    // Give it a few poll cycles (the screen polls every 2s) -- it never moves.
+    // Give it a few poll cycles (the screen polls every 2s) -- nothing drives
+    // the legacy session past RUNNING on its own, so it never moves by itself.
     await page.waitForTimeout(4000);
     await expect(page.getByText('0 / 0 steps')).toBeVisible();
+
+    const stopResponse = page.waitForResponse(
+      (resp) => resp.url().includes('/api/v1/mobile/pilot/stop') && resp.request().method() === 'POST'
+    );
+    await stopBtn.click();
+    await stopResponse;
+    await page.waitForTimeout(500);
+
+    await expect(page.getByTestId('pilot-status-badge')).toHaveText('Idle');
+    await expect(page.getByTestId('pilot-start-btn')).toBeVisible();
+    await expect(page.getByTestId('pilot-stop-btn')).toHaveCount(0);
+
+    // Prove the release is real backend state, not just this tab's local
+    // state: a second, unrelated page in a fresh navigation sees idle too,
+    // and can start its own pilot -- the whole point of fixing this.
+    const page2 = await context.newPage();
+    await page2.goto('/mobile');
+    await page2.waitForSelector('#mobile-pilot-screen');
+    await expect(page2.getByTestId('pilot-status-badge')).toHaveText('Idle');
+    await expect(page2.getByTestId('pilot-start-btn')).toBeVisible();
+    await page2.close();
   });
 
   test('a failed start is surfaced to the user, not silently dropped', async ({ page }) => {

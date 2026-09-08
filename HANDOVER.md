@@ -1,5 +1,28 @@
 # CHERENKOV -- Session Handover
 
+## Follow-up: fixed the Mobile Pilot lock left open below (2026-09-08)
+
+The previous entry left one finding deliberately unfixed: `/api/v1/mobile/pilot/start`
+claimed the hardcoded device `emulator-5554` with no counterpart to release it,
+so one click permanently locked the Mobile Pilot workspace for every user of
+the backend until the process restarted. Fixed on request:
+
+- **Backend:** added `POST /api/v1/mobile/pilot/stop` (`cherenkov/web/routes/mobile_routes.py`),
+  mirroring the existing `DELETE /api/v1/mobile/sessions/{id}` → `registry.release`
+  path but looking the session up by the hardcoded device id, since the legacy
+  pilot UI never learns a session id. Idempotent — stopping an already-idle
+  pilot is a no-op, not an error.
+- **Frontend:** `MobilePilotScreen.tsx` now renders a "Stop Pilot" button
+  whenever `status !== 'idle'`, wired to the new endpoint via `stopMobilePilot()`
+  in `lib/api.ts`.
+- Verified live (headed, real backend): start locks the device and hides Start;
+  Stop releases it and Start reappears; a second, unrelated browser tab
+  confirms the release is real backend state, not client-side hiding; a
+  second start/stop cycle round-trips cleanly.
+- `tests/e2e/mobile-pilot-live.spec.ts` rewritten: the "no way back" test is
+  now "Stop actually releases it," asserting the round trip and the
+  cross-tab proof above.
+
 ## Persona-driven exploratory E2E pass on the web UI, real headed browser (2026-09-08)
 
 Four new personas, real Chromium (headed, via Xvfb — not `headless: true`), real
