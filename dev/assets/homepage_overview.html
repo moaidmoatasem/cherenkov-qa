@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #0f172a;
+    color: #f8fafc;
+    min-height: 100vh;
+  }
+  .navbar {
+    background: #1e293b;
+    border-bottom: 1px solid #334155;
+    padding: 16px 40px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+  .nav-brand {
+    font-size: 22px;
+    font-weight: 800;
+    color: #38bdf8;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .nav-version {
+    background: #0369a1;
+    color: #e0f2fe;
+    padding: 3px 10px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .nav-links {
+    display: flex;
+    gap: 20px;
+    margin-left: 32px;
+    font-size: 15px;
+    color: #94a3b8;
+  }
+  .nav-links .active { color: #f8fafc; font-weight: 600; border-bottom: 2px solid #38bdf8; padding-bottom: 4px; }
+  .search-box {
+    margin-left: auto;
+    background: #0f172a;
+    border: 1px solid #475569;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 14px;
+    color: #94a3b8;
+    width: 260px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .hero {
+    padding: 60px 40px 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  .hero h1 {
+    font-size: 48px;
+    font-weight: 900;
+    line-height: 1.15;
+    margin-bottom: 20px;
+    background: linear-gradient(135deg, #ffffff 0%, #38bdf8 60%, #818cf8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .hero p {
+    font-size: 20px;
+    color: #94a3b8;
+    max-width: 800px;
+    margin: 0 auto 36px;
+    line-height: 1.6;
+  }
+  .badges-row {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 48px;
+  }
+  .hero-badge {
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid #334155;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #cbd5e1;
+  }
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 40px 60px;
+  }
+  .card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 16px;
+    padding: 28px 24px;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s;
+  }
+  .card-icon { font-size: 32px; margin-bottom: 16px; }
+  .card h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; color: #f8fafc; }
+  .card p { font-size: 14px; color: #94a3b8; line-height: 1.5; margin-bottom: 20px; flex-grow: 1; }
+  .card-link { font-size: 14px; font-weight: 600; color: #38bdf8; text-decoration: none; display: flex; align-items: center; gap: 6px; }
+</style>
+</head>
+<body>
+  <div class="navbar">
+    <div class="nav-brand">⚡ CHERENKOV QA <span class="nav-version">v1.4.0 CURRENT</span></div>
+    <div class="nav-links">
+      <span class="active">Documentation</span>
+      <span>Tutorials</span>
+      <span>How-To</span>
+      <span>Reference</span>
+      <span>Architecture</span>
+      <span>GitHub</span>
+    </div>
+    <div class="search-box"><span>🔍 Search documentation...</span><kbd>Ctrl+K</kbd></div>
+  </div>
+
+  <div class="hero">
+    <h1>Autonomous Quality Fabric & API Conformance Engine</h1>
+    <p>OpenAPI spec in, high-coverage Playwright suites out. Spec-derived validation, clean architecture ports, zero vendor lock-in, and autonomous self-healing.</p>
+    <div class="badges-row">
+      <div class="hero-badge">🔒 D7 Invariants Active</div>
+      <div class="hero-badge">🚀 Zero Lock-In (Eject)</div>
+      <div class="hero-badge">🧠 MemSearch SDD Protocol</div>
+      <div class="hero-badge">☸️ K8s Operator Ready</div>
+    </div>
+  </div>
+
+  <div class="cards-grid">
+    <div class="card">
+      <div class="card-icon">🎓</div>
+      <h3>Tutorials</h3>
+      <p>Step-by-step onboarding walkthroughs for new users. Run Petstore conformance in under 5 minutes.</p>
+      <div class="card-link">Start Learning ➔</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🛠️</div>
+      <h3>How-To Guides</h3>
+      <p>Practical recipes for CI/CD pipelines, Kubernetes deployments, and migration from Dredd/Postman.</p>
+      <div class="card-link">Explore Guides ➔</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📋</div>
+      <h3>Reference</h3>
+      <p>Exhaustive CLI flags, clean architecture ports & adapters inventory, and standardized error codes.</p>
+      <div class="card-link">View Reference ➔</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">💡</div>
+      <h3>Explanations</h3>
+      <p>Deep dives into D7 verification invariants, Sync Driven Development, and the AQE 2026 Vision.</p>
+      <div class="card-link">Read Architecture ➔</div>
+    </div>
+  </div>
+</body>
+</html>

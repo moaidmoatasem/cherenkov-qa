@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520" width="100%" height="100%" style="background:#090d16; font-family:'JetBrains Mono', 'Fira Code', monospace;">
+  <defs>
+    <linearGradient id="term-header" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <filter id="term-shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+  </defs>
+
+  <!-- Terminal Window Container -->
+  <g transform="translate(25, 20)" filter="url(#term-shadow)">
+    <!-- Outer Border & Background -->
+    <rect x="0" y="0" width="850" height="480" rx="10" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+    
+    <!-- Title Bar -->
+    <rect x="0" y="0" width="850" height="38" rx="10" fill="url(#term-header)"/>
+    <rect x="0" y="28" width="850" height="10" fill="#0f172a"/>
+    
+    <!-- Window Controls -->
+    <circle cx="22" cy="19" r="6" fill="#ef4444"/>
+    <circle cx="42" cy="19" r="6" fill="#f59e0b"/>
+    <circle cx="62" cy="19" r="6" fill="#10b981"/>
+    
+    <!-- Window Title -->
+    <text x="425" y="23" font-size="12" font-family="'Inter', sans-serif" font-weight="600" fill="#94a3b8" text-anchor="middle">cherenkov run — Petstore API Conformance Verification (v1.4.0)</text>
+
+    <!-- Terminal Text Content -->
+    <g transform="translate(25, 65)">
+      <!-- Command Prompt -->
+      <text x="0" y="0" font-size="13" fill="#64748b">$ <tspan fill="#38bdf8" font-weight="700">cherenkov</tspan> <tspan fill="#f8fafc">run --spec ./openapi/petstore.yaml --base-url http://localhost:4010</tspan></text>
+      
+      <!-- Ingest Step -->
+      <text x="0" y="26" font-size="12" fill="#818cf8">[INGEST] <tspan fill="#e2e8f0">Parsed OpenAPI 3.0.3 specification: 14 operations detected</tspan></text>
+      <text x="0" y="46" font-size="12" fill="#64748b">         ├── Endpoints: /pet (POST, PUT), /pet/findByStatus (GET), /pet/{petId} (GET, POST, DELETE)</text>
+      <text x="0" y="64" font-size="12" fill="#64748b">         └── Schemas: Pet, Category, Tag, ApiResponse (all validated)</text>
+      
+      <!-- Plan Step -->
+      <text x="0" y="92" font-size="12" fill="#a855f7">[PLAN]   <tspan fill="#e2e8f0">Generated 28 conformance test scenarios (depth-1 slice + mutation menu)</tspan></text>
+      
+      <!-- Execution Step -->
+      <text x="0" y="120" font-size="12" fill="#38bdf8">[EXEC]   <tspan fill="#e2e8f0">Executing Playwright conformance test suite with Prism mock engine...</tspan></text>
+      
+      <!-- Test Cases -->
+      <text x="15" y="146" font-size="12" fill="#10b981">✓ <tspan fill="#f1f5f9">GET /pet/findByStatus</tspan> <tspan fill="#64748b">(status 200 OK, schema conforms to Pet[])</tspan> <tspan fill="#38bdf8">[38ms]</tspan></text>
+      <text x="15" y="168" font-size="12" fill="#10b981">✓ <tspan fill="#f1f5f9">POST /pet</tspan> <tspan fill="#64748b">(status 200 OK, valid JSON payload round-trip)</tspan> <tspan fill="#38bdf8">[52ms]</tspan></text>
+      <text x="15" y="190" font-size="12" fill="#10b981">✓ <tspan fill="#f1f5f9">GET /pet/{petId}</tspan> <tspan fill="#64748b">(status 404 NOT_FOUND on non-existent ID mutant)</tspan> <tspan fill="#38bdf8">[29ms]</tspan></text>
+      <text x="15" y="212" font-size="12" fill="#10b981">✓ <tspan fill="#f1f5f9">PUT /pet</tspan> <tspan fill="#64748b">(status 400 BAD_REQUEST on missing required fields)</tspan> <tspan fill="#38bdf8">[31ms]</tspan></text>
+      <text x="15" y="234" font-size="12" fill="#10b981">✓ <tspan fill="#f1f5f9">DELETE /pet/{petId}</tspan> <tspan fill="#64748b">(status 200 OK, API key header propagation)</tspan> <tspan fill="#38bdf8">[44ms]</tspan></text>
+      <text x="15" y="256" font-size="12" fill="#10b981">✓ <tspan fill="#f1f5f9">POST /pet/{petId}/uploadImage</tspan> <tspan fill="#64748b">(status 200 OK, multipart form handling)</tspan> <tspan fill="#38bdf8">[61ms]</tspan></text>
+      <text x="15" y="278" font-size="12" fill="#64748b">... 22 additional endpoint conformance tests executed</text>
+
+      <!-- Review & Verdict -->
+      <text x="0" y="310" font-size="12" fill="#10b981">[REVIEW] <tspan fill="#e2e8f0">Integrity check passed (0 weakened assertions, 0 hallucinated fields)</tspan></text>
+      <text x="0" y="332" font-size="13" font-weight="700" fill="#10b981">[VERDICT] 28/28 passed (100.0% conformance rate) — Overall Verdict: CERTIFIED</text>
+
+      <!-- Output Artifacts -->
+      <text x="0" y="360" font-size="12" fill="#c084fc">[EXPORT] <tspan fill="#94a3b8">Playwright suite written to: </tspan><tspan fill="#f8fafc">./tests/conformance/petstore.spec.ts</tspan></text>
+      <text x="0" y="380" font-size="12" fill="#c084fc">[CERT]   <tspan fill="#94a3b8">Signed Certificate emitted: </tspan><tspan fill="#f8fafc">.cherenkov/evidence/cert_4c5b4f2e.json</tspan></text>
+    </g>
+  </g>
+</svg>

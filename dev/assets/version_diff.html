@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+    color: #f8fafc;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 40px;
+  }
+  .container {
+    width: 1400px;
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    padding: 48px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(16px);
+  }
+  .header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+  .header h1 {
+    font-size: 38px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 50%, #f472b6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 12px;
+  }
+  .header p {
+    font-size: 18px;
+    color: #94a3b8;
+  }
+  .timeline {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 32px;
+    position: relative;
+  }
+  .version-card {
+    background: rgba(30, 41, 59, 0.7);
+    border-radius: 18px;
+    padding: 32px;
+    border: 2px solid transparent;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+  .v12 {
+    border-color: #64748b;
+    background: linear-gradient(180deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.9) 100%);
+  }
+  .v13 {
+    border-color: #818cf8;
+    background: linear-gradient(180deg, rgba(49, 46, 129, 0.4) 0%, rgba(15, 23, 42, 0.9) 100%);
+  }
+  .v14 {
+    border-color: #38bdf8;
+    background: linear-gradient(180deg, rgba(14, 165, 233, 0.25) 0%, rgba(15, 23, 42, 0.95) 100%);
+    box-shadow: 0 0 30px rgba(56, 189, 248, 0.25);
+  }
+  .badge {
+    align-self: flex-start;
+    padding: 6px 14px;
+    border-radius: 9999px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 16px;
+  }
+  .badge-outdated {
+    background: rgba(239, 68, 68, 0.2);
+    color: #fca5a5;
+    border: 1px solid rgba(239, 68, 68, 0.4);
+  }
+  .badge-current {
+    background: rgba(34, 197, 94, 0.25);
+    color: #86efac;
+    border: 1px solid rgba(34, 197, 94, 0.6);
+  }
+  .version-title {
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #f8fafc;
+  }
+  .version-subtitle {
+    font-size: 15px;
+    color: #94a3b8;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .features-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    flex-grow: 1;
+  }
+  .features-list li {
+    font-size: 15px;
+    color: #cbd5e1;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    line-height: 1.4;
+  }
+  .bullet {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    margin-top: 7px;
+    flex-shrink: 0;
+  }
+  .v12 .bullet { background: #94a3b8; }
+  .v13 .bullet { background: #a5b4fc; }
+  .v14 .bullet { background: #38bdf8; }
+  .status-footer {
+    margin-top: 28px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .status-warn { color: #f87171; }
+  .status-ok { color: #4ade80; font-weight: 600; }
+  .arrow-indicator {
+    position: absolute;
+    top: 50%;
+    right: -24px;
+    transform: translateY(-50%);
+    font-size: 24px;
+    color: #64748b;
+    z-index: 10;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>CHERENKOV-QA Version Evolution Architecture</h1>
+    <p>Continuous progression from Foundation (v1.2) through Autonomous Extensions (v1.3) to Consolidated Release (v1.4)</p>
+  </div>
+  <div class="timeline">
+    <!-- Version 1.2 -->
+    <div class="version-card v12">
+      <span class="badge badge-outdated">Legacy / Archived</span>
+      <h2 class="version-title">Version 1.2</h2>
+      <div class="version-subtitle">Core Invariants & Foundations</div>
+      <ul class="features-list">
+        <li><span class="bullet"></span> Core API Conformance Testing engine</li>
+        <li><span class="bullet"></span> Playwright test suite auto-generation</li>
+        <li><span class="bullet"></span> SQLite storage harness (verdicts.db)</li>
+        <li><span class="bullet"></span> Non-negotiable D7 validation invariants</li>
+        <li><span class="bullet"></span> CLI baseline (run, validate, eject)</li>
+      </ul>
+      <div class="status-footer status-warn">
+        <span>⚠️ Outdated banner active on site</span>
+      </div>
+      <div class="arrow-indicator">➔</div>
+    </div>
+
+    <!-- Version 1.3 -->
+    <div class="version-card v13">
+      <span class="badge badge-outdated">Previous Minor</span>
+      <h2 class="version-title">Version 1.3</h2>
+      <div class="version-subtitle">Autonomous Fabric & Horizons</div>
+      <ul class="features-list">
+        <li><span class="bullet"></span> Second Brain (Knowledge Mesh & RAG)</li>
+        <li><span class="bullet"></span> VLM + LocalAI Backend tier routing</li>
+        <li><span class="bullet"></span> Tauri 2 Desktop Host Application</li>
+        <li><span class="bullet"></span> Chat Agent + Persona Registry (SSE)</li>
+        <li><span class="bullet"></span> Mobile Testing Engine (Maestro/ADB)</li>
+        <li><span class="bullet"></span> Kubernetes Operator & CRD extensions</li>
+      </ul>
+      <div class="status-footer status-warn">
+        <span>⚠️ Outdated banner links to v1.4</span>
+      </div>
+      <div class="arrow-indicator">➔</div>
+    </div>
+
+    <!-- Version 1.4 -->
+    <div class="version-card v14">
+      <span class="badge badge-current">CURRENT / LATEST</span>
+      <h2 class="version-title">Version 1.4.0</h2>
+      <div class="version-subtitle">Consolidated Release Hub</div>
+      <ul class="features-list">
+        <li><span class="bullet"></span> <strong>Unified 1.4 Diátaxis Documentation Hub</strong></li>
+        <li><span class="bullet"></span> <strong>Clean Architecture</strong> Ports & Adapters (ADR-004)</li>
+        <li><span class="bullet"></span> <strong>MemSearch Semantic Memory</strong> & SDD protocol</li>
+        <li><span class="bullet"></span> <strong>Multi-Agent Conductor</strong> & CC-1..CC-6 suite</li>
+        <li><span class="bullet"></span> <strong>Native CI/CD</strong> & Jenkins Shared Library</li>
+        <li><span class="bullet"></span> <strong>Spec Guardian</strong> & Portable Test Certificates</li>
+        <li><span class="bullet"></span> <strong>Live Regression Trend</strong> & Coverage Maps</li>
+      </ul>
+      <div class="status-footer status-ok">
+        <span>✅ Authoritative release (No warning banner)</span>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
