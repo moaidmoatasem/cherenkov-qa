@@ -751,7 +751,33 @@ gate scans `docs/` and `skills/` markdown, never `--help` output.
 Related: Click rewraps the examples block mid-command (`cherenkov\n verify --url ...`), so
 the documented examples are not copy-pasteable.
 
-### 4. Raw JSON logs pollute human output on `doctor`, `init`, `generate`
+### 4. Raw JSON logs pollute human output on `doctor`, `init`, `generate` — **RE-MEASURED 2026-08-16: mostly not a defect**
+
+> **The original diagnosis does not hold.** Measured on `main` at `a61fa9b`, stdout is **clean on all
+> three** — the JSON goes to stderr, which is where logs belong:
+>
+> | Command | JSON on **stdout** | JSON on stderr | human lines on stdout |
+> |---|---|---|---|
+> | `doctor` | **0** | 2 | 53 |
+> | `init` | **0** | 2 | 21 |
+> | `generate` | **0** | 81 | 30 |
+>
+> `StructuredLogger` writes JSONL to stderr by design (`core/errors.py:136`, and its own docstring
+> says so). Piping or redirecting therefore already gives clean human output —
+> `cherenkov doctor > report.txt` contains no JSON at all. The walkthrough saw the two streams
+> interleaved in a terminal, which is the same trap this file records for Click's `CliRunner`
+> (2026-08-08): **`result.output` is the combined stream, not stdout.**
+>
+> **What is still real:** in an interactive terminal `generate` shows 81 log lines against 30 lines
+> of report. That is noise worth addressing, but it is a *quiet mode* feature, not a stream bug.
+>
+> **Do not "fix" it by setting `LoggerConfig.suppress_stderr`** — the obvious move, and it is wrong
+> here. `demo`, `mcp` and `bench` do exactly that, but they can afford to: `_get_events_file()`
+> returns `LoggerConfig.events_file`, which is **`None` unless something opts in**
+> (`core/errors.py:89,105`). Only the orchestrator and `report_cmd` ever set it. So for a plain
+> `doctor` or `init` invocation stderr is the *only* sink, and suppressing it discards the
+> diagnostics rather than relocating them. A quiet mode needs an events file (or a `--quiet` flag
+> that the user opts into), not a blanket suppression.
 
 Structured log lines are interleaved into formatted human reports:
 
@@ -764,7 +790,7 @@ Structured log lines are interleaved into formatted human reports:
 On `generate` the ratio is roughly 14 JSON lines to 4 human ones. Same output-pollution
 class this file records as fixed elsewhere; these three paths were missed.
 
-### 5. The dashboard's CSP blocks its own fonts
+### 5. The dashboard's CSP blocks its own fonts — FIXED 2026-09-07, now guarded
 
 ```
 Refused to load the stylesheet 'https://fonts.googleapis.com/css2?family=Inter...'
@@ -773,6 +799,43 @@ Refused to load the stylesheet 'https://fonts.googleapis.com/css2?family=Inter..
 31 failed requests per session. `style-src 'self' 'unsafe-inline'` does not permit the
 Google Fonts stylesheet `index.html` itself requests, so the UI renders without its
 intended typography. Self-inflicted: either allow the host or self-host the fonts.
+
+**The defect is gone.** `src/index.css` was created with that `@import` on 2026-08-11
+(`b462f6b`) and it was removed on 2026-09-07 (`13d938c`, #1012), which also dropped to
+platform font stacks to keep the offline guarantee. Re-measured on the shipped
+`ui/dist/`: **0** `@font-face` rules, **0** off-origin `url()`, no font `<link>` in
+`index.html`; the only `url()` in the built CSS is an inlined `data:` SVG.
+
+The right repair was taken — remove the dependency, not widen the policy. Widening to
+`font-src 'self' https://fonts.gstatic.com` would have kept the cloud call and merely
+silenced the browser, contradicting README's *"100% private. No telemetry, no cloud
+calls."*
+
+**Two gates guarded nothing here** (the 5th and 6th instances of that pattern in this
+repo):
+
+1. `ui/tests/qa/nonfunctional-suite.spec.ts:452` — the only test watching for failed
+   network requests **excluded `fonts.gstatic.com` and `fonts.googleapis.com`**. It was
+   taught to ignore precisely this defect.
+2. It made no difference: `qa-headless.yml` runs only `headless-qa-user.spec.ts`, so
+   that suite **never executes in CI** — not on PRs, not nightly.
+
+And the CSP itself had **no test at all** — `grep -rl "Content-Security-Policy" tests/`
+returned nothing, despite `SecurityHeadersMiddleware` being mounted at `web/api.py:108`.
+
+Now guarded by `tests/unit/test_dashboard_offline_guarantee.py` (22 tests, in the
+`unit-tests` job that runs on every PR — no browser, no server). It asserts the shipped
+`dist/` CSS and `index.html` fetch nothing off-origin, that `src/index.css` has no
+external `@import`, and that the CSP is sent and names no third-party host. The
+exclusions in the Playwright suite were removed so it is honest if ever wired up.
+
+*Method note.* `git log -S 'fonts.googleapis'` is misleading on this file: it flags only
+`b462f6b`, because the removal in `13d938c` left the string alive in the comment
+explaining the removal, so the count never reached zero. Read the diffs.
+
+*Method note.* CSP assertions must compare directive values **whole**. `"font-src
+'self'" in csp` stays true after widening to `font-src 'self' https://fonts.gstatic.com`
+— my first version of that test passed under the exact mutation it existed to catch.
 
 ### 6. Onboarding completion is not persisted
 
