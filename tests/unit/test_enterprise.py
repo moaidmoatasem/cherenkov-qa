@@ -277,3 +277,95 @@ class TestSOC2ReportGenerator(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestSOC2ReportingPeriodDates(unittest.TestCase):
+    """The six-month lookback must not depend on today's date.
+
+    `generate_report` used `period_end.replace(month=m)`, which keeps the day.
+    Six months before 30 August is "30 February", so it raised
+    `ValueError: day is out of range for month` and 500'd
+    `GET /api/enterprise/soc2/report`. The existing SOC2 tests only caught it
+    on the 7 days a year it actually fires, which is how it shipped; these
+    exercise the date arithmetic directly, so they fail every day.
+    """
+
+    def test_every_day_of_a_leap_and_non_leap_year_resolves(self):
+        import calendar
+        from datetime import datetime, timezone
+
+        from cherenkov.enterprise.soc2 import _months_before
+
+        for year in (2024, 2026):  # leap and non-leap
+            for month in range(1, 13):
+                for day in range(1, calendar.monthrange(year, month)[1] + 1):
+                    when = datetime(year, month, day, tzinfo=timezone.utc)
+                    # The assertion is that this does not raise.
+                    start = _months_before(when, 6)
+                    self.assertLess(start, when)
+
+    def test_short_target_month_clamps_to_its_last_day(self):
+        from datetime import datetime, timezone
+
+        from cherenkov.enterprise.soc2 import _months_before
+
+        # 30 Aug 2026 - 6 months would be "30 February", which does not exist.
+        got = _months_before(datetime(2026, 8, 30, tzinfo=timezone.utc), 6)
+        self.assertEqual(got.date().isoformat(), "2026-02-28")
+
+        # Same shape, but a leap year gives the 29th.
+        got = _months_before(datetime(2024, 8, 31, tzinfo=timezone.utc), 6)
+        self.assertEqual(got.date().isoformat(), "2024-02-29")
+
+    def test_ordinary_day_is_untouched(self):
+        from datetime import datetime, timezone
+
+        from cherenkov.enterprise.soc2 import _months_before
+
+        got = _months_before(datetime(2026, 9, 1, tzinfo=timezone.utc), 6)
+        self.assertEqual(got.date().isoformat(), "2026-03-01")
+
+    def test_lookback_crossing_the_year_boundary(self):
+        from datetime import datetime, timezone
+
+        from cherenkov.enterprise.soc2 import _months_before
+
+        got = _months_before(datetime(2026, 3, 31, tzinfo=timezone.utc), 6)
+        self.assertEqual(got.date().isoformat(), "2025-09-30")
+
+    def test_generated_report_period_is_well_formed(self):
+        from cherenkov.enterprise.soc2 import SOC2ReportGenerator
+
+        report = SOC2ReportGenerator().generate_report("TestOrg")
+        start, _, end = report.reporting_period.partition(" to ")
+        self.assertRegex(start, r"^\d{4}-\d{2}-\d{2}$")
+        self.assertRegex(end, r"^\d{4}-\d{2}-\d{2}$")
+        self.assertLess(start, end)
+
+    def test_generate_report_survives_a_short_target_month(self):
+        """The real regression test: freeze the clock on a day that used to crash.
+
+        The others cover the extracted helper, so they would pass on any
+        refactor. This one drives the public API with the clock pinned to
+        30 August, where the six-month lookback lands on the non-existent
+        "30 February" and the original code raised ValueError.
+        """
+        from datetime import datetime, timezone
+        from unittest.mock import patch
+
+        from cherenkov.enterprise.soc2 import SOC2ReportGenerator
+
+        frozen = datetime(2026, 8, 30, 12, 0, tzinfo=timezone.utc)
+
+        class _FrozenDatetime(datetime):
+            @classmethod
+            def now(cls, tz=None):
+                return frozen
+
+        # Patched by string target rather than `import ... as soc2`: every
+        # other reference to this module in the file uses `from ... import`,
+        # and mixing the two forms is what CodeQL flags.
+        with patch("cherenkov.enterprise.soc2.datetime", _FrozenDatetime):
+            report = SOC2ReportGenerator().generate_report("TestOrg")
+
+        self.assertEqual(report.reporting_period, "2026-02-28 to 2026-08-30")

@@ -124,7 +124,11 @@ class SubprocessHookExecutor:
                 stdout, stderr = proc.communicate(timeout=5)
             except subprocess.TimeoutExpired:
                 proc.kill()
-                stdout, stderr = b"", b""
+                # Both Popen calls above pass text=True, so communicate()
+                # yields str and HookResult.stdout/stderr are typed str. The
+                # bytes literals here would have put bytes into those fields
+                # on a double timeout — mypy caught it as an assignment error.
+                stdout, stderr = "", ""
             duration_ms = int((time.monotonic() - start) * 1000)
             result = HookResult(
                 event=config.event,
