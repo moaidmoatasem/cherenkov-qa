@@ -627,7 +627,33 @@ gate scans `docs/` and `skills/` markdown, never `--help` output.
 Related: Click rewraps the examples block mid-command (`cherenkov\n verify --url ...`), so
 the documented examples are not copy-pasteable.
 
-### 4. Raw JSON logs pollute human output on `doctor`, `init`, `generate`
+### 4. Raw JSON logs pollute human output on `doctor`, `init`, `generate` — **RE-MEASURED 2026-08-16: mostly not a defect**
+
+> **The original diagnosis does not hold.** Measured on `main` at `a61fa9b`, stdout is **clean on all
+> three** — the JSON goes to stderr, which is where logs belong:
+>
+> | Command | JSON on **stdout** | JSON on stderr | human lines on stdout |
+> |---|---|---|---|
+> | `doctor` | **0** | 2 | 53 |
+> | `init` | **0** | 2 | 21 |
+> | `generate` | **0** | 81 | 30 |
+>
+> `StructuredLogger` writes JSONL to stderr by design (`core/errors.py:136`, and its own docstring
+> says so). Piping or redirecting therefore already gives clean human output —
+> `cherenkov doctor > report.txt` contains no JSON at all. The walkthrough saw the two streams
+> interleaved in a terminal, which is the same trap this file records for Click's `CliRunner`
+> (2026-08-08): **`result.output` is the combined stream, not stdout.**
+>
+> **What is still real:** in an interactive terminal `generate` shows 81 log lines against 30 lines
+> of report. That is noise worth addressing, but it is a *quiet mode* feature, not a stream bug.
+>
+> **Do not "fix" it by setting `LoggerConfig.suppress_stderr`** — the obvious move, and it is wrong
+> here. `demo`, `mcp` and `bench` do exactly that, but they can afford to: `_get_events_file()`
+> returns `LoggerConfig.events_file`, which is **`None` unless something opts in**
+> (`core/errors.py:89,105`). Only the orchestrator and `report_cmd` ever set it. So for a plain
+> `doctor` or `init` invocation stderr is the *only* sink, and suppressing it discards the
+> diagnostics rather than relocating them. A quiet mode needs an events file (or a `--quiet` flag
+> that the user opts into), not a blanket suppression.
 
 Structured log lines are interleaved into formatted human reports:
 
