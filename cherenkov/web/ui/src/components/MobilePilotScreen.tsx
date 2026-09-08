@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Play, Square, RotateCw, CheckCircle, XCircle, Clock, Loader2, AlertTriangle } from 'lucide-react';
-import { Card, PageHeader, EmptyState, Skeleton } from './ui';
+import { Card, PageHeader, EmptyState, Skeleton, useToast } from './ui';
 import { fetchMobilePilotStatus, startMobilePilot, PilotStatus, PilotStep } from '../lib/api';
 
 const STATUS_ICONS: Record<string, React.ReactNode> = {
@@ -23,6 +23,7 @@ export default function MobilePilotScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isStarting, setIsStarting] = useState(false);
+  const { toast } = useToast();
 
   const poll = async () => {
     try {
@@ -48,7 +49,15 @@ export default function MobilePilotScreen() {
       await startMobilePilot();
       await poll();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to start pilot');
+      // `error` only renders through the "Pilot Unavailable" empty state below,
+      // which is gated on `!pilot` -- by the time a start can fail, the initial
+      // status poll has already populated `pilot` (even as idle), so setting
+      // `error` alone was silent: the button just went back to "Start Pilot"
+      // with no explanation of what happened (e.g. the device already claimed
+      // by another session, 409, or no emulator registered, 503).
+      const message = err instanceof Error ? err.message : 'Failed to start pilot';
+      setError(message);
+      toast(message, 'danger');
     } finally {
       setIsStarting(false);
     }

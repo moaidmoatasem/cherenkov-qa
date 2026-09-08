@@ -22,6 +22,18 @@ export default defineConfig(() => {
           target: 'http://127.0.0.1:8001',
           changeOrigin: true,
         },
+        // EnterpriseWorkspace's three panels (SlaDashboard, CompliancePanel,
+        // SupportPortal) call the backend's `/api/enterprise/*` router, which
+        // is deliberately registered outside the `/api/v1` prefix (see
+        // cherenkov/web/routes/enterprise_routes.py). Without this entry those
+        // requests fall through to this dev/preview server itself, which has
+        // no matching route and serves the SPA's index.html back with a 200 --
+        // the fetch then throws "Unexpected token '<' ... is not valid JSON"
+        // straight onto the Enterprise Command Center screen.
+        '/api/enterprise': {
+          target: 'http://127.0.0.1:8001',
+          changeOrigin: true,
+        },
         '/ws/live': {
           target: 'ws://127.0.0.1:8001',
           ws: true,
