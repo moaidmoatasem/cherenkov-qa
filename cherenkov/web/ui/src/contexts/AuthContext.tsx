@@ -15,6 +15,7 @@ import React, {
   useMemo,
   useState,
 } from 'react';
+import { apiErrorMessage } from '../lib/api';
 
 export type UserRole = 'viewer' | 'reviewer' | 'admin';
 
@@ -128,7 +129,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.detail || 'Login failed');
+      throw new Error(apiErrorMessage(err) || 'Login failed');
     }
 
     const data = await res.json();

@@ -180,25 +180,42 @@ function InnerApp() {
     return () => clearInterval(id);
   }, []);
 
-  // Guided Tour state
+  // Guided Tour state. Reads/writes are wrapped -- a browser with storage
+  // blocked (Safari private mode, an enterprise storage policy) previously hit
+  // an uncaught QuotaExceededError right here, during InnerApp's own render on
+  // any deep link. That throw happens above where <ErrorBoundary> is mounted
+  // (it wraps a child of InnerApp, not InnerApp itself), so it wasn't just
+  // unhandled -- it took the whole app to a blank screen with no fallback UI.
   const [showTour, setShowTour] = useState(() => {
     const path = window.location.pathname;
     const isDeepLink = path !== '/' && path !== '/index.html' && path !== '/setup' && path !== '/projects';
-    if (isDeepLink) {
-      localStorage.setItem('[copilot] tour_seen', 'true');
+    try {
+      if (isDeepLink) {
+        localStorage.setItem('[copilot] tour_seen', 'true');
+        return false;
+      }
+      return localStorage.getItem('[copilot] tour_seen') !== 'true';
+    } catch {
       return false;
     }
-    return localStorage.getItem('[copilot] tour_seen') !== 'true';
   });
 
   const handleCloseTour = () => {
     setShowTour(false);
-    localStorage.setItem('[copilot] tour_seen', 'true');
+    try {
+      localStorage.setItem('[copilot] tour_seen', 'true');
+    } catch {
+      /* storage full or blocked -- the session still gets the tour dismissed */
+    }
   };
 
   // Onboarding Wizard state
   const [showOnboarding, setShowOnboarding] = useState(() => {
-    return localStorage.getItem('[cherenkov] onboarding_seen') !== 'true';
+    try {
+      return localStorage.getItem('[cherenkov] onboarding_seen') !== 'true';
+    } catch {
+      return true;
+    }
   });
 
   // N-6: "?" keyboard map overlay
@@ -206,7 +223,11 @@ function InnerApp() {
 
   const handleCompleteOnboarding = () => {
     setShowOnboarding(false);
-    localStorage.setItem('[cherenkov] onboarding_seen', 'true');
+    try {
+      localStorage.setItem('[cherenkov] onboarding_seen', 'true');
+    } catch {
+      /* storage full or blocked -- the session still gets the wizard dismissed */
+    }
   };
 
   const handleEnableDemo = async () => {

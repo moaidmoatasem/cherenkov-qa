@@ -1,5 +1,106 @@
 # CHERENKOV -- Session Handover
 
+## Persona-driven exploratory E2E pass on the web UI, real headed browser (2026-09-08)
+
+Four new personas, real Chromium (headed, via Xvfb — not `headless: true`), real
+FastAPI backend, real `vite preview` build — not the `api_mocks.ts` fixtures the
+existing `tests/e2e/*-workspace.spec.ts` suite mostly runs against. Four new
+spec files added under `tests/e2e/`, none reusing scenarios from the existing
+suite (which the exploration started by mapping: `/enterprise` had zero
+coverage anywhere, `/mobile` had a nav-array assertion and nothing else, and
+the only prior real-backend spec, `a11y.spec.ts`, explicitly omits Enterprise
+from its own workspace list). Five real defects found; four fixed alongside
+their regression test, one left as a documented, deliberately-unfixed finding.
+
+**1. The Enterprise Command Center was completely broken under `npm run dev`
+and `npm run preview` alike** — i.e. under both documented ways of running the
+frontend, including the exact `webServer` command `playwright.config.ts` uses
+for the whole e2e suite. `EnterpriseWorkspace`'s three panels (SLA, Compliance,
+Support) call `/api/enterprise/*`, which the backend deliberately registers
+outside the `/api/v1` prefix (see `enterprise_routes.py`) — but `vite.config.ts`
+only proxied `/api/v1` and `/ws/live`. Every request fell through to the SPA's
+own `index.html`, and the resulting `res.json()` parse threw `Unexpected token
+'<' ... is not valid JSON` straight onto the page a compliance/procurement
+evaluator opens first. Fixed by adding `/api/enterprise` to the proxy map.
+
+**2. An honest failure rendered in success-green.** `SupportPortal`'s ticket
+endpoint correctly answers 501 ("ticketing isn't wired to a backend, no ticket
+was created" — already a prior fix, per this file's own history, over a
+version that lied and said "created successfully"). But the color check for
+that message only looked for the literal substring `"Failed"`, which the
+honest message doesn't contain, so it rendered in the same green as a real
+success. Fixed with an explicit `resultOk` boolean instead of parsing the copy.
+
+**3. Fifteen-plus places across the app silently discarded the backend's own
+error messages.** `cherenkov/web/errors.py` documents a deliberate, structured
+error contract — `{"error": {"code", "message", "detail?"}}` — specifically so
+failures come with a real explanation. `lib/api.ts` had 15 call sites (plus one
+each in `AuthContext.tsx` and `SupportPortal.tsx`) reading `err.detail`
+directly, which is `undefined` against that contract, so every API error in
+the app fell through to a generic templated fallback regardless of what the
+backend actually said. Confirmed live: pointing Spec Ingestion at a URL the
+SSRF guard blocks used to render "Ingestion failed: Spec ingestion failed:
+400" — the real answer, "Internal network URLs not allowed", never reached the
+screen. Fixed with one shared `apiErrorMessage()` helper used at every site,
+rather than hand-editing 17 near-identical lines with room for one to drift.
+
+**4. A blocked-storage browser (Safari private mode, an enterprise storage
+policy — `setItem` throws, `getItem` still works) crashed the whole app to a
+blank white screen on any deep link, with no ErrorBoundary fallback at all.**
+The Guided Tour's `showTour` `useState` initializer in `App.tsx` wrote to
+localStorage unconditionally on any deep-link path, unguarded, during
+`InnerApp`'s own render — above where `<ErrorBoundary>` sits in the tree (it
+wraps a child of `InnerApp`'s returned JSX, not `InnerApp` itself), so nothing
+could catch the throw. Landing on `/` first was less bad but still broken:
+`NavigationBar`'s two unguarded persistence effects (pinned surfaces, collapsed
+sections) threw on mount instead, which *did* land inside the boundary, so at
+least "Something went wrong" rendered — with no way out, since the Reload
+button hits the same throw again. All four write sites now wrap in try/catch,
+matching the pattern already used elsewhere in the same files (`RECENTS_KEY`,
+`useDensity.ts`).
+
+**5. Left as a documented finding, not fixed:** the Mobile Pilot workspace's
+"Start Pilot" is a one-way door. The legacy `/api/v1/mobile/pilot/start`
+endpoint claims the hardcoded device `emulator-5554` and flips it straight to
+RUNNING; nothing ever drives it further, so the screen sits at "Running · 0/0
+steps · 0%" forever, and there is no Stop/Cancel/Reset control anywhere in
+`MobilePilotScreen.tsx` — the Start button itself only renders while
+`status === 'idle'`, so once it fires it never comes back. Because the claim
+lives in the backend's in-memory device registry, this is shared, global,
+permanent state: one click by anyone takes the Mobile Pilot workspace offline
+for the whole team until the process restarts. Recovering from this needs a
+real Stop/Reset affordance wired to `registry.release`, which is a product
+decision, not a one-line fix — `tests/e2e/mobile-pilot-live.spec.ts`
+documents and asserts the current (broken) behavior so it's visible the next
+time someone is in this file. The silently-dropped error from a *failed*
+start (409/503) in the same component *was* fixed — it now also routes through
+the app's toast system, the same pattern `App.tsx` uses for demo-mode-enable
+failures.
+
+**Also confirmed fixed, not re-broken:** the onboarding-completion-not-
+persisted defect this file previously logged as open (2026-08-12 entry, "onboarding
+completion not persisted — reappears every reload/deep-link") no longer
+reproduces — verified live via Skip, full click-through, reload, and a second
+tab in the same context. Whatever later change fixed it did so silently; this
+pass is the first re-verification of it since.
+
+**New coverage, all in `tests/e2e/`:** `enterprise-workspace-live.spec.ts`,
+`mobile-pilot-live.spec.ts`, `storage-blocked-resilience.spec.ts`,
+`api-error-messages-live.spec.ts`. All run headed-capable, three of the four
+against the real backend via `bootstrapReal` (the fourth mocks deliberately,
+to make a browser-level storage failure reproducible without a real Safari
+private window). `enterprise-workspace-live.spec.ts` also characterizes (does
+not fail on) a sixth finding left for a product call: the Compliance tab's
+"Security / Availability / Privacy: 100% / 100% / 85% Operational" badges are
+hardcoded JSX, never wired to the real `GET /api/enterprise/soc2/summary`
+endpoint that already exists server-side — the same "green verdict nobody
+measured" pattern this project already caught and fixed once at the CLI layer
+(`check-suite`, see the 2026-08-20 entry below).
+
+**Not assessed / out of scope for this pass:** detector accuracy, LLM
+generation quality, K8s operator, desktop build, federation — same list as
+the 2026-08-20 entry, unchanged.
+
 ## UX audit of the first-run path, and the four defects it found (2026-08-20)
 
 Ran the product rather than reading it — CLI executed, backend served, UI driven
