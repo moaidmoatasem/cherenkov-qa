@@ -666,7 +666,7 @@ Structured log lines are interleaved into formatted human reports:
 On `generate` the ratio is roughly 14 JSON lines to 4 human ones. Same output-pollution
 class this file records as fixed elsewhere; these three paths were missed.
 
-### 5. The dashboard's CSP blocks its own fonts
+### 5. The dashboard's CSP blocks its own fonts — FIXED 2026-09-07, now guarded
 
 ```
 Refused to load the stylesheet 'https://fonts.googleapis.com/css2?family=Inter...'
@@ -675,6 +675,43 @@ Refused to load the stylesheet 'https://fonts.googleapis.com/css2?family=Inter..
 31 failed requests per session. `style-src 'self' 'unsafe-inline'` does not permit the
 Google Fonts stylesheet `index.html` itself requests, so the UI renders without its
 intended typography. Self-inflicted: either allow the host or self-host the fonts.
+
+**The defect is gone.** `src/index.css` was created with that `@import` on 2026-08-11
+(`b462f6b`) and it was removed on 2026-09-07 (`13d938c`, #1012), which also dropped to
+platform font stacks to keep the offline guarantee. Re-measured on the shipped
+`ui/dist/`: **0** `@font-face` rules, **0** off-origin `url()`, no font `<link>` in
+`index.html`; the only `url()` in the built CSS is an inlined `data:` SVG.
+
+The right repair was taken — remove the dependency, not widen the policy. Widening to
+`font-src 'self' https://fonts.gstatic.com` would have kept the cloud call and merely
+silenced the browser, contradicting README's *"100% private. No telemetry, no cloud
+calls."*
+
+**Two gates guarded nothing here** (the 5th and 6th instances of that pattern in this
+repo):
+
+1. `ui/tests/qa/nonfunctional-suite.spec.ts:452` — the only test watching for failed
+   network requests **excluded `fonts.gstatic.com` and `fonts.googleapis.com`**. It was
+   taught to ignore precisely this defect.
+2. It made no difference: `qa-headless.yml` runs only `headless-qa-user.spec.ts`, so
+   that suite **never executes in CI** — not on PRs, not nightly.
+
+And the CSP itself had **no test at all** — `grep -rl "Content-Security-Policy" tests/`
+returned nothing, despite `SecurityHeadersMiddleware` being mounted at `web/api.py:108`.
+
+Now guarded by `tests/unit/test_dashboard_offline_guarantee.py` (22 tests, in the
+`unit-tests` job that runs on every PR — no browser, no server). It asserts the shipped
+`dist/` CSS and `index.html` fetch nothing off-origin, that `src/index.css` has no
+external `@import`, and that the CSP is sent and names no third-party host. The
+exclusions in the Playwright suite were removed so it is honest if ever wired up.
+
+*Method note.* `git log -S 'fonts.googleapis'` is misleading on this file: it flags only
+`b462f6b`, because the removal in `13d938c` left the string alive in the comment
+explaining the removal, so the count never reached zero. Read the diffs.
+
+*Method note.* CSP assertions must compare directive values **whole**. `"font-src
+'self'" in csp` stays true after widening to `font-src 'self' https://fonts.gstatic.com`
+— my first version of that test passed under the exact mutation it existed to catch.
 
 ### 6. Onboarding completion is not persisted
 

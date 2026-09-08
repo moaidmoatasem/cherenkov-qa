@@ -449,7 +449,15 @@ test.describe('QA Engineer: Non-Functional Testing — Security, Performance, Ac
       const failedRequests: string[] = [];
       page.on('requestfailed', request => {
         const url = request.url();
-        if (!url.includes('favicon') && !url.includes('manifest') && !url.includes('fonts.gstatic.com') && !url.includes('fonts.googleapis.com')) {
+        // fonts.gstatic.com / fonts.googleapis.com used to be excluded here.
+        // The dashboard's CSP is `font-src 'self'`, so those requests were being
+        // blocked on every page load — excluding them taught the one test that
+        // watches network failures to ignore a real defect. The external font
+        // @import was removed in #1012; the exclusions went with it, and the
+        // invariant is now enforced on every PR by
+        // tests/unit/test_dashboard_offline_guarantee.py (this suite is not run
+        // by qa-headless.yml, which executes only headless-qa-user.spec.ts).
+        if (!url.includes('favicon') && !url.includes('manifest')) {
           failedRequests.push(`${request.method()} ${url}`);
         }
       });
