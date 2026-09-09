@@ -820,6 +820,12 @@ repo):
 2. It made no difference: `qa-headless.yml` runs only `headless-qa-user.spec.ts`, so
    that suite **never executes in CI** — not on PRs, not nightly.
 
+   *Correction, 2026-09-09.* That is true but understates it. `nonfunctional-suite.spec.ts`
+   is one of six files listed in `playwright.config.ts` `testIgnore` as archived legacy
+   specs, so Playwright does not discover it **in any run at all**, local ones included —
+   `npx playwright test --list` reports 17 files, not 23. The workflow selection is the
+   second reason it never runs, not the first.
+
 And the CSP itself had **no test at all** — `grep -rl "Content-Security-Policy" tests/`
 returned nothing, despite `SecurityHeadersMiddleware` being mounted at `web/api.py:108`.
 
@@ -837,7 +843,7 @@ explaining the removal, so the count never reached zero. Read the diffs.
 'self'" in csp` stays true after widening to `font-src 'self' https://fonts.gstatic.com`
 — my first version of that test passed under the exact mutation it existed to catch.
 
-### 6. Onboarding completion is not persisted
+### 6. Onboarding completion is not persisted — ALREADY FIXED, verified 2026-09-09
 
 Completing the wizard clears the overlay, but a reload brings it back. `localStorage`
 holds `nav_collapsed`, `nav_pinned`, `tour_seen`, `recent_workspaces` — **no
@@ -845,9 +851,38 @@ onboarding-complete key**. Four prefs persist and this one does not, so it reads
 oversight. Every refresh and every deep link (`/triage?divergence=…`) lands the user back
 on the welcome screen.
 
-### 7. Cosmetic — generated test titles duplicate the scenario name
+**No longer true.** `App.tsx:215` reads `[cherenkov] onboarding_seen` in a lazy
+`useState` initializer and `App.tsx:227` writes it on completion, both inside
+`try`/`catch` so blocked storage degrades to a dismissed session rather than a crash.
+
+All three exit paths were checked, not just the one the walkthrough used — Escape
+(`OnboardingWizard.tsx:87`), the "Skip & explore" button (`:108`) and the final button
+(`:202`) all call `onComplete` → `handleCompleteOnboarding`. `handleDemo` calls
+`handleNext()` and advances a step rather than dismissing, so it cannot exit unpersisted.
+The key set the walkthrough listed no longer exists at all; the UI now stores exactly
+three keys (`prefers-reduced-motion`, `[copilot] tour_seen`, `[cherenkov] onboarding_seen`).
+
+### 7. Cosmetic — generated test titles duplicate the scenario name — FIXED 2026-09-09
 
 `test('get /orders/{id} happy_path happy_path', …)`.
+
+**Root cause, confirmed at both ends.** `substrate/providers/template_generator.py` built
+the title as `"{method} {path} {case_type} {mutation_id}"`, and `stages/ingest.py:278`
+mints `Mutation(id="happy_path", case_type="happy_path")` for **every** endpoint. So the
+duplication landed on the most common scenario in any suite, once per endpoint. It read
+as a rare cosmetic slip only because the neighbouring `auth` mutation uses
+`id="unauthorized"` and renders correctly.
+
+Fixed by appending the id only when it differs from the case type, so
+`auth`/`unauthorized` and `validation`/`missing_email` keep their detail. Guarded by
+`tests/unit/test_template_generator_test_names.py` (11 tests; 6 fail against the original
+expression, and the other 5 exist to catch over-correction — they must pass either way).
+
+*Method note.* `grep` over `stub/generated_tests` finds **zero** duplicated titles, which
+looks like evidence the defect is not real. It is not: those fixtures come from a
+different generation path. The defect was confirmed by calling `generate_test` directly
+and by reading the `Mutation(...)` construction in `ingest.py` — both ends, not the
+artefacts in between.
 
 ---
 

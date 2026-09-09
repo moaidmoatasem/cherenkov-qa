@@ -174,10 +174,14 @@ def generate_test(
     body = _infer_body(operation, schemas, case_type, mutation_id)
     resp_prop = _infer_response_property(operation, schemas, expected_status)
 
-    test_name = (
-        f"{method.lower()} {path} {case_type} {mutation_id or ''}".strip().replace(
-            "  ", " "
-        )
+    # `ingest.py` mints the happy-path mutation as Mutation(id="happy_path",
+    # case_type="happy_path") for every endpoint, so appending both produced
+    # `get /orders/{id} happy_path happy_path` on the single most common
+    # scenario there is. The id only adds information when it differs from the
+    # case type (e.g. case_type="auth", id="unauthorized").
+    suffix = mutation_id if mutation_id and mutation_id != case_type else ""
+    test_name = f"{method.lower()} {path} {case_type} {suffix}".strip().replace(
+        "  ", " "
     )
 
     lines: list[str] = [
