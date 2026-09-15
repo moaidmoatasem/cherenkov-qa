@@ -1,5 +1,82 @@
 # CHERENKOV -- Session Handover
 
+## The dashboard's real-backend E2E suite has never run in CI — wired it in (2026-09-15)
+
+Prompted by a blunt product question: "a lot of code and development but no value — where
+are the core functions from a functionality/UX POV?" Rather than guess, ran the product
+(CLI + web) as a real user would, starting with the README's own first command.
+
+**1. `cherenkov demo` — the README's literal first command — does not work in a fresh
+environment.** `.claude/hooks/session-start.sh` installs `requirements.txt` (dependencies)
+but never runs `pip install .`/`pip install -e .`, so the `cherenkov` console script is
+never registered. Confirmed: `cherenkov demo` failed with "No such file or directory"
+until installed by hand. Every Claude Code web session on this repo started from a state
+where the flagship "see it in 60 seconds" command was broken — the opposite of the
+README's "no setup required" claim. Fixed by adding `pip install --user -e . --no-deps`
+to the hook, alongside the dependency install. Once installed, the demo itself runs
+correctly and does what the README claims (Beats 1-4, meaningful-assertion gate catches
+the weakened assertion) — this was an onboarding gap, not a demo-logic bug.
+
+**2. The bigger finding: `tests/e2e/*.spec.ts` — the only suite that drives the real React
+dashboard against a real FastAPI backend (`bootstrapReal`, no `api_mocks.ts`) — runs in
+zero CI workflows on an ordinary PR.** Checked all 37 workflow files. `qa-headless.yml`
+runs a *different* spec (`tests/qa/headless-qa-user.spec.ts`) and only on schedule,
+`workflow_dispatch`, or a PR carrying the `qa-headless` label. `ci.yml` never invokes
+`playwright test` against this suite at all. This is exactly the "gate that runs only on
+a schedule is how the dead suite survived" pattern this file's own history keeps
+rediscovering (2026-08-13 brain-map and integrity-detector entries) — except here nothing
+ever ran it automatically in the first place. Every defect the 2026-09-08 and 2026-08-20
+entries below found (a completely broken Enterprise workspace, a one-way-door Mobile
+Pilot, 15+ swallowed error messages, a first-run crash) was caught by a human/agent
+manually starting a backend and running Playwright during a periodic audit — never by CI.
+Between audits, nothing holds those fixes in place.
+
+New `.github/workflows/dashboard-e2e.yml` runs the full `tests/e2e/` suite (live backend
++ built frontend) on every PR to `main`, mirroring the exact manual steps the HANDOVER
+entries below describe.
+
+**Before wiring it, ran the full suite to see what state it's actually in**: 8 of 56 tests
+failed on a fresh backend.
+- **2 were a real, previously-unknown defect**, not environment noise:
+  `triage-workspace.spec.ts`'s two HITL review-queue tests (`HitlReviewQueue renders...`,
+  `...approve and reject actions...`) assert the Approve/Reject buttons are visible with
+  *zero setup*. `ReviewStage._bridge_hitl` (`cherenkov/stages/review.py:566`) only enqueues
+  a review item when a generated test's quality score lands in the 0.7-0.9 band — by
+  design, most tests are auto-approved or regenerated without ever reaching a human — so a
+  fresh backend's queue is legitimately empty and the test could never pass against real
+  data; it only ever passed against mock fixtures or coincidental leftover state. This means
+  **the HITL approve/reject flow — the actual human-trust boundary over AI-generated
+  tests, one of the product's stated differentiators — had no working real-backend
+  coverage.** Verified the backend path itself is sound (manually enqueued an item via
+  `HitlQueue`, confirmed it round-trips through `GET /api/v1/review/queue` and
+  `POST /api/v1/review/approve`), so the defect was in the test, not the feature. Fixed by
+  seeding a real pending item through the same `HitlQueue` class before the assertions
+  (not a new REST endpoint) and cleaning it up in `afterAll`; both tests now pass against
+  a genuinely fresh backend. Also fixed the empty-state copy in `HitlReviewQueue.tsx`,
+  which read "All generated test scenarios have been reviewed and approved" on a queue
+  that has never had anything in it — technically-true-but-misleading, the same failure
+  class as the "honest failure rendered in success-green" defect from 2026-09-08.
+- **2 were `new_dashboard.spec.ts`**, confirmed stale: both target `#cherenkov-app-header`,
+  an id the current app root (`#cherenkov-app-core`) doesn't have — the same UI drift the
+  2026-08-20 entry already named. Fully superseded by `dashboard-workspace.spec.ts` +
+  `navigation-ia.spec.ts`. Added to `playwright.config.ts`'s `testIgnore`, matching how
+  the equally-stale `dashboard_e2e.spec.ts` and `a11y.spec.ts` were handled before it.
+- **4 are the same already-documented, environment-dependent gap** the 2026-08-20 entry
+  named and deferred ("worth a separate pass; not regressions") — a fresh backend has no
+  run history (`VerdictHistoryTable`, `IntegrityHeatmap` render an `EmptyState`, not a
+  `<table>`, exactly as designed) and this container has no GPU/VLM device
+  (`DeviceManager` correctly shows "Hardware Degraded"), plus one more legacy text
+  assertion (`AppHeader`'s "Tokens:" — the header shows a `tokenUsagePercent` ring, not
+  that label). Marked `test.fixme()` in-file with the specific reason each, rather than
+  silently excluded, so the new gate is green today without hiding that these four still
+  need real seeded run/integrity data or a rewritten assertion — genuinely separate work
+  from wiring the gate itself.
+
+**Net: the suite went from "never runs" to 52 passed / 4 documented-fixme / 0 failed,
+gated on every PR.** The four fixmes are the next honest thing to pick up here — they need
+a way to seed a completed verification run (verdicts, integrity scores) into a fresh
+backend for tests to assert against, which is real work, not a one-line fix.
+
 ## Follow-up: fixed the Mobile Pilot lock left open below (2026-09-08)
 
 The previous entry left one finding deliberately unfixed: `/api/v1/mobile/pilot/start`

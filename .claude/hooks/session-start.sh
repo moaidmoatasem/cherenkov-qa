@@ -14,6 +14,13 @@ cd "$CLAUDE_PROJECT_DIR"
 # never imported directly, so unit tests/lint don't need it — skip it.
 grep -vi '^Appium-Python-Client' requirements.txt | pip install --user -r /dev/stdin
 
+# Install the package itself (console script + entry points) so `cherenkov ...`
+# works from the first command of the session. requirements.txt only installs
+# dependencies; without this, `cherenkov demo` — the README's own first command
+# — fails with "No such file or directory" until someone runs `pip install .`
+# by hand.
+pip install --user -e . --no-deps
+
 # Dashboard UI (React/Vite) — needed for `tsc --noEmit` lint and Playwright tests.
 if [ -d cherenkov/web/ui ]; then
   (cd cherenkov/web/ui && npm install)
