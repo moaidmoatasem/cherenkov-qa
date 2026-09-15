@@ -15,6 +15,13 @@ export default defineConfig({
     // 'tests/dashboard_e2e.spec.ts' was deleted in e6b1fc3 and replaced by
     // tests/e2e/new_dashboard.spec.ts; the ignore entry outlived the file.
     'tests/sdd_cockpit.spec.ts',
+    // new_dashboard.spec.ts is itself now the legacy file its own comment
+    // predicted: 2 of its 4 tests target '#cherenkov-app-header', an id the
+    // current app root (#cherenkov-app-core, see qa/page-objects.ts) doesn't
+    // have. Superseded by tests/e2e/dashboard-workspace.spec.ts and
+    // navigation-ia.spec.ts, which cover the same surface against the
+    // current IA. See HANDOVER.md 2026-08-20.
+    'tests/e2e/new_dashboard.spec.ts',
     'tests/qa/api-contract-integration.spec.ts',
     'tests/qa/functional-suite.spec.ts',
     'tests/qa/nonfunctional-suite.spec.ts',
