@@ -23,7 +23,7 @@ jobs:
       total_stack_size: ${{ steps.check-stack.outputs.total_size }}
       stack_base_ref: ${{ steps.check-stack.outputs.base_ref }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Check if PR belongs to a stack
         id: check-stack
@@ -80,7 +80,7 @@ jobs:
     if: needs.determine-stack-membership.outputs.is_in_stack != 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
