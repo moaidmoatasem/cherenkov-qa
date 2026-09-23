@@ -1,5 +1,39 @@
 # CHERENKOV -- Session Handover
 
+## Cleared 3 of the 4 dashboard E2E `test.fixme()`s the 2026-09-15 entry left open (2026-09-23)
+
+That entry named the four fixmes "the next honest thing to pick up here." Reproduced each
+against a fresh backend (isolated `CHERENKOV_DATA_DIR`/`CHERENKOV_RUNS_DB`) before touching
+anything, since two of the four stated reasons turned out to be wrong:
+
+- **`IntegrityHeatmap` — the stated reason was wrong.** The fixme said "no integrity/risk
+  scores in a fresh backend," but `divergences.list_divergences()`
+  (`cherenkov/web/divergences.py:187`) falls back to a 7-endpoint demo corpus whenever nothing
+  is stored, so data was never the problem. The real cause: `IntegrityHeatmap` lives in the
+  Dashboard's "Coverage & Signals" tab (`DashboardWorkspace.tsx`), not the default "Overview"
+  tab the test lands on, so `getByTestId('integrity-heatmap')` genuinely wasn't in the DOM.
+  Fixed by clicking the tab first — no seeding needed.
+- **`VerdictHistoryTable` — the stated reason was right.** `runs.length === 0` really does
+  render an `EmptyState`, not a `<table>`, on a truly fresh backend. Seeded one run through
+  `RunStore` (`cherenkov/persistence/run_store.py:104`, same pattern as the HITL seed in
+  `triage-workspace.spec.ts`) in `beforeAll`, deleted it in `afterAll`. Verified cleanup by
+  running the suite twice back-to-back and querying the DB for leftover rows after each.
+- **AppHeader `"Tokens:"` — worse than stated.** The fixme said the label had moved to a
+  `tokenUsagePercent` ring; it hasn't moved anywhere. `AppHeader.tsx` accepts a
+  `tokenUsagePercent` prop but never renders it — there is no token-budget UI at all, text or
+  ring. Left as dead code (a product call: wire it up or drop the prop, not decided here) and
+  rewrote the test to check only the header chrome that actually exists.
+- **DeviceManager (`settings-workspace.spec.ts`) — left as `test.fixme()`.** This container has
+  no GPU/VLM device; "Hardware Degraded" is the correct status. Genuinely environmental.
+
+**Net: `tests/e2e/` went from 52 passed / 4 fixme to 55 passed / 1 fixme.** Full suite run
+twice against a fresh backend to confirm the seed/cleanup is stable, not order-dependent.
+
+**Also reproduced, not fixed:** on the second back-to-back run, `settings-workspace.spec.ts`'s
+GovernanceSettings test failed on rate-limit noise (`429` from `cherenkov/web/middleware/
+rate_limit.py`) after two full suite runs in quick succession — matches issue #1026 ("12 that
+failed were rate-limiter artifacts"). Unrelated to this file; not touched here.
+
 ## The dashboard's real-backend E2E suite has never run in CI — wired it in (2026-09-15)
 
 Prompted by a blunt product question: "a lot of code and development but no value — where
