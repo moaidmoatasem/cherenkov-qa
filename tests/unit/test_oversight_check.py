@@ -50,3 +50,19 @@ def test_online_findings_flags_untracked_stale_and_red():
 
 def test_digest_is_stable_and_content_sensitive():
     assert oc.digest("a") == oc.digest("a") != oc.digest("b")
+
+
+def test_done_and_struck_through_mentions_are_not_stale_refs():
+    """Finished work is recorded in ROADMAP on purpose; only live references can go stale."""
+    roadmap = "\n".join([
+        "| ~~Fixed thing~~ — fixed | #101 |",
+        "| Redesign — **done, merged in #102/#103:** more | #5 |",
+        "Done in #104: #105, #106.",
+        "- Rebase draft PR #107 (still open item)",
+        "- Live item #108",
+    ])
+    found = oc.online_findings([{"number": 5, "title": "t", "label_names": []}], [], {}, None, roadmap, NOW)
+    text = "\n".join(found)
+    for n in (101, 102, 103, 104, 105, 106):
+        assert f"#{n}," not in text and f"#{n} " not in text
+    assert "#107" in text and "#108" in text  # live mentions of non-open numbers still flagged
