@@ -25,7 +25,7 @@ jobs:
           - 8080:8080
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Wait for Petstore to be ready
         run: |
