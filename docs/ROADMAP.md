@@ -21,8 +21,8 @@ Why: [PREMORTEM_2026-10](reviews/PREMORTEM_2026-10.md) and [MARKET_SCAN_2026-10]
 
 | Item | Where |
 |---|---|
-| Redesign Phase 1 — **done in PR #1031 (pending merge):** one identity, Core/Assist/Labs tiers, `cherenkov check`, first-value CI job, `mode: check` PR-comment Action (M3, due 2026-10-07), Labs nav + removed invented UI values, `agent init` referee rule. **Remaining:** slim core install (553 MB today), sample-findings banner (#1041), `check` SARIF output | PR #1031 |
-| Default-path meaningful-assertion gate uses a mutant that catches 0/3 cheat classes | #1032 |
+| Redesign Phase 1 — **done, merged in #1031/#1043:** one identity, Core/Assist/Labs tiers, `cherenkov check`, first-value CI job, `mode: check` PR-comment Action (M3, due 2026-10-07), Labs nav + removed invented UI values, `agent init` referee rule. **Remaining:** slim core install (553 MB today), sample-findings banner (#1041), `check` SARIF output | #1031, #1043 |
+| ~~Default-path meaningful-assertion gate uses a mutant that catches 0/3 cheat classes~~ — fixed: gate now runs the single-axis battery (status/value/enum) | #1032 |
 | Groups shadow `review`/`enterprise`/`routine` commands; dashboard launch broken | #1039 |
 | `init` scaffolds a project `doctor` rejects, plus a broken CI workflow | #1040 |
 | Dashboard shows sample/invented data as real | #1041 |

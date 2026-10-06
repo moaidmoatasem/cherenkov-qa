@@ -80,6 +80,11 @@ def synthesize_mutant_response(
     return concrete_path, _mutate_status(success), body
 
 
+# Axes the default-path gate requires a test to kill. `missing` is excluded:
+# honest suites fail it too, so it discriminates poorly (see the battery docstring).
+GATE_MUTANTS = ("status", "value", "enum")
+
+
 def _enum_field(
     schema: dict[str, Any] | None, spec: dict[str, Any]
 ) -> tuple[str, list[Any]] | None:
