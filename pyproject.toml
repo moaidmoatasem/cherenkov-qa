@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cherenkov-qa"
-version = "1.3.0"
+version = "1.4.0"
 description = "The integrity gate for AI-written tests: prove an agent's change to your tests did not weaken them."
 readme = "README.md"
 license = {text = "Apache-2.0"}
