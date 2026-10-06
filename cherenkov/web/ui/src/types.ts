@@ -237,4 +237,6 @@ export interface Divergence {
   evidence: string;
   reproSteps: string;
   confidence?: number;
+  /** True when this is built-in demo data, not a result from the user's run (#1041). */
+  sample?: boolean;
 }

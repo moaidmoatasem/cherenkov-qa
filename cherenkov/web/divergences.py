@@ -200,6 +200,7 @@ def list_divergences() -> list[dict]:
     out = []
     for d in _DIVERGENCE_CORPUS:
         item = dict(d)
+        item["sample"] = True  # lets the UI label this as seed data, not a result (#1041)
         if d["id"] in _STATUS_OVERRIDES:
             item["status"] = _STATUS_OVERRIDES[d["id"]]
         out.append(item)

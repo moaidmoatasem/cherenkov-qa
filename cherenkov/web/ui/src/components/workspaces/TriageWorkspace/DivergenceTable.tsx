@@ -6,7 +6,7 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { List } from 'react-window';
-import { Card, Skeleton, EmptyState, useToast } from '../../ui';
+import { Card, Skeleton, EmptyState, useToast, SampleDataBanner, hasSampleData } from '../../ui';
 import { fetchDivergences, actOnDivergence } from '../../../lib/api';
 import { Divergence } from '../../../types';
 import { Zap, AlertTriangle, CheckCircle2, ShieldAlert, RefreshCw } from 'lucide-react';
@@ -158,6 +158,7 @@ export const DivergenceTable: React.FC<DivergenceTableProps> = ({ onSelectDiverg
 
   return (
     <Card className="p-6 space-y-4" data-testid="divergence-table">
+      {hasSampleData(divergences) && <SampleDataBanner />}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-sm font-semibold font-mono uppercase tracking-wider text-text-muted flex items-center gap-2">
