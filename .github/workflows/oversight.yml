@@ -1,0 +1,28 @@
+name: Oversight
+
+# Weekly, deterministic (no LLM): compares docs/ROADMAP.md with open issues, stale PRs and
+# CI health, and upserts ONE issue labelled `oversight` (edited only when content changes).
+on:
+  schedule:
+    - cron: '17 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  actions: read
+  pull-requests: read
+
+jobs:
+  oversight:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Oversight check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: python scripts/oversight_check.py --upsert

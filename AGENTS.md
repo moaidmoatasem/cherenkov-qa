@@ -25,7 +25,7 @@
 
 ### Consolidated Plan (Phase -1 through Phase 8)
 
-The consolidated plan (see [docs/PHASE_PLAN.md](docs/PHASE_PLAN.md)) extends CHERENKOV with 5 new capabilities across Phase 1-8. All phases are tracked in GitHub issues (#277-#391).
+The historical plan ([docs/PHASE_PLAN.md](docs/PHASE_PLAN.md), superseded) extended CHERENKOV with 5 new capabilities across Phase 1-8. All phases are tracked in GitHub issues (#277-#391).
 
 **Current Status:**
 - ✅ **Phase -1** (Planning & Preparation): Complete. All 6 ADRs written, all strategy docs created.
@@ -76,11 +76,11 @@ The consolidated plan (see [docs/PHASE_PLAN.md](docs/PHASE_PLAN.md)) extends CHE
 - Track I (CI/CD): Phase 10 ✅
 
 **Extended Roadmap (Phases 9-16 — Product & Market Expansion):**
-- See [docs/PRODUCT_STRATEGY_ROADMAP.md](docs/ROADMAP.md) for Phases 9-16: market launch, enterprise tier, fine-tuned model, 10-year vision, revenue model.
+- See [docs/ROADMAP.md](docs/ROADMAP.md) for the current work queue and focus decision (no paid tier — 2026-08-01 decision).
 - See [docs/INTEGRATION_STRATEGY.md](docs/INTEGRATION_STRATEGY.md) for the 25-integration delivery plan (VS Code, GitHub Actions, Slack, Teams, Jira, Xray, Zephyr, GraphQL, gRPC, and more) across 6 sprints.
 
 **Agent Guidance:**
-- Read [PHASE_PLAN.md](docs/PHASE_PLAN.md) first for consolidated plan overview
+- Read the "Current state" block of [HANDOVER.md](HANDOVER.md) and [docs/ROADMAP.md](docs/ROADMAP.md) first
 - Read the relevant ADR for architectural decisions (docs/adr/)
 - Read the relevant vision doc for your phase (docs/vision/15-18)
 - Follow Clean Architecture (Ports/Adapters) per ADR-004

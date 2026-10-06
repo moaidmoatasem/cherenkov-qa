@@ -6,6 +6,8 @@ material errors. Read them through the project's honest baseline ([HANDOVER.md](
 
 ## Current
 
+- `MARKET_SCAN_2026-10.md` — market scan (WebdriverIO v10, TesterArmy 0.10, healer-agent vendors, Paperclip as a loop reference). Method caveat inside: vendor sites were unreachable, claims cite registries/snippets.
+- `PREMORTEM_2026-10.md` — premortem, critique, assessment and the keep-going verdict with kill criteria (checked 2026-12-15).
 - `TESTERARMY_TEARDOWN_2026-08.md` — competitive teardown of TesterArmy (`testerarmy@0.9.0`)
   plus a phased plan for the gaps it exposes. **Caveat on method:** the docs site was
   egress-blocked from the session that wrote it, so the product was reconstructed from the

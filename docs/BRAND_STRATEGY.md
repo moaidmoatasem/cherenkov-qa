@@ -1,5 +1,8 @@
 # CHERENKOV — Brand, Strategy & Go-to-Market
 
+> **Note (2026-10-06):** paid open-core tiers described below were superseded by the 2026-08-01 decision (fully open source, no paid tier).
+
+
 > **Status:** Canonical brand + strategy source of truth · **Owner:** Moaid Moatasem
 > **Decisions locked (2026-06-16):** One master brand · Open-core (career capital **and** wealth) · Apache-2.0 core
 > Supersedes the branding fragments in `PRODUCT_STRATEGY_ROADMAP.md`, `docs/vision/00_VISION.md` (now the *vision layer* only), and the `cherenkov-security.com` "Sovereign AI Security" shell (to be folded in).

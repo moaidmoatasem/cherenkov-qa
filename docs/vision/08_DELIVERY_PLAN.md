@@ -1,7 +1,8 @@
+<!-- plan-status: superseded -->
+> **Superseded (2026-10-06).** Not the plan of record. See the "Current state" block in [HANDOVER.md](../../HANDOVER.md) and the work queue in [docs/ROADMAP.md](../../docs/ROADMAP.md).
+
 # CHERENKOV — Consolidated Delivery Plan (across-the-board status of record)
 
-> [!WARNING]
-> **This document is deprecated.** For the single source of truth on active roadmap progress, completed milestones, and upcoming tasks, please refer to the unified [_archive/ROADMAP_RECONCILIATION.md](../_archive/ROADMAP_RECONCILIATION.md).
 
 **Status:** ✅ Built (E0–E13 built, 5-QA gate 0/5 reviews) · **Date:** 2026-06-04
 **Live plan has moved on:** see [`10_HORIZON_2.md`](10_HORIZON_2.md) and EPIC #147. This file is kept as the record of how the gate was reached.
