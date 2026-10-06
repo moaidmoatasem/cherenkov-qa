@@ -1379,28 +1379,6 @@ and reports what a real run would do, without requiring GPU or training dependen
 
 ---
 
-#### `testerarmy`
-TesterArmy-inspired command group.
-
-```bash
-# Retrieve documentation for a topic (JSON if requested)
-cherenkov testerarmy docs <topic> --json
-
-# List environments
-cherenkov testerarmy environments
-
-# List projects
-cherenkov testerarmy projects
-
-# List runs
-cherenkov testerarmy runs
-
-# List tests
-cherenkov testerarmy tests
-```
-
----
-
 ## 🔒 The Anti-Lock-In Promise
 CHERENKOV does not lock you into a proprietary framework. Every test generated is a standard, pure Playwright TypeScript file (`.spec.ts`) that imports a pure `openapi-fetch` client.
 

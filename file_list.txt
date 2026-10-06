@@ -375,7 +375,6 @@ cherenkov/cli/commands/routine_cmd.py
 cherenkov/cli/commands/simple.py
 cherenkov/cli/commands/teleport_cmd.py
 cherenkov/cli/commands/template_cmd.py
-cherenkov/cli/commands/testerarmy.py
 cherenkov/cli/commands/validate.py
 cherenkov/cli/commands/verify.py
 cherenkov/cli/core.py
@@ -1362,7 +1361,6 @@ docs/adr/ADR-015-per-process-limiter.md
 docs/agent-orchestration.md
 docs/architecture/AI_ROUTING_CONSOLIDATION_PLAN.md
 docs/cli-reference.md
-docs/cli/testerarmy.md
 docs/compliance/CERT_COMPLIANCE_MAPPING.md
 docs/config_cookbook.md
 docs/dashboard/FE_DESIGN_SPEC.md
@@ -1853,8 +1851,6 @@ skills/rag-query/SKILL.md
 skills/self-healing/SKILL.md
 skills/snyk-remediation/SKILL.md
 skills/sync-driven-dev/SKILL.md
-skills/testerarmy_insp/SKILL.md
-skills/testerarmy_insp/commands/testerarmy.py
 skills/verify/SKILL.md
 skills/visual-diff/SKILL.md
 skills/visual-regression/SKILL.md
