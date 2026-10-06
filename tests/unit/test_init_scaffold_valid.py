@@ -1,7 +1,7 @@
 """#1040: what `cherenkov init` scaffolds must be accepted by the rest of the tool."""
 from __future__ import annotations
 
-import tomllib
+import re
 from pathlib import Path
 
 import yaml
@@ -12,20 +12,30 @@ from cherenkov.stages.init_cmd import generate_github_actions_workflow, generate
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def _flatten(d: dict, prefix: str = "") -> list[str]:
-    out: list[str] = []
-    for k, v in d.items():
-        key = f"{prefix}{k}"
-        if isinstance(v, dict) and not any(key.startswith(n) and key != n for n in ()):
-            out += _flatten(v, f"{key}.")
-        else:
-            out.append(key)
-    return out
+def _written_keys(toml_text: str) -> list[str]:
+    """Dotted `section.key` names in init's TOML.
+
+    Hand-parsed on purpose: `tomllib` is 3.11+ and `tomli` is not a declared
+    dependency, so CI on 3.10 could not import either. The template only uses
+    `[table]` headers and single-line `key = value` pairs.
+    """
+    keys: list[str] = []
+    section = ""
+    for line in toml_text.splitlines():
+        header = re.match(r"^\[([\w.]+)\]\s*(#.*)?$", line)
+        if header:
+            section = header.group(1)
+            continue
+        pair = re.match(r"^([A-Za-z_]\w*)\s*=", line)
+        if pair:
+            keys.append(f"{section}.{pair.group(1)}" if section else pair.group(1))
+    return keys
 
 
 def test_every_key_init_writes_is_known_to_the_loader():
-    data = tomllib.loads(generate_toml(["openapi.yaml"], "laptop", "CPU"))
-    unknown = [k for k in _flatten(data) if k not in KNOWN_KEYS]
+    keys = _written_keys(generate_toml(["openapi.yaml"], "laptop", "CPU"))
+    assert keys, "parser found no keys; the template format changed"
+    unknown = [k for k in keys if k not in KNOWN_KEYS]
     assert unknown == []
 
 
