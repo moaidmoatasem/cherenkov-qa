@@ -26,7 +26,7 @@ Why: [PREMORTEM_2026-10](reviews/PREMORTEM_2026-10.md) and [MARKET_SCAN_2026-10]
 | ~~Groups shadow `review`/`enterprise`/`routine` commands; dashboard launch broken~~ — fixed: no same-named groups, `cherenkov review --port` works again | #1039 |
 | `init` scaffolds a project `doctor` rejects, plus a broken CI workflow — init half fixed (valid config keys, real `mode: check` workflow); **remaining:** `doctor` assumes Ollama and checks `npx playwright` instead of what `validate` needs | #1040 |
 | ~~Dashboard shows sample/invented data as real~~ — fixed: demo findings carry `sample: true` and Triage/Heatmap show a banner; invented fallbacks and hardcoded badges went in #1043 | #1041 |
-| Walkthrough defects: #995 #996 #997 #998 | issues |
+| Walkthrough defects: ~~#995~~ (diff now sees schema-level changes) #996 #997 #998 | issues |
 
 Done in #1031: #993, #994, routines RCE (allowlist), testerarmy stub removed.
 

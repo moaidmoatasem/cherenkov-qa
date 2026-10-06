@@ -11,6 +11,10 @@
 - **Standing rules** (unchanged; see "Standing rules for agents" below): verify with file:line before claiming done; one branch per concern, draft PR to main; stage specific files, never `git add -A`; never simulate M1; no new roadmap/handover docs; log new work as issues.
 - **Do not trust:** `docs/_archive/ROADMAP_RECONCILIATION.md` (fabricated gate results), `.agents/*` notes, `docs/STATUS.md`.
 
+## 2026-10-06 — #995: `diff` sees schema-level breaking changes
+
+`SpecDiffer` now walks `components.schemas` and inline request/response bodies (new required field, removed field, type change, removed/added enum value, removed schema). Identical `$ref`s are skipped so one change gives one finding; depth-capped for recursive schemas. Not covered: `allOf`/`oneOf`/`anyOf`, and request-vs-response direction (a new required response field is reported as breaking too). Tests: `tests/unit/test_spec_differ_schemas.py`. Claimed via `in-progress` label.
+
 ## 2026-10-06 — #1041: sample findings are labelled
 
 `list_divergences` marks the built-in corpus `sample: true` when the store is empty; `SampleDataBanner` (`components/ui`) renders in `DivergenceTable` and `IntegrityHeatmap`. Tests: `tests/unit/test_divergence_sample_flag.py`, a triage e2e assertion (6/6 pass against a real backend). Tracked `ui/dist` rebuilt. Left: project switcher still not wired (`AppHeader`).

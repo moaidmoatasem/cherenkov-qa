@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * **validate:** `cherenkov validate` now exits `1` when any test fails (previously it printed `[SUCCESS]` and exited `0` with 0/N passing unless `--fail-on-drift` was passed). The status shows `PASSED` / `FAILED (n failed)`. Use `--no-fail-on-drift` for the old report-only behaviour (#993).
 
+* **diff:** `cherenkov diff` now compares `components.schemas` and inline request/response bodies. A new required field, a removed field, a changed type or a removed enum value exits `1`; before, a schema-only change printed "No changes detected" and exited `0` (#995).
+
 ### Security
 
 * **routines:** `POST /routines/`, `cherenkov routine create` and the scheduler adapter accept only allowlisted targets; previously a caller-supplied `module:func` was imported and run on a schedule.

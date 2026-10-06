@@ -28,6 +28,13 @@ Please replace with a meaningful description.
     ADDED_ENDPOINT = "added_endpoint"
     ADDED_OPTIONAL_PARAM = "added_optional_param"
     CHANGED_DESCRIPTION = "changed_description"
+    ADDED_REQUIRED_FIELD = "added_required_field"
+    REMOVED_FIELD = "removed_field"
+    CHANGED_FIELD_TYPE = "changed_field_type"
+    REMOVED_ENUM_VALUE = "removed_enum_value"
+    ADDED_ENUM_VALUE = "added_enum_value"
+    REMOVED_SCHEMA = "removed_schema"
+    ADDED_OPTIONAL_FIELD = "added_optional_field"
 
 
 @dataclass
@@ -145,8 +152,11 @@ Please replace with a meaningful description.
                 after["paths"][p],
                 p,
                 report,
+                before,
+                after,
             )
 
+        self._diff_components(before, after, report)
         return report
 
     def _diff_path_item(
@@ -155,6 +165,8 @@ Please replace with a meaningful description.
         after_item: dict,
         path: str,
         report: SpecDiffReport,
+        before_spec: dict | None = None,
+        after_spec: dict | None = None,
     ) -> None:
         for method in before_item:
             if method.lower() not in _HTTP_METHODS:
@@ -175,6 +187,9 @@ Please replace with a meaningful description.
             after_op = after_item[method]
             self._diff_parameters(before_op, after_op, path, method, report)
             self._diff_response_codes(before_op, after_op, path, method, report)
+            self._diff_bodies(
+                before_op, after_op, path, method, report, before_spec or {}, after_spec or {}
+            )
 
     def _diff_parameters(
         self,
@@ -269,6 +284,131 @@ Please replace with a meaningful description.
                     detail=f"Response status {code} removed from {method.upper()} {path}",
                 )
             )
+
+    # ── schema-level changes (#995) ───────────────────────────────────────────
+    # Components are compared once, by name. A body that `$ref`s the same
+    # component in both specs is skipped (already covered there), so one real
+    # change yields one finding. Bodies are compared only when inline or when
+    # the `$ref` target changed.
+
+    _MAX_DEPTH = 12
+
+    def _diff_components(self, before: dict, after: dict, report: SpecDiffReport) -> None:
+        b_schemas = (before.get("components") or {}).get("schemas") or {}
+        a_schemas = (after.get("components") or {}).get("schemas") or {}
+        for name in sorted(b_schemas):
+            where = f"#/components/schemas/{name}"
+            if name not in a_schemas:
+                report.breaking.append(SpecChange(
+                    change_type=ChangeType.REMOVED_SCHEMA, breaking=True, endpoint=where,
+                    method=None, detail=f"Schema '{name}' was removed",
+                ))
+                continue
+            self._diff_schema(b_schemas[name], a_schemas[name], where, name, None, report,
+                              before, after, 0)
+
+    def _diff_bodies(
+        self,
+        before_op: dict,
+        after_op: dict,
+        path: str,
+        method: str,
+        report: SpecDiffReport,
+        before_spec: dict,
+        after_spec: dict,
+    ) -> None:
+        def json_schema(content: Any) -> Any:
+            media = (content or {}).get("application/json") or {}
+            return media.get("schema")
+
+        pairs = [("request body", json_schema((before_op.get("requestBody") or {}).get("content")),
+                  json_schema((after_op.get("requestBody") or {}).get("content")))]
+        for code, b_resp in (before_op.get("responses") or {}).items():
+            a_resp = (after_op.get("responses") or {}).get(code)
+            if a_resp is None:
+                continue  # removal already reported by _diff_response_codes
+            pairs.append((f"{code} response",
+                          json_schema((b_resp or {}).get("content")),
+                          json_schema((a_resp or {}).get("content"))))
+        for label, b_schema, a_schema in pairs:
+            if isinstance(b_schema, dict) and isinstance(a_schema, dict):
+                self._diff_schema(b_schema, a_schema, path, label, method.upper(), report,
+                                  before_spec, after_spec, 0)
+
+    @staticmethod
+    def _resolve(schema: dict, spec: dict) -> dict:
+        ref = schema.get("$ref")
+        if not isinstance(ref, str) or not ref.startswith("#/"):
+            return schema
+        node: Any = spec
+        for part in ref[2:].split("/"):
+            node = node.get(part) if isinstance(node, dict) else None
+        return node if isinstance(node, dict) else {}
+
+    def _diff_schema(
+        self,
+        before: dict,
+        after: dict,
+        endpoint: str,
+        label: str,
+        method: str | None,
+        report: SpecDiffReport,
+        before_spec: dict,
+        after_spec: dict,
+        depth: int,
+    ) -> None:
+        if depth > self._MAX_DEPTH or not isinstance(before, dict) or not isinstance(after, dict):
+            return
+        b_ref, a_ref = before.get("$ref"), after.get("$ref")
+        if b_ref is not None and b_ref == a_ref:
+            return  # same named component on both sides: diffed under components
+        before = self._resolve(before, before_spec)
+        after = self._resolve(after, after_spec)
+
+        def add(ct: ChangeType, breaking: bool, detail: str, b: Any = None, a: Any = None) -> None:
+            (report.breaking if breaking else report.additive).append(SpecChange(
+                change_type=ct, breaking=breaking, endpoint=endpoint, method=method,
+                detail=detail, before=b, after=a))
+
+        b_type, a_type = before.get("type"), after.get("type")
+        if b_type and a_type and b_type != a_type:
+            add(ChangeType.CHANGED_FIELD_TYPE, True,
+                f"{label}: type changed from '{b_type}' to '{a_type}'", b_type, a_type)
+            return
+
+        b_enum, a_enum = before.get("enum"), after.get("enum")
+        if isinstance(b_enum, list) and isinstance(a_enum, list):
+            for v in b_enum:
+                if v not in a_enum:
+                    add(ChangeType.REMOVED_ENUM_VALUE, True, f"{label}: enum value {v!r} removed", v)
+            for v in a_enum:
+                if v not in b_enum:
+                    add(ChangeType.ADDED_ENUM_VALUE, False, f"{label}: enum value {v!r} added", None, v)
+
+        b_props = before.get("properties") or {}
+        a_props = after.get("properties") or {}
+        b_req, a_req = set(before.get("required") or []), set(after.get("required") or [])
+        for name in sorted(b_props):
+            if name not in a_props:
+                add(ChangeType.REMOVED_FIELD, True, f"{label}: field '{name}' was removed")
+        for name in sorted(a_props):
+            if name not in b_props:
+                if name in a_req:
+                    add(ChangeType.ADDED_REQUIRED_FIELD, True,
+                        f"{label}: new required field '{name}' added — breaks existing callers")
+                else:
+                    add(ChangeType.ADDED_OPTIONAL_FIELD, False, f"{label}: optional field '{name}' added")
+            else:
+                if name in a_req and name not in b_req:
+                    add(ChangeType.ADDED_REQUIRED_FIELD, True,
+                        f"{label}: field '{name}' became required — breaks existing callers")
+                self._diff_schema(b_props[name], a_props[name], endpoint, f"{label}.{name}", method,
+                                  report, before_spec, after_spec, depth + 1)
+
+        b_items, a_items = before.get("items"), after.get("items")
+        if isinstance(b_items, dict) and isinstance(a_items, dict):
+            self._diff_schema(b_items, a_items, endpoint, f"{label}[]", method, report,
+                              before_spec, after_spec, depth + 1)
 
     @staticmethod
     def _load(path: str) -> dict:
