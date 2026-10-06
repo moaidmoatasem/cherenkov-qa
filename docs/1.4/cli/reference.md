@@ -481,12 +481,12 @@ Manage autonomous background routines.
 
 ```bash
 # List active routines
-cherenkov routine routine list
+cherenkov routine list
 
 # Create, toggle, or trigger routines
-cherenkov routine routine create
-cherenkov routine routine toggle
-cherenkov routine routine trigger
+cherenkov routine create
+cherenkov routine toggle
+cherenkov routine trigger
 ```
 
 ### `check-stale`

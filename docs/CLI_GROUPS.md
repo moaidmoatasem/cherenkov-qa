@@ -10,17 +10,16 @@ defined in `cherenkov/cli/groups.py` (`GROUP_LAYOUT`).
 
 ---
 
+There are deliberately no `review`, `enterprise` or `routine` groups: a group named like a command would shadow that command's own options (#1039). Those commands live under `operate` / `admin` and at the top level.
+
 ## Group overview
 
 | Group | Purpose | Member commands |
 |-------|---------|-----------------|
 | [`pipeline`](#pipeline) | Core API conformance pipeline | `validate`, `verify`, `audit`, `check-suite`, `check-stale`, `synthetic`, `generate`, `bench`, `eval`, `drift` |
-| [`review`](#review) | Human-in-the-loop review workflows | `hitl`, `review`, `ocr` |
 | [`model`](#model) | Model / VLM substrate commands | `visual`, `perf`, `mobile`, `mcp`, `examples` |
-| [`operate`](#operate) | Long-running operations and observability | `daemon`, `dashboard`, `explore`, `map`, `author`, `record`, `tokens`, `governance`, `profile`, `teleport` |
-| [`admin`](#admin) | Setup, maintenance, and self-service | `init`, `doctor`, `self-test`, `eject`, `completion`, `report`, `diff`, `demo` |
-| [`enterprise`](#enterprise) | Enterprise integrations and certification | `enterprise`, `certify`, `playbook`, `guardian` |
-| [`routine`](#routine) | Scheduled routines | `routine` |
+| [`operate`](#operate) | Long-running operations and observability | `daemon`, `dashboard`, `explore`, `map`, `author`, `record`, `tokens`, `governance`, `profile`, `teleport`, `hitl`, `review`, `ocr`, `routine` |
+| [`admin`](#admin) | Setup, maintenance, and self-service | `init`, `doctor`, `self-test`, `eject`, `completion`, `report`, `diff`, `demo`, `enterprise`, `certify`, `playbook`, `guardian` |
 
 ---
 
@@ -35,15 +34,6 @@ cherenkov pipeline --help
 
 # Run a command through the group (equivalent to the top-level form)
 cherenkov pipeline --target http://localhost:8000
-```
-
-## `review`
-
-Human-in-the-loop review workflows: `hitl`, `review`, `ocr`.
-
-```bash
-cherenkov review --help
-cherenkov review hitl list
 ```
 
 ## `model`
@@ -73,25 +63,6 @@ Setup, maintenance, and self-service: `init`, `doctor`, `self-test`, `eject`,
 ```bash
 cherenkov admin --help
 cherenkov admin doctor
-```
-
-## `enterprise`
-
-Enterprise integrations and certification: `enterprise`, `certify`, `playbook`,
-`guardian`.
-
-```bash
-cherenkov enterprise --help
-cherenkov enterprise certify --llm deep
-```
-
-## `routine`
-
-Scheduled routines: `routine`.
-
-```bash
-cherenkov routine --help
-cherenkov routine list
 ```
 
 ---

@@ -18,7 +18,7 @@ Please replace with a meaningful description.
 """
     print("Starting review dashboard in non-demo mode...")
     proc = subprocess.Popen(
-        ["./bin/cherenkov", "review", "review", "--port", "8005"],
+        ["./bin/cherenkov", "review", "--port", "8005"],
         env={**os.environ, "PYTHONPATH": "."},
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
