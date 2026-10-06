@@ -126,7 +126,6 @@ behavioral_diff_on_pr = false
 [copilot]
 # Manual-QA pillar (E10). Autonomy ladder grows in E13.
 autonomy = "assisted"         # assisted | augmented | agentic | predictive
-explorer_slow_ms = 2000       # crawl latency budget before a slow-response finding
 mentor_enabled = true         # E13: Mentor surfaces senior idioms to juniors
 
 [certification]
@@ -138,35 +137,30 @@ min_faithfulness = 0.8
 
 def generate_github_actions_workflow() -> str:
     """Generate a template GitHub Actions workflow."""
-    return """name: CHERENKOV Conformance Tests
+    return """name: Cherenkov integrity check
 
 on:
-  push:
-    branches: [ "main" ]
   pull_request:
-    branches: [ "main" ]
+
+permissions:
+  contents: read
+  pull-requests: write
 
 jobs:
-  conformance:
+  integrity:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
         with:
-          node-version: 22
+          fetch-depth: 0
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      # Fails the PR when a change weakens or deletes tests; posts one sticky comment.
+      - name: Cherenkov check
+        uses: moaidmoatasem/cherenkov-qa@main
         with:
-          python-version: '3.10'
-
-      - name: Run CHERENKOV
-        uses: cherenkov-qa/action@v1
-        with:
-          openapi-spec-path: './path/to/openapi.yaml'
-          target-url: 'http://localhost:8000'
+          mode: check
+          # tests-path: ./tests      # auto-detected when omitted
+          # spec: ./openapi.yaml     # optional: also detects hallucinated assertions
 """
 
 
