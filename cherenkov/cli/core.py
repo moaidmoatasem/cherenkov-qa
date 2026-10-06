@@ -217,9 +217,11 @@ def labs_cmd() -> None:
     They stay fully callable, but are outside the integrity-gate product and
     frozen for new features.
     """
-    root = click.get_current_context().find_root().command
+    ctx = click.get_current_context()
+    root = ctx.find_root().command
+    assert isinstance(root, click.Group)  # the root CLI is always a group
     for name in labs_names(root):
-        cmd = root.get_command(click.get_current_context(), name)
+        cmd = root.get_command(ctx, name)
         click.echo(f"  {name:<14} {cmd.get_short_help_str(limit=60) if cmd else ''}")
 
 
