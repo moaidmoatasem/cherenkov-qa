@@ -75,6 +75,24 @@ def _api(path: str, token: str, repo: str, method: str = "GET", body: dict | Non
         return json.loads(resp.read() or b"null")
 
 
+_STRUCK = re.compile(r"~~.*?~~", re.S)
+_DONE_REF = re.compile(r"(?:merged in|fixed in|done in)\s+(?:#\d+[/,\s]*)+", re.I)
+
+
+def live_mentions(roadmap_text: str) -> set[int]:
+    """Issue numbers ROADMAP still treats as live work.
+
+    Struck-through rows and "done/merged in #N" notes record finished work on
+    purpose, so they must not be reported as stale references.
+    """
+    # A row with a struck-through title is finished, including the issue number
+    # in its "Where" column, which sits outside the ~~strike~~.
+    kept = [ln for ln in roadmap_text.splitlines()
+            if not _STRUCK.search(ln) and not re.match(r"\s*done in\b", ln, re.I)]
+    text = _DONE_REF.sub(" ", "\n".join(kept))
+    return {int(n) for n in re.findall(r"#(\d+)", text)}
+
+
 def online_findings(issues: list[dict], prs: list[dict], runs: dict[str, str], last_main_commit: str | None,
                     roadmap_text: str, now: datetime | None = None) -> list[str]:
     """Pure function over already-fetched GitHub data (unit-testable without a network)."""
@@ -86,7 +104,7 @@ def online_findings(issues: list[dict], prs: list[dict], runs: dict[str, str], l
     for n in sorted(open_nums - mentioned):
         title = next(i["title"] for i in issues if i["number"] == n)
         out.append(f"open issue #{n} is not in docs/ROADMAP.md: {title}")
-    for n in sorted(mentioned - open_nums):
+    for n in sorted(live_mentions(roadmap_text) - open_nums):
         out.append(f"ROADMAP mentions #{n}, which is not an open issue (closed, a PR, or a typo) — check it")
     for pr in prs:
         updated = datetime.fromisoformat(pr["updated_at"].replace("Z", "+00:00"))

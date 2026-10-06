@@ -11,6 +11,10 @@
 - **Standing rules** (unchanged; see "Standing rules for agents" below): verify with file:line before claiming done; one branch per concern, draft PR to main; stage specific files, never `git add -A`; never simulate M1; no new roadmap/handover docs; log new work as issues.
 - **Do not trust:** `docs/_archive/ROADMAP_RECONCILIATION.md` (fabricated gate results), `.agents/*` notes, `docs/STATUS.md`.
 
+## 2026-10-06 — overseer: finished work no longer reported as stale
+
+`oversight_check.live_mentions` ignores struck-through rows, `Done in #N` lines and `merged/fixed in #N` notes, so ROADMAP can record finished work without the weekly report flagging it (#1047 listed seven such false positives). Also removed ROADMAP's stale "rebase draft PR #1025" line (it merged). Test: `test_done_and_struck_through_mentions_are_not_stale_refs`. Open `oversight` issue #1047 will refresh on the next run.
+
 ## 2026-10-06 — #995: `diff` sees schema-level breaking changes
 
 `SpecDiffer` now walks `components.schemas` and inline request/response bodies (new required field, removed field, type change, removed/added enum value, removed schema). Identical `$ref`s are skipped so one change gives one finding; depth-capped for recursive schemas. Not covered: `allOf`/`oneOf`/`anyOf`, and request-vs-response direction (a new required response field is reported as breaking too). Tests: `tests/unit/test_spec_differ_schemas.py`. Claimed via `in-progress` label.

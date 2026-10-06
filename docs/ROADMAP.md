@@ -21,7 +21,7 @@ Why: [PREMORTEM_2026-10](reviews/PREMORTEM_2026-10.md) and [MARKET_SCAN_2026-10]
 
 | Item | Where |
 |---|---|
-| Redesign Phase 1 — **done, merged in #1031/#1043:** one identity, Core/Assist/Labs tiers, `cherenkov check`, first-value CI job, `mode: check` PR-comment Action (M3, due 2026-10-07), Labs nav + removed invented UI values, `agent init` referee rule. **Remaining:** slim core install (553 MB today), sample-findings banner (#1041), `check` SARIF output | #1031, #1043 |
+| Redesign Phase 1 — **done, merged in #1031/#1043:** one identity, Core/Assist/Labs tiers, `cherenkov check`, first-value CI job, `mode: check` PR-comment Action (M3, due 2026-10-07), Labs nav + removed invented UI values, `agent init` referee rule. **Remaining:** slim core install (553 MB today), `check` SARIF output | merged |
 | ~~Default-path meaningful-assertion gate uses a mutant that catches 0/3 cheat classes~~ — fixed: gate now runs the single-axis battery (status/value/enum) | #1032 |
 | ~~Groups shadow `review`/`enterprise`/`routine` commands; dashboard launch broken~~ — fixed: no same-named groups, `cherenkov review --port` works again | #1039 |
 | `init` scaffolds a project `doctor` rejects, plus a broken CI workflow — init half fixed (valid config keys, real `mode: check` workflow); **remaining:** `doctor` assumes Ollama and checks `npx playwright` instead of what `validate` needs | #1040 |
@@ -33,9 +33,8 @@ Done in #1031: #993, #994, routines RCE (allowlist), testerarmy stub removed.
 ## Next
 
 - Onboarding: one path, accurate docs, MCP default policy — #1042, #999, #1000, #1010, #1026.
-- Spec-drift workflow posts mock findings — #1038 (resolved by the real Action).
+- ~~Spec-drift workflow posts mock findings~~ — #1038, resolved by the real Action.
 - Hollow automation — #1037. Unwired loops — #1033. Regenerate caps — #1034. Guardian daemons — #1035. Routine CLI — #1036.
-- Rebase draft PR #1025 (walkthrough defects 6/7).
 
 ## Strategic bets (from the market scan)
 
