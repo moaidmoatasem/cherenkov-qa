@@ -65,7 +65,7 @@ export const BrainMapPanel: React.FC = () => {
     try {
       const data = focusId
         ? await getBrainNeighborhood(focusId, 2)
-        : await getBrainGraph({ limit: 300, kinds, q: search });
+        : await getBrainGraph({ limit: 160, kinds, q: search });
       setGraph(data);
     } catch (err) {
       setError((err as Error).message);

@@ -35,6 +35,9 @@ export const KIND_COLORS: Record<string, string> = {
 
 export const kindColor = (kind: string): string => KIND_COLORS[kind] || '#94a3b8';
 
+/** Node labels drawn at 1x zoom; the budget grows with zoom, which is what zooming is for. */
+const LABEL_BUDGET = 18;
+
 interface Particle {
   id: string;
   x: number;
@@ -177,6 +180,17 @@ export const ForceGraph: React.FC<ForceGraphProps> = ({
     ctx.scale(zoom, zoom);
 
     const particles = particlesRef.current;
+
+    // Label budget. A fixed radius threshold labels nearly everything once the
+    // graph is a few hundred nodes, and overlapping text hides the very shape
+    // the graph exists to show. Label the most connected handful plus whatever
+    // is selected or hovered.
+    const budget = Math.round(LABEL_BUDGET * Math.max(1, Math.min(zoom, 3)));
+    const labelFloor =
+      particles.length > budget
+        ? [...particles].sort((a, b) => b.r - a.r)[budget - 1]?.r ?? 0
+        : 0;
+
     ctx.lineWidth = 1 / zoom;
     for (const link of linkPairs) {
       const a = particles[link.a];
@@ -205,10 +219,10 @@ export const ForceGraph: React.FC<ForceGraphProps> = ({
         ctx.stroke();
       }
       ctx.globalAlpha = 1;
-      if (p.r > 8 || isSelected || isHovered) {
-        ctx.fillStyle = 'rgba(226,232,240,0.9)';
+      if (p.r >= labelFloor || isSelected || isHovered) {
+        ctx.fillStyle = isSelected || isHovered ? '#F1F5F9' : 'rgba(226,232,240,0.82)';
         ctx.font = `${Math.max(9, 11 / zoom)}px ui-monospace, monospace`;
-        ctx.fillText(p.node.title.slice(0, 28), p.x + p.r + 3, p.y + 3);
+        ctx.fillText(p.node.title.slice(0, 32), p.x + p.r + 4, p.y + 3);
       }
     }
     ctx.restore();
