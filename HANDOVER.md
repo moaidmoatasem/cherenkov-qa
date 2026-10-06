@@ -11,6 +11,10 @@
 - **Standing rules** (unchanged; see "Standing rules for agents" below): verify with file:line before claiming done; one branch per concern, draft PR to main; stage specific files, never `git add -A`; never simulate M1; no new roadmap/handover docs; log new work as issues.
 - **Do not trust:** `docs/_archive/ROADMAP_RECONCILIATION.md` (fabricated gate results), `.agents/*` notes, `docs/STATUS.md`.
 
+## 2026-10-06 — session-loop skill
+
+Added `.claude/skills/session-loop/SKILL.md` (force-added: `.claude/` is gitignored). Single-agent, one item per session; no swarm/orchestrator, per the Paperclip verdict. Not eval-looped: process text with no gradable output.
+
 ## 2026-10-06 — #1040 (init half): scaffold is valid
 
 `init` no longer writes the unknown `copilot.explorer_slow_ms` key and scaffolds a `mode: check` workflow using `moaidmoatasem/cherenkov-qa@main` with real `action.yml` inputs. Tests: `tests/unit/test_init_scaffold_valid.py`. Left open on #1040: `doctor` is Ollama-centric and checks `npx playwright`. Also triggered `oversight.yml` once via workflow_dispatch; the GitHub repo description still reads "API conformance test generator" and needs a manual edit (no tool here can set it).
