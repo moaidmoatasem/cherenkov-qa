@@ -19,6 +19,7 @@ except ImportError:
     _yaml = None  # type: ignore[assignment]
 
 from cherenkov.core.errors import get_logger
+from cherenkov.execution.fixtures import is_shipped_fixture
 from cherenkov.execution.playwright_invoke import PlaywrightRunner
 from cherenkov.execution.trace_reader import TraceReader
 
@@ -176,9 +177,8 @@ class ValidationEngine:
         test_files = [f for f in os.listdir(self.tests_dir) if f.endswith(".spec.ts")]
 
         # Prevent picking up shipped catch-the-AI-cheating fixtures by default
-        _fixtures = ("demo_", "golden_", "password_too_short")
         if not tests_filter:
-            test_files = [f for f in test_files if not f.startswith(_fixtures)]
+            test_files = [f for f in test_files if not is_shipped_fixture(f)]
 
         if tests_filter:
             test_files = [

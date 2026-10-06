@@ -24,6 +24,7 @@ from cherenkov.core.contracts import (
 )
 from cherenkov.core.errors import get_logger
 from cherenkov.core.settings import get_settings
+from cherenkov.execution.fixtures import is_shipped_fixture
 from cherenkov.execution.playwright_invoke import PlaywrightRunner
 from cherenkov.execution.prism_mock import PrismMockServer
 from cherenkov.execution.trace_reader import TraceReader
@@ -94,34 +95,35 @@ class ReviewStage:
         gates.append(self._gate_client_usage(code))
         gates.append(self._gate_assertion(code))
 
-        test_file_path = self._write_test_file(code, scenario_id)
+        test_file_path = os.path.join(self.stub_dir, "generated_tests", f"{scenario_id}.spec.ts")
+        # A scenario id can equal a shipped fixture's name (`password_too_short`
+        # is both). The gates below must write the candidate to that exact path,
+        # so snapshot the tracked fixture and put it back afterwards — D7 says
+        # nothing in the pipeline edits or deletes it (issue #994).
+        protected_fixture = self._snapshot_shipped_fixture(test_file_path)
+        try:
+            test_file_path = self._write_test_file(code, scenario_id)
 
-        tsc_gate = self._gate_tsc(scenario_id)
-        gates.append(tsc_gate)
+            tsc_gate = self._gate_tsc(scenario_id)
+            gates.append(tsc_gate)
 
-        prism_gate = self._gate_prism(
-            code, scenario_id, spec_path, tsc_gate.passed,
-            gates[0].passed, gates[1].passed,
-        )
-        gates.append(prism_gate)
+            prism_gate = self._gate_prism(
+                code, scenario_id, spec_path, tsc_gate.passed,
+                gates[0].passed, gates[1].passed,
+            )
+            gates.append(prism_gate)
 
-        self._gate_meaningful_assertion(generate, code, scenario_id, operation, schemas, prism_gate, gates)
-        self._gate_ocr(code, test_file_path, scenario_id, gates)
-        self._gate_consensus(generate, code, spec_path, gates)
+            self._gate_meaningful_assertion(generate, code, scenario_id, operation, schemas, prism_gate, gates)
+            self._gate_ocr(code, test_file_path, scenario_id, gates)
+            self._gate_consensus(generate, code, spec_path, gates)
 
-        quality_score = self._compute_quality_score(gates)
-        verdict = self._determine_verdict(quality_score)
+            quality_score = self._compute_quality_score(gates)
+            verdict = self._determine_verdict(quality_score)
 
-        self._log_finetune(verdict, generate, quality_score, gates, code)
-        self._bridge_hitl(verdict, generate, quality_score, gates, scenario_id)
-
-        if self._cleanup_scratch:
-            try:
-                os.remove(test_file_path)
-            except OSError as exc:
-                self.log.warning(
-                    "failed to remove review scratch file", path=test_file_path, error=str(exc)
-                )
+            self._log_finetune(verdict, generate, quality_score, gates, code)
+            self._bridge_hitl(verdict, generate, quality_score, gates, scenario_id)
+        finally:
+            self._release_scratch(test_file_path, protected_fixture)
 
         dt = int((time.monotonic() - t0) * 1000)
         self.log.info(
@@ -214,6 +216,29 @@ class ReviewStage:
             passed = False
             detail = "Missing expectation asserting response body property structure (toHaveProperty)."
         return GateResult(gate="assertion", passed=passed, detail=detail)
+
+    @staticmethod
+    def _snapshot_shipped_fixture(path: str) -> bytes | None:
+        """Bytes of the shipped fixture at ``path``, or None if it is not one."""
+        if is_shipped_fixture(path) and os.path.isfile(path):
+            with open(path, "rb") as f:
+                return f.read()
+        return None
+
+    def _release_scratch(self, path: str, protected_fixture: bytes | None) -> None:
+        """Restore a shipped fixture the gates overwrote, or drop the scratch copy."""
+        try:
+            if protected_fixture is not None:
+                with open(path, "wb") as f:
+                    f.write(protected_fixture)
+                self.log.warning(
+                    "scenario id collides with a shipped fixture; restored it after review",
+                    path=path,
+                )
+            elif self._cleanup_scratch and os.path.exists(path):
+                os.remove(path)
+        except OSError as exc:
+            self.log.warning("failed to release review scratch file", path=path, error=str(exc))
 
     def _write_test_file(self, code: str, scenario_id: str) -> str:
         tests_dir = os.path.join(self.stub_dir, "generated_tests")
