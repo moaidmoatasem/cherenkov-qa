@@ -11,6 +11,10 @@
 - **Standing rules** (unchanged; see "Standing rules for agents" below): verify with file:line before claiming done; one branch per concern, draft PR to main; stage specific files, never `git add -A`; never simulate M1; no new roadmap/handover docs; log new work as issues.
 - **Do not trust:** `docs/_archive/ROADMAP_RECONCILIATION.md` (fabricated gate results), `.agents/*` notes, `docs/STATUS.md`.
 
+## 2026-10-06 — #1039: groups no longer shadow review/enterprise/routine
+
+Removed the `review`, `enterprise`, `routine` groups from `cli/groups.py` (members now under `operate`/`admin`; all stay top-level) and `core.py` refuses to let any group replace a same-named command. Reverted the `review review` / `routine routine` workarounds in workflows, `start-server.sh`, smoke test and docs. Test: `test_groups_never_shadow_same_named_commands`.
+
 ## 2026-10-06 — #1032: default-path gate uses the single-axis mutant battery
 
 `ReviewStage._gate_meaningful_assertion` now runs `synthesize_mutant_battery` axes `status`, `value`, `enum` (`GATE_MUTANTS`), one mock each, stopping at the first survivor and naming it. Regression tests in `tests/unit/test_review_meaningful_gate.py::TestSingleAxisCheatClasses`. Not measured: real-suite wall time (up to 3 runs per endpoint vs 1 before).

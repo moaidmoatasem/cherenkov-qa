@@ -13,6 +13,8 @@ import click
 # Group name -> layout. ``commands`` lists the top-level command names that
 # belong in the group; the same command objects stay registered at the top
 # level for backwards compatibility.
+# Groups named like an existing command (`review`, `enterprise`, `routine`) are
+# deliberately absent: they would shadow that command's own options (#1039).
 GROUP_LAYOUT: dict[str, dict] = {
     "pipeline": {
         "help": "Core API conformance pipeline: validate, verify, audit, generate, bench.",
@@ -28,10 +30,6 @@ GROUP_LAYOUT: dict[str, dict] = {
             "eval",
             "drift",
         ],
-    },
-    "review": {
-        "help": "Human-in-the-loop review workflows: hitl, review, ocr.",
-        "commands": ["hitl", "review", "ocr"],
     },
     "model": {
         "help": "Model / VLM substrate commands: visual, perf, mobile, mcp, examples.",
@@ -51,6 +49,10 @@ GROUP_LAYOUT: dict[str, dict] = {
             "governance",
             "profile",
             "teleport",
+            "hitl",
+            "review",
+            "ocr",
+            "routine",
         ],
     },
     "admin": {
@@ -64,15 +66,11 @@ GROUP_LAYOUT: dict[str, dict] = {
             "report",
             "diff",
             "demo",
+            "enterprise",
+            "certify",
+            "playbook",
+            "guardian",
         ],
-    },
-    "enterprise": {
-        "help": "Enterprise integrations and certification: enterprise, certify, playbook, guardian.",
-        "commands": ["enterprise", "certify", "playbook", "guardian"],
-    },
-    "routine": {
-        "help": "Scheduled routines: routine.",
-        "commands": ["routine"],
     },
 }
 
