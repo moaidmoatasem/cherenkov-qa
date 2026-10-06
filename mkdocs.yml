@@ -1,6 +1,6 @@
 site_name: Cherenkov QA
 site_description: Autonomous Quality Fabric
-site_author: TesterArmy
+site_author: Cherenkov QA contributors
 
 theme:
   name: material

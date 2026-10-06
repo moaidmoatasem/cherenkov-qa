@@ -1,0 +1,85 @@
+name: Dashboard E2E (live backend)
+
+# tests/e2e/*.spec.ts drives the real React dashboard against a real FastAPI
+# backend (Playwright's bootstrapReal, no api_mocks.ts) — it is the only
+# suite that exercises the actual user-facing product end to end, and it has
+# repeatedly caught real defects that unit tests and mock-based specs missed
+# (see HANDOVER.md 2026-09-08: a completely broken Enterprise workspace, a
+# one-way-door Mobile Pilot control, 15+ swallowed backend error messages).
+#
+# Before this workflow, nothing ran it on an ordinary PR: qa-headless.yml
+# only runs a different spec (tests/qa/headless-qa-user.spec.ts) and only on
+# a schedule, workflow_dispatch, or a PR carrying the qa-headless label. Every
+# fix cited above was found by a human/agent manually starting a backend and
+# running Playwright by hand during a periodic audit — the exact "gate that
+# runs only on a schedule is how the dead suite survived" pattern this repo's
+# own history keeps rediscovering (see HANDOVER.md 2026-08-13, brain-map and
+# integrity-detector entries). This wires it into every ordinary PR instead.
+#
+# Four tests are marked test.fixme() in-file (not silently skipped) for
+# pre-existing, environment-dependent gaps unrelated to this gate — no GPU/VLM
+# device and no seeded run history in a fresh backend — see HANDOVER.md
+# 2026-08-20 and the fixme reasons themselves.
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  dashboard-e2e:
+    name: Dashboard E2E — live backend
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: cherenkov/web/ui/package-lock.json
+
+      - name: Install Python package
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -e . --no-deps
+
+      - name: Install UI dependencies
+        run: |
+          cd cherenkov/web/ui
+          npm ci
+
+      - name: Install Playwright browsers
+        run: |
+          cd cherenkov/web/ui
+          npx playwright install --with-deps chromium
+
+      - name: Start backend
+        run: |
+          python -m uvicorn cherenkov.web.api:app --port 8001 &
+          for i in $(seq 1 30); do
+            curl -sf http://127.0.0.1:8001/api/v1/health && break
+            sleep 1
+          done
+          curl -f http://127.0.0.1:8001/api/v1/health
+
+      - name: Run dashboard E2E suite
+        run: |
+          cd cherenkov/web/ui
+          npx playwright test tests/e2e/ --reporter=list
+
+      - name: Upload traces on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dashboard-e2e-traces
+          path: cherenkov/web/ui/test-results/

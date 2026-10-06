@@ -1,7 +1,8 @@
+<!-- plan-status: superseded -->
+> **Superseded (2026-10-06).** Not the plan of record. See the "Current state" block in [HANDOVER.md](../../HANDOVER.md) and the work queue in [docs/ROADMAP.md](../../docs/ROADMAP.md).
+
 # CHERENKOV — Roadmap
 
-> [!WARNING]
-> **This document is deprecated.** For the single source of truth on active roadmap progress, completed milestones, and upcoming tasks, please refer to the unified [_archive/ROADMAP_RECONCILIATION.md](../_archive/ROADMAP_RECONCILIATION.md).
 
 Companion to [`00_VISION.md`](00_VISION.md) / [`01_ARCHITECTURE.md`](01_ARCHITECTURE.md).
 > **Current execution status & open backlog:** see [`08_DELIVERY_PLAN.md`](08_DELIVERY_PLAN.md) — the plan of record reconciling code ↔ GitHub ↔ sequencing.

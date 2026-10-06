@@ -356,3 +356,14 @@ giving up anything in §4.
 - Reconstructed from `testerarmy@0.9.0` (npm), `tester-army/cli` README + `examples/TESTER.md`.
 - `docs.tester.army` was **not** reachable from this environment; no claim here rests on it.
 - CHERENKOV-side claims verified by grep against the tree at `de2974a`, cited inline.
+
+
+## Status update — 2026-10-06
+
+- **Phase A: done**, including A3 (`--json` on `check-suite`, `verify`, `audit`, `certify`; `audit.py` and `certify.py` expose `--json`).
+- **B1/B2: done** (root `package.json` at 1.3.0). **B3** (PyPI) is blocked on milestone M1.
+- **C: not started.** The `knowledge` commands deliberately do not exist.
+- **D: done.** `action.yml:38-64` passes the nine PR-ergonomics flags and `validate.py` declares all nine.
+- The echo-only `cherenkov testerarmy` command group built after this teardown went against its own "do not build" list and was removed (PR #1031).
+- **TesterArmy CLI 0.10.0 (2026-09-22)** dropped `@playwright/mcp`, `ai` and `playwright` from its dependencies (npm size 1.29 MB → 178 KB), which suggests it is now cloud-only (inference from the npm registry). The analysis above describes 0.9.0.
+- Wider market context: [MARKET_SCAN_2026-10](MARKET_SCAN_2026-10.md).

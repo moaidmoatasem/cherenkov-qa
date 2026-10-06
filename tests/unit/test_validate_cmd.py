@@ -630,3 +630,42 @@ Please replace with a meaningful description.
         report = _findings_report({"reports": [{"scenario_id": "s1", "passed": True}]})
 
         assert report.findings == []
+
+
+class TestValidateExitCodeIssue993:
+    """#993: bare `validate` printed `[SUCCESS]` and exited 0 with 0/10 passing."""
+
+    def _run(self, runner, tmp_path, passed, total, *extra):
+        proto = tmp_path / "service.proto"
+        proto.write_text(PROTO_CONTENT)
+        with (
+            patch("cherenkov.cli.commands.validate.ValidationEngine") as MockEngine,
+            patch("cherenkov.stages.generate.GenerateStage.run"),
+        ):
+            MockEngine.return_value = _patch_engine(passed=passed, total=total)
+            return runner.invoke(validate_cmd, [
+                "--target", "http://localhost:9000", "--source", "grpc",
+                "--spec", str(proto), *extra,
+            ])
+
+    def test_all_failing_exits_1_by_default(self, runner, tmp_path):
+        result = self._run(runner, tmp_path, 0, 3)
+        assert result.exit_code == 1
+        assert "SUCCESS" not in result.output
+        assert "FAILED (3 failed)" in result.output
+
+    def test_partial_failure_exits_1(self, runner, tmp_path):
+        assert self._run(runner, tmp_path, 1, 3).exit_code == 1
+
+    def test_all_passing_exits_0(self, runner, tmp_path):
+        result = self._run(runner, tmp_path, 3, 3)
+        assert result.exit_code == 0
+        assert "PASSED" in result.output
+
+    def test_no_fail_on_drift_restores_report_only(self, runner, tmp_path):
+        result = self._run(runner, tmp_path, 0, 3, "--no-fail-on-drift")
+        assert result.exit_code == 0
+        assert "FAILED (3 failed)" in result.output
+
+    def test_explicit_fail_on_drift_still_accepted(self, runner, tmp_path):
+        assert self._run(runner, tmp_path, 0, 3, "--fail-on-drift").exit_code == 1

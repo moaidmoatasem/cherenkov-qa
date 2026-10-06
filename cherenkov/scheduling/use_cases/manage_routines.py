@@ -5,6 +5,7 @@ import uuid
 from typing import Any, cast
 
 from cherenkov.scheduling.domain.models import Routine, RoutineTrigger
+from cherenkov.scheduling.domain.targets import check_routine_target
 from cherenkov.scheduling.ports.scheduler import SchedulerPort
 
 
@@ -17,7 +18,8 @@ def create_routine(
     target_module: str,
     target_kwargs: dict[str, Any]
 ) -> Routine:
-    """Create and schedule a new routine."""
+    """Create and schedule a new routine. Raises ``ValueError`` for a non-allowlisted target."""
+    check_routine_target(target_module)
     routine = Routine(
         id=f"rt_{uuid.uuid4().hex[:8]}",
         name=name,

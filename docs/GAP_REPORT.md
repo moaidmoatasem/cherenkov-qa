@@ -1,3 +1,6 @@
+<!-- plan-status: superseded -->
+> **Superseded (2026-10-06).** Not the plan of record. See the "Current state" block in [HANDOVER.md](../HANDOVER.md) and the work queue in [docs/ROADMAP.md](../docs/ROADMAP.md).
+
 # CHERENKOV — Technical Development Plan Gap Report
 **SSOT / Authority:** v3.1 + delta · **For:** AI agents + Moaid
 

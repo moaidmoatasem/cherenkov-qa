@@ -11,7 +11,7 @@ from __future__ import annotations
 from contextlib import asynccontextmanager
 from typing import Any
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
 from cherenkov.scheduling.adapters.apscheduler_adapter import APSchedulerAdapter
 from cherenkov.scheduling.domain.models import Routine
@@ -47,10 +47,13 @@ def api_create_routine(
     target_module: str,
     target_kwargs: dict[str, Any]
 ) -> Routine:
-    """Create a new routine."""
-    return create_routine(
-        scheduler, name, description, trigger_type, trigger_value, target_module, target_kwargs
-    )
+    """Create a new routine. Only allowlisted targets are accepted (400 otherwise)."""
+    try:
+        return create_routine(
+            scheduler, name, description, trigger_type, trigger_value, target_module, target_kwargs
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 @router.post("/{routine_id}/toggle")
 def api_toggle_routine(routine_id: str, enabled: bool) -> dict[str, str]:

@@ -91,11 +91,12 @@ def _findings_report(results: dict):
     ),
 )
 @click.option(
-    "--fail-on-drift",
+    "--fail-on-drift/--no-fail-on-drift",
     "fail_on_drift",
-    is_flag=True,
-    default=False,
-    help="Exit with code 1 if any conformance violations are found (CI gate mode)",
+    default=True,
+    show_default=True,
+    help="Exit with code 1 if any test fails or conformance violation is found. "
+    "Use --no-fail-on-drift to always exit 0 (report-only).",
 )
 @click.option(
     "--json-summary",
@@ -320,8 +321,14 @@ Returns:
             for suggestion in r.get("suggestions", []):
                 click.echo(f"    consider -> {suggestion}")
 
+    if _total == 0:
+        _label = results.get("status", "empty").upper()
+    elif _passed == _total:
+        _label = "PASSED"
+    else:
+        _label = f"FAILED ({_total - _passed} failed)"
     click.echo(click.style(
-        f"\nResults: {_passed}/{_total} passed  [{results.get('status', 'done').upper()}]",
+        f"\nResults: {_passed}/{_total} passed  [{_label}]",
         fg=_status_color,
         bold=True,
     ))
@@ -422,7 +429,7 @@ Returns:
         violation_count = sum(1 for r in reports if not r.get("passed", True))
         click.echo(
             click.style(
-                f"\n❌ {violation_count} conformance violation(s) detected. Exiting 1 (--fail-on-drift).",
+                f"\n❌ {violation_count} conformance violation(s) detected. Exiting 1 (use --no-fail-on-drift to report only).",
                 fg="red",
             )
         )

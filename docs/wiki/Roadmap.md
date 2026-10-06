@@ -1,3 +1,6 @@
+<!-- plan-status: superseded -->
+> **Superseded (2026-10-06).** Not the plan of record. See the "Current state" block in [HANDOVER.md](../../HANDOVER.md) and the work queue in [docs/ROADMAP.md](../../docs/ROADMAP.md).
+
 # Roadmap
 
 > **Navigation:** [Home](Home.md) · [Pipeline](Pipeline.md) · [Architecture](Architecture.md) · [CLI Reference](CLI-Reference.md) · [Configuration](Configuration.md) · [Deployment](Deployment.md) · **Roadmap** · [FAQ](FAQ.md) · [Troubleshooting](Troubleshooting.md)

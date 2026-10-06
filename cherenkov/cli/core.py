@@ -47,7 +47,6 @@ def _clean_help_recursively(command: click.Command, _seen: set[int] | None = Non
 
 # Import the plugins command group for registration
 from cherenkov.cli.commands.plugins_cmd import plugins_cmd
-from cherenkov.cli.commands.testerarmy import testerarmy
 
 def _get_version() -> str:
     try:
@@ -181,7 +180,6 @@ def _register_commands() -> None:
         (docs_cmd, "docs"),
         (agent_cmd, "agent"),
         (plugins_cmd, "plugins"),
-        (testerarmy, "testerarmy"),
         (routine_cmd, "routine"),
         (federation_cmd, "federation"),
         (teleport_cmd, "teleport"),

@@ -16,7 +16,7 @@
 
 ## Project identity
 
-- **Repo:** `cherenkov-qa` — a QA validation layer / Reality Engine for LLM-generated API tests
+- **Repo:** `cherenkov-qa` — the integrity gate for AI-written tests: before an agent's change to a test suite is merged, prove the tests still catch bugs (Core / Assist / Labs; see `docs/ROADMAP.md`)
 - **Stack:** Python (FastAPI + Click CLI), React/TypeScript (Vite), Playwright for E2E
 - **Key entry points:**
   - `cherenkov/` — core Python package
@@ -24,6 +24,15 @@
   - `cherenkov/cli/` — CLI commands
   - `stub/generated_tests/` — demo & golden test fixtures (generated, do not edit manually)
 - **Active branch convention:** `qa/*` branches; `main` is the merge target
+
+## Session loop (one item per session)
+
+1. **Wake:** read only the "Current state" block of `HANDOVER.md` and the open `oversight` issue.
+2. **Claim:** take the top unblocked item in `docs/ROADMAP.md` "Now"; check no open PR/branch references it; assign it and label it `in-progress`.
+3. **Work:** that one item. Don't start a second.
+4. **Stop:** add a dated `HANDOVER.md` entry, tick the ROADMAP, open/update the draft PR.
+
+Never re-audit plan files by hand — `scripts/oversight_check.py` does that weekly.
 
 ## Status anchor
 

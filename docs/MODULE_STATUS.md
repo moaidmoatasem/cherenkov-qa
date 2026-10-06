@@ -1,3 +1,6 @@
+<!-- plan-status: superseded -->
+> **Superseded (2026-10-06).** Not the plan of record. See the "Current state" block in [HANDOVER.md](../HANDOVER.md) and the work queue in [docs/ROADMAP.md](../docs/ROADMAP.md).
+
 # Module Implementation Status
 
 This document tracks the implementation status of each CHERENKOV-QA module.

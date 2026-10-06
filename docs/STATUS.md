@@ -1,3 +1,6 @@
+<!-- plan-status: superseded -->
+> **Superseded (2026-10-06).** Not the plan of record. See the "Current state" block in [HANDOVER.md](../HANDOVER.md) and the work queue in [docs/ROADMAP.md](../docs/ROADMAP.md).
+
 **Last updated:** 2026-08-03
 **Branch:** `main`
 **HEAD:** `3cfdbde1` (v1.3.0)

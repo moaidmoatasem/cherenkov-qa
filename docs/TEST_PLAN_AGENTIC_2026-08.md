@@ -223,7 +223,7 @@ richness heuristic that silently dropped endpoints twice), `journeys/crud_detect
   for exit codes and stream discipline. **Assert on `result.stdout`, never `result.output`** —
   under Click 8.4 `result.output` is the combined stream and hides banner corruption; four
   tests were already wrong this way (HANDOVER 2026-08-08). Also fix the unreachable
-  `cherenkov testerarmy projects list` (four groups at `commands/testerarmy.py:15-135` are
+  `cherenkov testerarmy projects list` (removed 2026-10-06; its four groups were
   never attached) and the competing root group at `cli/__init__.py:8`.
 - **React UI:** vitest across all 68 components with MSW; Playwright across all 7 routes and
   every alias redirect. **Contract pinning** — extend the one good existing idea,

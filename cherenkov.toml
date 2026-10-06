@@ -71,6 +71,7 @@ excludes = [
   "agent_memory/**",        # synced machine state, not human-facing knowledge
   ".agents/**",             # per-agent scratch reports
   "stub/generated_tests/**", # generated fixtures
+  ".cherenkov/**",          # runtime state: evals.db, feedback, cache, jira scratch
   "docs/_archive/**",       # frozen history — links there are meant to rot
   "docs/archive/**",
   "**/site-packages/**",

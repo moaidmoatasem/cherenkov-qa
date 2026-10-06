@@ -127,7 +127,7 @@ export const HitlReviewQueue: React.FC = () => {
         <EmptyState
           icon={CheckSquare}
           title="Review Queue Empty"
-          description="All generated test scenarios have been reviewed and approved."
+          description="No generated test scenarios currently need human review. Mid-confidence tests land here automatically; high-confidence tests are auto-approved and low-confidence ones are regenerated."
         />
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
