@@ -93,6 +93,17 @@ test.describe('Triage Workspace E2E Suite', () => {
     await select.selectOption('all');
   });
 
+  test('DivergenceTable labels built-in demo findings as sample data (#1041)', async ({ page }) => {
+    const res = await page.request.get('/api/v1/divergences');
+    const items: Array<{ sample?: boolean }> = await res.json();
+    const banner = page.getByTestId('divergence-table').getByTestId('sample-data-banner');
+    if (items.some((i) => i.sample === true)) {
+      await expect(banner).toBeVisible();
+    } else {
+      await expect(banner).toHaveCount(0);
+    }
+  });
+
   test('SpecVsRealityDiffViewer renders side-by-side payload comparison panes', async ({ page }) => {
     const diff = page.getByTestId('spec-vs-reality-diff-viewer');
     await expect(diff).toBeVisible();

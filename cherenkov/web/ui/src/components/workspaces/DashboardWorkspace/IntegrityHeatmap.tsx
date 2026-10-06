@@ -7,7 +7,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { ShieldCheck, ShieldAlert, ShieldX, Activity, ShieldQuestion } from 'lucide-react';
 import { fetchTruthMapData, fetchDivergences } from '../../../lib/api';
 import type { Divergence } from '../../../types';
-import { Card, Skeleton, EmptyState } from '../../ui';
+import { Card, Skeleton, EmptyState, SampleDataBanner, hasSampleData } from '../../ui';
 
 export interface EndpointIntegrity {
   id: string;
@@ -32,6 +32,7 @@ const SEVERITY_PENALTY: Record<string, number> = {
 export const IntegrityHeatmap: React.FC<{ endpoints?: EndpointIntegrity[] }> = ({ endpoints: initialEndpoints }) => {
   const [endpoints, setEndpoints] = useState<EndpointIntegrity[]>(initialEndpoints || []);
   const [isLoading, setIsLoading] = useState(!initialEndpoints || initialEndpoints.length === 0);
+  const [isSample, setIsSample] = useState(false);
 
   useEffect(() => {
     if (initialEndpoints && initialEndpoints.length > 0) {
@@ -51,6 +52,7 @@ export const IntegrityHeatmap: React.FC<{ endpoints?: EndpointIntegrity[] }> = (
         // Only count divergences that are still an open finding -- a
         // rejected/false-positive divergence shouldn't drag the score down.
         const activeDivergences = (divergences || []).filter((d) => d.status !== 'rejected');
+        setIsSample(hasSampleData(divergences || []));
 
         const knownEndpoints = new Set<string>([
           ...(truthMap || []).map((n) => n.endpoint),
@@ -101,6 +103,7 @@ export const IntegrityHeatmap: React.FC<{ endpoints?: EndpointIntegrity[] }> = (
 
   return (
     <Card className="p-6 space-y-4" data-testid="integrity-heatmap">
+      {isSample && <SampleDataBanner />}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-sm font-semibold font-mono uppercase tracking-wider text-text-muted flex items-center gap-2">

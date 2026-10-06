@@ -14,3 +14,4 @@ export * from './CoverageTrendChart';
 export { default as OfflineOverlay } from './OfflineOverlay';
 export * from './ReadOnlyDiffViewer';
 export * from './Breadcrumbs';
+export * from './SampleDataBanner';
