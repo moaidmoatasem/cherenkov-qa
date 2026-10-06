@@ -147,10 +147,10 @@ export const VerdictHistoryTable: React.FC<VerdictHistoryTableProps> = ({ target
                     {run.divergence_count ?? 0}
                   </td>
                   <td className="py-2.5 px-3 text-text-muted">
-                    {run.coverage_pct != null ? `${run.coverage_pct.toFixed(1)}%` : '100%'}
+                    {run.coverage_pct != null ? `${run.coverage_pct.toFixed(1)}%` : '—'}
                   </td>
                   <td className="py-2.5 px-3 text-text-muted">
-                    {run.duration_ms ? `${(run.duration_ms / 1000).toFixed(1)}s` : '1.2s'}
+                    {run.duration_ms ? `${(run.duration_ms / 1000).toFixed(1)}s` : '—'}
                   </td>
                   <td className="py-2.5 px-3 text-right text-text-muted text-[10px]">
                     {new Date(run.timestamp).toLocaleTimeString()}

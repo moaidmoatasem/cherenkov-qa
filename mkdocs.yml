@@ -1,5 +1,5 @@
 site_name: Cherenkov QA
-site_description: Autonomous Quality Fabric
+site_description: The integrity gate for AI-written tests
 site_author: Cherenkov QA contributors
 
 theme:

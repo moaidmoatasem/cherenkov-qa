@@ -1095,6 +1095,28 @@ Enterprise-tier commands for org management, SSO, audit logs, and compliance.
 
 ---
 
+#### `check`
+The integrity gate: prove an AI's change to your tests did not weaken them. Static analysis only — no LLM, no server, no Node. Exits `1` on any WEAKENED, DELETED or HALLUCINATED finding; every verdict states which checks ran.
+
+```bash
+# Compare ./tests against the same tests at a git ref (tests/ is auto-detected)
+cherenkov check --baseline origin/main
+
+# Add the spec to also catch hallucinated response fields; emit a PR-comment body
+cherenkov check ./e2e --baseline $BASE_SHA --spec openapi.yaml --format md
+```
+
+---
+
+#### `labs`
+List the experimental commands that are not advertised in `cherenkov --help` (desktop, mobile, federation, enterprise, ...). They stay fully callable.
+
+```bash
+cherenkov labs
+```
+
+---
+
 #### `check-suite`
 Detect AI cheating in a test suite — find weakened, deleted, or hallucinated assertions via fast static analysis (no execution required).
 

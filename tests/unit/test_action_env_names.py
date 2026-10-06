@@ -73,6 +73,8 @@ Please replace with a meaningful description.
 """
     if name in _RUNNER_PROVIDED:
         pytest.skip(f"{name} is provided by the runner")
+    if name.startswith("INPUT_"):
+        pytest.skip(f"{name} is an action input read by scripts/action_check.sh, not by settings")
     assert name in _settings_aliases(), (
         f"action.yml sets {name}, which nothing in cherenkov/core/settings.py reads. "
         f"The Action would run with defaults and report success — a silent no-op."

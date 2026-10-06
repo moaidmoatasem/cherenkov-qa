@@ -89,7 +89,9 @@ def test_block_names_the_integrity_check():
     """The block is the only thing an agent reads before deciding to use the tool,
     so it must carry the differentiator, not just a command list."""
     out = upsert_agents_block(None)
-    assert "check-suite" in out
+    assert "cherenkov check --baseline" in out
+    assert "WEAKENED" in out and "DELETED" in out and "HALLUCINATED" in out
+    assert "exits 1" in out or "exit 1" in out, "the referee rule must say what to do on failure"
     assert "eject" in out, "the exit path is part of the pitch, not a footnote"
 
 

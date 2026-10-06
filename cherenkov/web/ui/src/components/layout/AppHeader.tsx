@@ -168,7 +168,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
                     }`}
                   >
                     <span className="truncate">{p.name}</span>
-                    <span className="text-[10px] text-text-muted">{p.stats?.passRate ?? 100}%</span>
+                    <span className="text-[10px] text-text-muted">{p.stats?.passRate != null ? `${p.stats.passRate}%` : '—'}</span>
                   </button>
                 ))
               )}

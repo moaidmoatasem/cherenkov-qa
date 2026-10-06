@@ -24,20 +24,21 @@ SKILL_INSTALL_TIMEOUT_S = 120
 BLOCK_START = "<!-- CHERENKOV:START -->"
 BLOCK_END = "<!-- CHERENKOV:END -->"
 
-_BLOCK_BODY = """This project can use CHERENKOV for API conformance testing and test-suite integrity.
+_BLOCK_BODY = """This project uses CHERENKOV as the integrity gate for AI-written tests.
 
-CHERENKOV takes an OpenAPI spec, generates Playwright tests, and — unlike a test
-generator — proves the generated tests can actually fail. Everything runs locally;
-there is no hosted backend and no account.
+**Rule for agents:** before you report a change to the tests as done, run
+`cherenkov check --baseline <base-ref>` (for example `origin/main`) and do not finish while it
+exits 1. It reports WEAKENED, DELETED and HALLUCINATED assertions, needs no LLM or server, and
+every verdict states which checks ran. Fix the tests so they catch the bug; never loosen an
+assertion, skip a test or delete one to make it pass.
 
-- **Skills:** install with `npx skills add {repo}` or rerun `cherenkov agent init`.
+- **Gate:** `cherenkov check --baseline origin/main` (add `--spec openapi.yaml` to catch hallucinated fields; `--format json` for scripts). Exit 0 clean, 1 violations, 2 usage error.
 - **Docs as data:** `cherenkov docs --json` lists every topic; `cherenkov docs <topic>` for one.
-- **Health check:** start with `cherenkov doctor` — it reports what is missing before a run fails halfway.
-- **Generate tests:** `cherenkov generate --spec openapi.yaml --output-dir tests/`. Add `--no-repair` when no LLM is available.
-- **Verify a live API:** `cherenkov verify --spec openapi.yaml --url https://api.example.com`. Needs a reachable target; exits 2 rather than reporting an outage as clean.
-- **Check the tests are real:** `cherenkov check-suite --candidate tests/suite.py --baseline known_good.py --json` catches WEAKENED, DELETED and HALLUCINATED assertions. This is the check no other tool runs — prefer it over trusting a green suite.
-- **CI:** use `--fail-on-drift` / `--fail-on-finding` to gate, and `--json` for anything a script reads. Exit codes are stable; human text is not.
-- **Leaving:** `cherenkov eject --output ./standalone` produces vanilla Playwright with zero CHERENKOV imports. This is supported, not a trap.
+- **Health check:** `cherenkov doctor` reports what is missing before a run fails halfway.
+- **Generate tests (assist):** `cherenkov generate --spec openapi.yaml --output-dir tests/`. Add `--no-repair` when no LLM is available.
+- **Verify a live API:** `cherenkov verify --spec openapi.yaml --url https://api.example.com`. Exits 2 rather than reporting an outage as clean.
+- **Skills:** `npx skills add {repo}` or rerun `cherenkov agent init`.
+- **Leaving:** `cherenkov eject --output ./standalone` produces vanilla Playwright with zero CHERENKOV imports.
 """
 
 

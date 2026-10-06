@@ -643,6 +643,45 @@ jobs:
         env:
           PYTHONPATH: .
 
+  first-value:
+    # Kill criterion 1 (docs/ROADMAP.md), measured instead of claimed: a clean
+    # runner with no Node, no LLM and no config goes from `pip install` to a
+    # real integrity verdict on a git repo in under 5 minutes.
+    name: First value (install to verdict, no LLM)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - name: Install the package into a clean venv
+        run: |
+          python -m venv /tmp/fv
+          /tmp/fv/bin/pip install . --quiet
+      - name: Verdict on a repo whose HEAD weakens an assertion
+        run: |
+          set -u
+          fx="$GITHUB_WORKSPACE/demos/catch-the-ai-cheating"
+          mkdir /tmp/proj && cd /tmp/proj && git init -q && mkdir tests
+          git config user.email ci@example.com && git config user.name ci
+          cp "$fx/suite_good.py" tests/test_api.py
+          git add -A && git commit -qm honest
+          cp "$fx/suite_cheat_weakened.py" tests/test_api.py
+          git commit -qam "agent edit"
+          set +e
+          out=$(/tmp/fv/bin/cherenkov check --baseline HEAD~1 2>&1); code=$?
+          set -e
+          echo "$out"
+          test "$code" -eq 1
+          echo "$out" | grep -q WEAKENED
+      - name: Clean change exits 0
+        run: |
+          cd /tmp/proj
+          git reset -q --hard HEAD~1
+          echo x > README && git add -A && git commit -qm docs
+          /tmp/fv/bin/cherenkov check --baseline HEAD~1
+
   sandbox-heal-docker:
     name: Sandbox Heal Docker (opt-in)
     if: github.event_name == 'workflow_dispatch'

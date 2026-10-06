@@ -5,11 +5,32 @@
 - **Plan of record:** this block + [docs/ROADMAP.md](docs/ROADMAP.md) (focus decision, work queue, kill criteria). Other plan files carry a "superseded" banner. A weekly oversight workflow files one `oversight` issue when plan files, issues and CI drift apart; start there instead of re-auditing by hand.
 - **Focus:** Cherenkov is the integrity gate for AI-written tests (Core / Assist / Labs). Kill criteria are checked 2026-12-15.
 - **`main` health (2026-10-06):** CI, Dashboard E2E and the daily validation gate green. No `main` commits between 2026-09-23 (#1028) and #1029.
-- **In flight:** draft PR #1031 — routines RCE fix, #993, #994, testerarmy removal, plan reconciliation, market scan, overseer, Phase 1 redesign.
+- **In flight:** draft PR #1031 — routines RCE fix, #993, #994, testerarmy removal, plan reconciliation, market scan, overseer, `cherenkov check`, tiers, PR-comment Action, UI honesty fixes.
 - **Open work:** GitHub milestones + the ROADMAP "Now/Next" tables. The old "Open work" table further down (#809-#816) is superseded; all of those are closed.
 - **Session loop:** read this block and the open `oversight` issue; claim one ROADMAP "Now" item (assign it, label `in-progress`, check no open PR/branch references it); do that one item; write a dated entry below, tick the ROADMAP, open/update the draft PR; stop.
 - **Standing rules** (unchanged; see "Standing rules for agents" below): verify with file:line before claiming done; one branch per concern, draft PR to main; stage specific files, never `git add -A`; never simulate M1; no new roadmap/handover docs; log new work as issues.
 - **Do not trust:** `docs/_archive/ROADMAP_RECONCILIATION.md` (fabricated gate results), `.agents/*` notes, `docs/STATUS.md`.
+
+## Reconcile, premortem, and the integrity-gate redesign (2026-10-06, PR #1031)
+
+Asked for a review of plans/progress, a market scan, a loop audit, and a verdict on whether to keep going. Verdict: **keep going, only as the narrowed integrity gate, with kill criteria checked 2026-12-15** ([docs/reviews/PREMORTEM_2026-10.md](docs/reviews/PREMORTEM_2026-10.md), [docs/ROADMAP.md](docs/ROADMAP.md)).
+
+**Fixed (each with a test that fails without the fix):**
+- **Security:** `POST /routines/` imported and scheduled a caller-supplied `module:func` with caller-supplied kwargs; auth is off by default, so `os:system` was remote code execution on any non-loopback deploy. Allowlist (`scheduling/domain/targets.py`) enforced at model, use case, API (400), CLI and adapter. The scheduling package had no tests before.
+- **#994:** a scenario id equal to a shipped fixture (`password_too_short`) made review overwrite and generate delete the tracked fixture. `ReviewStage` snapshots/restores it (also on gate crash).
+- **#993:** `validate` exits 1 when any test fails (breaking; `--no-fail-on-drift` for the old behaviour).
+- Removed the echo-only `testerarmy` command group. Stopped tracking `cherenkov_qa.egg-info/` (the session hook dirtied the tree every session).
+- `spec-drift.yml` no longer posts hand-written mock divergences as a PR comment (#1038).
+
+**Built:** `cherenkov check` (git-ref baseline, auto-detected tests dir, exit 1 on violations, text/json/md); Core/Assist/Labs tiers in `--help` plus `cherenkov labs`; `action.yml` `mode: check` with one sticky PR comment (`scripts/action_check.sh`; its test caught a bug where "Not checked" bullets counted as violations); a `first-value` CI job; `agent init` now writes the "run `cherenkov check` before you call test changes done" rule; one identity in README/pyproject/mkdocs; UI: Labs nav section collapsed by default, hardcoded compliance badges and invented 100%/1.2s values removed.
+
+**Measured (kill criterion 1):** clean venv `pip install .` = 32 s and **553 MB** (memsearch pulls pandas/pyarrow/milvus/faiss/openai); `cherenkov check` = 0.67 s, no LLM/Node. The time criterion is met; the footprint is not good. Slim core install is Phase 2.
+
+**Process:** HANDOVER now opens with a "Current state" block; pre-August entries moved to `docs/_archive/HANDOVER_2026-06_to_07.md`; ~14 stale plan files carry a "superseded" banner; `scripts/oversight_check.py` + weekly `oversight.yml` upsert ONE `oversight` issue (no LLM; the offline half is a unit test, so plan drift fails the PR that causes it); CLAUDE.md has a one-item-per-session loop borrowed from Paperclip's checkout/budget/heartbeat ideas ([MARKET_SCAN_2026-10](docs/reviews/MARKET_SCAN_2026-10.md)).
+
+**Filed, not fixed:** #1032 (default-path mutant gate catches 0/3 cheat classes: first item in ROADMAP "Now"), #1033-#1038 (loop/automation findings), #1039 (groups shadow `review`/`enterprise`/`routine`), #1040 (`init` output fails `doctor`), #1041 (sample findings shown as real), #1042 (onboarding docs).
+
+**Not done / not verified:** the oversight workflow's online half can only be exercised after merge (`workflow_dispatch`); no benchmark exists yet for kill criterion 2; no external practitioner has run it (criterion 3, maintainer-only); `.agents/*` banners were added locally but that directory is gitignored. Python 3.10 behaviour of the toml loader was reasoned about, not run.
 
 ## Cleared 3 of the 4 dashboard E2E `test.fixme()`s the 2026-09-15 entry left open (2026-09-23)
 

@@ -126,7 +126,7 @@ export const ProjectManager: React.FC = () => {
             <div key={p.id} className="p-3 rounded-xl bg-black/20 border border-white/5 space-y-1">
               <div className="flex items-center justify-between">
                 <span className="font-bold text-text-primary">{p.name}</span>
-                <span className="text-[10px] text-emerald-400">{p.stats?.passRate ?? 100}% Pass</span>
+                <span className="text-[10px] text-emerald-400">{p.stats?.passRate != null ? `${p.stats.passRate}% Pass` : 'No runs'}</span>
               </div>
               <p className="text-[10px] text-text-muted">ID: {p.id}</p>
               <p className="text-[10px] text-text-muted">Tests: {p.stats?.testsCount || 0}</p>

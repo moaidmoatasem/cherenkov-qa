@@ -9,12 +9,28 @@ branding:
   color: blue
 
 inputs:
+  mode:
+    description: >
+      `check` runs the integrity gate on the PR's test changes (no LLM, no server) and posts one
+      sticky PR comment; `validate` (default) runs conformance tests against a live target.
+    required: false
+    default: validate
+  tests-path:
+    description: "mode=check: tests directory or file (auto-detected when empty)"
+    required: false
+  baseline:
+    description: "mode=check: git ref to compare against (defaults to the pull request base SHA)"
+    required: false
+  comment:
+    description: "mode=check: post/update a sticky PR comment"
+    required: false
+    default: "true"
   spec:
-    description: Path to OpenAPI spec file (YAML or JSON)
-    required: true
+    description: Path to OpenAPI spec file (YAML or JSON). Required for mode=validate; optional for mode=check (enables HALLUCINATED detection).
+    required: false
   target:
-    description: API server URL to test against
-    required: true
+    description: API server URL to test against (mode=validate)
+    required: false
   fail-on-drift:
     description: Exit with code 1 if any conformance violations are found
     required: false
@@ -66,10 +82,10 @@ inputs:
 outputs:
   violations:
     description: Number of conformance violations found
-    value: ${{ steps.run.outputs.violations }}
+    value: ${{ steps.check.outputs.violations || steps.run.outputs.violations }}
   report-path:
     description: Path to the generated conformance report
-    value: ${{ steps.run.outputs.report-path }}
+    value: ${{ steps.check.outputs.report-path || steps.run.outputs.report-path }}
   sarif-path:
     description: Path to SARIF output (for GitHub Security tab)
     value: ${{ steps.run.outputs.sarif-path }}
@@ -81,7 +97,7 @@ outputs:
     value: ${{ steps.run.outputs.sarif_report }}
   drift-detected:
     description: true if any conformance violations were found
-    value: ${{ steps.run.outputs.drift-detected }}
+    value: ${{ steps.check.outputs.drift-detected || steps.run.outputs.drift-detected }}
 
 runs:
   using: composite
@@ -95,7 +111,23 @@ runs:
       shell: bash
       run: pip install "${{ github.action_path }}" --quiet
 
+    - name: Integrity check
+      if: inputs.mode == 'check'
+      id: check
+      shell: bash
+      env:
+        INPUT_TESTS_PATH: ${{ inputs.tests-path }}
+        INPUT_BASELINE: ${{ inputs.baseline || github.event.pull_request.base.sha }}
+        INPUT_SPEC: ${{ inputs.spec }}
+        INPUT_COMMENT: ${{ inputs.comment }}
+        INPUT_PR_NUMBER: ${{ inputs.pr-number || github.event.pull_request.number }}
+        INPUT_FAIL_ON_DRIFT: ${{ inputs.fail-on-drift }}
+        INPUT_OUTPUT_PATH: cherenkov-check.md
+        GITHUB_TOKEN: ${{ github.token }}
+      run: bash "${{ github.action_path }}/scripts/action_check.sh"
+
     - name: Run conformance check
+      if: inputs.mode != 'check'
       id: run
       shell: bash
       env:

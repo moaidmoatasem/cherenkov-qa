@@ -1,48 +1,39 @@
 # ☢️ CHERENKOV-QA
 
-**An open Quality Intelligence Platform — API conformance is the shipped core.**
+**The integrity gate for AI-written tests.** Before you merge an AI agent's change to your tests, Cherenkov proves they still catch bugs.
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Version: 1.3.0](https://img.shields.io/badge/Version-1.3.0-green.svg)](https://github.com/moaidmoatasem/cherenkov-qa/releases/tag/v1.3.0)
 
-Every API has an OpenAPI spec, but those specs silently drift from the real server implementations every day. Moreover, AI-generated tests often hallucinate expected outcomes or silently weaken assertions to force a "green" build.
-
-**CHERENKOV-QA** is an **API Integrity Auditor**. It checks whether your test suite actually enforces your OpenAPI contract, detecting Weakened, Deleted, and Hallucinated assertions with no LLM involved — then provides a spec-derived local LLM engine to generate conformant Playwright tests.
-
-> **The through-line:** CHERENKOV keeps the quality verdict **independent of the AI that produced the work** — policy the agent under test cannot lower for itself. API conformance and test-suite integrity auditing are the deepest surface; visual/UI regression (`cherenkov visual`), API load testing (`cherenkov perf`), and mobile flows (`cherenkov mobile`) execute for real against a browser, k6, and a device respectively. Security coverage is deliberately narrow: opt-in OWASP safe-rejection probes on request-body strings (see Features), and nothing beyond that — no scanner, no authn/authz testing. See the [Platform Operating Model](docs/PLATFORM_OPERATING_MODEL.md) and [User Journeys](docs/USER_JOURNEYS.md).
-
-For **Python** suites the audit is genuine AST analysis: `check-suite` parses with `ast.parse` and decides WEAKENED by comparing comparison-operator node types, so `== 200` → `in (200, 201)` is caught structurally rather than textually. For **TypeScript** suites it is regex-based pattern matching, which is weaker — see [Detection depth by language](#detection-depth-by-language).
+AI coding agents (and "self-healing" test tools) make red tests green the easy way: loosening `==` to `in`, deleting the failing test, asserting fields the API never returns. Cherenkov catches those three cheats — **WEAKENED**, **DELETED**, **HALLUCINATED** — with static analysis only: **no LLM, no server, no Node, no account.** Every verdict says which checks actually ran.
 
 *Zero vendor lock-in. 100% private. No telemetry, no cloud calls.*
 
----
+## Three ways in
 
-## 🚀 See it in 60 seconds (no setup required)
+| You are | Use |
+|---|---|
+| a QA/SDET or developer | `cherenkov check --baseline origin/main` |
+| reviewing pull requests | the GitHub Action: `uses: moaidmoatasem/cherenkov-qa@main` with `mode: check` posts one sticky comment |
+| running a coding agent | `cherenkov agent init` writes the rule into `AGENTS.md`: *run `cherenkov check` before you call test changes done* |
 
-```bash
-git clone https://github.com/moaidmoatasem/cherenkov-qa && cd cherenkov-qa
-pip install .
-cherenkov demo
-```
-
-Watch it catch the AI attempting to cheat by loosening assertions or deleting tests. No LLM, no API key, no internet — the demo starts two throwaway HTTP servers on `127.0.0.1:18800/18801` (one spec-conforming, one deliberately broken) and runs the suite against both, so a test that passes the broken one is provably vacuous. (PyPI publish is on the roadmap — until then, install from source as above, or use the one-liner: `curl -fsSL https://raw.githubusercontent.com/moaidmoatasem/cherenkov-qa/main/install.sh | bash`.)
-
-**Then audit a real test suite, and verify your own API:**
+## 🚀 First verdict in five minutes
 
 ```bash
-# Full audit — all three checks. --baseline is the known-honest suite to compare against.
-cherenkov check-suite --candidate ./tests --baseline ./tests-baseline --spec ./openapi.yaml --fail-on-finding
-
-# No baseline to hand? This still runs, but only HALLUCINATED can be checked —
-# the report says so explicitly and prints PASS (1/3 checks) rather than a bare PASS.
-cherenkov check-suite --candidate ./tests --spec ./openapi.yaml --fail-on-finding
-
-cherenkov verify --url http://localhost:8080 --spec ./openapi.yaml
+pip install git+https://github.com/moaidmoatasem/cherenkov-qa   # PyPI publish is on the roadmap
+cherenkov demo                                   # 60-second offline demo of the three cheats
+cd your-repo
+cherenkov check --baseline origin/main           # tests/ is auto-detected; exits 1 on any violation
+cherenkov check --baseline origin/main --spec openapi.yaml   # also catches hallucinated fields
 ```
 
-`--candidate` and `--baseline` each accept a single file or a directory; directories are walked recursively for `.py`/`.ts` suites and paired by their path relative to each root.
+> **Read the verdict, not just the exit code.** WEAKENED and DELETED need a `--baseline` (a git ref or a path); HALLUCINATED needs `--spec`. A check that could not run is listed under `NOT_CHECKED`. A green run without a baseline means "no hallucinated fields", not "this suite is honest".
 
-> **Read the verdict, not just the exit code.** WEAKENED and DELETED need `--baseline`; HALLUCINATED needs `--spec`. Any check that could not run is listed under `NOT_CHECKED:` in the report and under `checks_not_run` in `--json`. A green run without a baseline means "no hallucinated fields", not "this suite is honest".
+`cherenkov --help` shows the Core and Assist commands; `cherenkov labs` lists the experimental ones (desktop, mobile, federation, enterprise, ... — still callable, frozen for new features). Why this focus: [docs/reviews/PREMORTEM_2026-10.md](docs/reviews/PREMORTEM_2026-10.md); what's next: [docs/ROADMAP.md](docs/ROADMAP.md).
+
+For **Python** suites the audit is genuine AST analysis (`ast.parse`; `== 200` → `in (200, 201)` is caught structurally). For **TypeScript** suites it is regex-based pattern matching, which is weaker — see [Detection depth by language](#detection-depth-by-language).
+
+**Also in the box (Assist):** spec-derived test generation (`generate`, needs a local LLM), live-API conformance (`verify`, `validate`), `eject` to vanilla Playwright, and a review dashboard. See the [Platform Operating Model](docs/PLATFORM_OPERATING_MODEL.md) and [User Journeys](docs/USER_JOURNEYS.md).
 
 ---
 
