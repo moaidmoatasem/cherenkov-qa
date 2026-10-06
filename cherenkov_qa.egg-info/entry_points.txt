@@ -1,5 +1,6 @@
 [cherenkov.plugin]
 hipaa = cherenkov.plugins.builtin.hipaa_compliance
+mistral = cherenkov.plugins.builtin.mistral_llm
 
 [console_scripts]
 cherenkov = cherenkov.cli.core:main
