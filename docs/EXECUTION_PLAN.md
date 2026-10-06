@@ -1,3 +1,6 @@
+<!-- plan-status: superseded -->
+> **Superseded (2026-10-06).** Not the plan of record. See the "Current state" block in [HANDOVER.md](../HANDOVER.md) and the work queue in [docs/ROADMAP.md](../docs/ROADMAP.md).
+
 # CHERENKOV — Critique, Premortem & Execution Plan
 
 > **Status:** Execution source of truth. Pairs with [BRAND_STRATEGY.md](BRAND_STRATEGY.md) (the *why/what*) — this is the *how/when/what-could-kill-it*.

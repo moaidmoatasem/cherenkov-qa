@@ -1,3 +1,6 @@
+<!-- plan-status: superseded -->
+> **Superseded (2026-10-06).** Not the plan of record. See the "Current state" block in [HANDOVER.md](../HANDOVER.md) and the work queue in [docs/ROADMAP.md](../docs/ROADMAP.md).
+
 # CHERENKOV-QA Innovation Roadmap v2.0 — "From Integrity Engine to Quality Intelligence Platform"
 
 **Date:** July 31, 2026

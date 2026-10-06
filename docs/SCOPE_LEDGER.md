@@ -1,3 +1,6 @@
+<!-- plan-status: superseded -->
+> **Superseded (2026-10-06).** Not the plan of record. See the "Current state" block in [HANDOVER.md](../HANDOVER.md) and the work queue in [docs/ROADMAP.md](../docs/ROADMAP.md).
+
 # CHERENKOV — Scope Ledger (honest map of what is live vs built-ahead)
 
 **Date:** 2026-06-08 · **Status:** Authoritative for *scope* (pairs with [HANDOVER.md](https://github.com/moaidmoatasem/cherenkov-qa/blob/main/HANDOVER.md) for *project status*).

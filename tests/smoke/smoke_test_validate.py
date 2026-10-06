@@ -202,7 +202,11 @@ Please replace with a meaningful description.
             env={**os.environ, "PYTHONPATH": "."},
             capture_output=True,
             text=True,
-            check=True,
+            check=False,
+        )
+        # #993: a failing test must fail the command, not just print FAIL.
+        assert drift_proc.returncode == 1, (
+            f"validate exited {drift_proc.returncode} on a failing test; expected 1"
         )
         drift_stdout = drift_proc.stdout
 

@@ -140,7 +140,7 @@ cherenkov validate --target http://localhost:8080 --spec ./openapi.yaml --fail-o
 | `--workers` | `1` | Parallel workers for Playwright tests. |
 | `--no-html` | off | Disable automatic HTML report generation. |
 | `--no-cache` | off | Disable incremental test-generation cache. |
-| `--fail-on-drift` | off | Exit `1` on conformance violations (CI gate). |
+| `--fail-on-drift / --no-fail-on-drift` | on | Exit `1` when any test fails or a conformance violation is found; `--no-fail-on-drift` reports only. |
 | `--json-summary` | — | Write a machine-readable JSON summary to this path. |
 | `--json` | off | Emit pure JSON to stdout. |
 | `--quiet, -q` / `--verbose, -v` | — | Quiet = final status only; verbose = per-gate + per-scenario detail. |

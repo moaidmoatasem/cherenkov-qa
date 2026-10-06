@@ -1,68 +1,57 @@
-# CHERENKOV QA — Master Roadmap
+# CHERENKOV QA — Roadmap (the work queue)
 
-This document serves as the unified source of truth for the Cherenkov QA product strategy, market roadmap, and technical implementation plan. It consolidates previous roadmaps into a single, cohesive vision.
+> **Plan of record (2026-10-06):** the "Current state" block at the top of [`HANDOVER.md`](../HANDOVER.md) plus this file. Everything else that looks like a plan is superseded — see the list at the bottom. Changing this file is how the plan changes; do not open a new roadmap doc. A weekly [oversight report](https://github.com/moaidmoatasem/cherenkov-qa/issues?q=label%3Aoversight) checks for drift.
 
-## 1. Where We Stand
+## Focus decision
 
-> **Corrected 2026-08-11 by backlog reconciliation.** This section previously read "Phases -1 through 16 are Complete". That was not true: a code-level audit of every open issue found 7 items either simulated, placeholder, or entirely unimplemented. The per-issue GitHub comments are the authoritative record of what is actually shipped.
+Cherenkov is **the integrity gate for AI-written tests**: before an agent's change to a test suite is merged, prove the tests still catch bugs. Generation is an assist, not the product.
 
-- **Phases -1 through 12: Complete.** Core engine, CLI, desktop host (Tauri), chat agents, dashboard.
-- **Phase 13 — Enterprise Tier: 7/9 complete.** SAML 2.0 SSO, RBAC, multi-tenant orgs, audit log, GDPR, SOC2 reports, and BYO-LLM are real and wired. **Open:** SLA dashboard (#762) and support portal (#763) — both currently render fabricated data and are tracked as integrity defects, not missing features.
-- **Phase 14 — Spec Guardian: Complete.** Daemon, CLI entrypoint, dashboard routes, conformance trend and regression detection.
-- **Phase 15 — Fine-Tuned Model: 5/7 complete.** The training pipeline (collection → curation → fine-tune → eval) runs end-to-end via `cherenkov train`. **Open:** model release (#779) and self-hosted serving (#780) — no code yet; both parked behind Gate G0.
-- **Phase 16 — Platform & Marketplace: 5/8 complete.** Public API, Plugin SDK, template marketplace, federation, and webhooks are real. **Open:** LLM provider marketplace (#785), CHERENKOV Certified (#787), Analytics API (#789).
-- **Technical Moat**: Spec-driven generation, local-first LLM design, strict D7 validation invariants, and isolated sandboxing.
+- **Core** (the only things a new user sees): `check` (integrity verdict, no LLM), `demo`, `init`, `doctor`, `validate`, `verify`; the PR-comment GitHub Action; the agent skill (`agent init`).
+- **Assist:** `generate`, `eject`, `author`, and similar.
+- **Labs:** desktop, K8s operator, mobile, federation, enterprise, training/fine-tune, marketplace, openclaw, copilot, chat, brainmap, reflector. Still callable; frozen for new features and out of the default CLI, UI nav and critical CI path.
 
-**The single highest-value open item is #787 (CHERENKOV Certified)** — it is Rung 3 of `NORTH_STAR.md` §3, the move from platform to standard. Everything else open is convenience or cleanup.
+Why: [PREMORTEM_2026-10](reviews/PREMORTEM_2026-10.md) and [MARKET_SCAN_2026-10](reviews/MARKET_SCAN_2026-10.md).
 
-## 2. The Execution Plan (Phases 9 - 16)
+**Kill criteria — checked 2026-12-15** (measured, not claimed):
+1. Install to first verdict on the user's own repo in under 5 minutes, no LLM — measured by a CI job on a clean container.
+2. Public held-out benchmark: gate catches ≥80% of weakening cases at ≤10% false positives.
+3. ≥5 external QA/SDET practitioners run it on their own repos; ≥3 keep it in CI after two weeks. If this fails, archive the platform and salvage `check-suite` as a small library plus Action.
 
-### Horizon 1: Distribution & Market Launch (Months 1-3)
-- **Phase 9 — Market Launch**: Cut v1.0.0, execute Product Hunt / Hacker News launch kit, demo video arcs.
-- **Phase 10 — CI/CD Native**: Provide native GitHub Actions (`action.yml`), GitLab CI templates, and Jenkins pipelines.
-- **Phase 11 — VS Code Extension**: Bring the "Catch AI Cheating" experience directly to where developers live.
+## Now
 
-### Horizon 2: Ecosystem Expansion (Months 3-9)
-- **Phase 12 — Protocol Expansion**: Add support for GraphQL, gRPC, and AsyncAPI alongside OpenAPI 3.1.
-- **Phase 13 — Enterprise Tier**: Introduce SSO/SAML, role-based access control (RBAC), and team workspaces.
+| Item | Where |
+|---|---|
+| Redesign Phase 1: one identity; Core/Assist/Labs CLI tiers; `cherenkov check`; first-value CI gate; real PR-comment Action (M3, due 2026-10-07); dashboard IA; `agent init` | PR #1031 |
+| Default-path meaningful-assertion gate uses a mutant that catches 0/3 cheat classes | #1032 |
+| Groups shadow `review`/`enterprise`/`routine` commands; dashboard launch broken | #1039 |
+| `init` scaffolds a project `doctor` rejects, plus a broken CI workflow | #1040 |
+| Dashboard shows sample/invented data as real | #1041 |
+| Walkthrough defects: #995 #996 #997 #998 | issues |
 
-### Horizon 3: Platform Dominance (Months 9-30)
-- **Phase 14 — Spec Guardian**: Active daemon monitoring spec-to-server drift in real-time.
-- **Phase 15 — Fine-Tuned Model**: Release a custom SLM (Small Language Model) hyper-optimized for QA generation and validation.
-- **Phase 16 — Platform & Marketplace**: Open the MCP Ecosystem for third-party integrations, custom evaluators, and public test templates.
+Done in #1031: #993, #994, routines RCE (allowlist), testerarmy stub removed.
 
-## 3. Integration Strategy
+## Next
 
-> **Corrected 2026-08-11 (#964).** This section previously listed "25 external systems across 5 tiers" as a flat roster, which read as a description of what ships. Checked against the code, the list was wrong in **both** directions: it named integrations that do not exist (SonarQube, Splunk, Zed, JetBrains) and omitted several that do (Claude Desktop, Windsurf, CircleCI, Jenkins, Linear, PagerDuty, Opsgenie, and six more LLM providers). It is now split into shipped vs. planned, with the evidence for each.
+- Onboarding: one path, accurate docs, MCP default policy — #1042, #999, #1000, #1010, #1026.
+- Spec-drift workflow posts mock findings — #1038 (resolved by the real Action).
+- Hollow automation — #1037. Unwired loops — #1033. Regenerate caps — #1034. Guardian daemons — #1035. Routine CLI — #1036.
+- Rebase draft PR #1025 (walkthrough defects 6/7).
 
-### Shipped
+## Strategic bets (from the market scan)
 
-| Tier | Integration | Evidence |
-|---|---|---|
-| **0 — Dev** | VS Code | `vscode/src/extension.ts`, `.github/workflows/vscode-ci.yml` |
-| 0 | Cursor, Claude Desktop, Windsurf | `cherenkov mcp install` generates each config (`mcp/install.py`: `cursor_mcp_config`, `claude_desktop_config`, `windsurf_mcp_config`) |
-| **1 — Team** | GitHub | `action.yml`, `web/routes/webhooks_github.py`, `web/pr_comments.py`, `validate/github_exporter.py`, `export_github_ticket` MCP tool |
-| 1 | GitLab, CircleCI, Jenkins | `ci/gitlab-ci-template.yml`, `ci/circleci/orb.yml`, `ci/jenkins/vars/` — all flag-guarded by `check_cli_flags.py` since #966 |
-| 1 | Jira, Linear | `export_jira_ticket` / `export_linear_ticket` MCP tools |
-| 1 | Slack, Teams, PagerDuty, Opsgenie, generic webhook | `adapters/notifiers/` |
-| **2 — Quality** | Zephyr, Xray | `adapters/zephyr_client.py`, `adapters/xray_client.py` |
-| 2 | Allure, JUnit | `execution/emitters/`, surfaced as `validate --format allure|junit` |
-| **3 — AI** | Ollama, OpenAI, Anthropic, LocalAI, Bedrock, Azure OpenAI, HuggingFace, GitHub Models, AirLLM, NeMo | `substrate/providers/` |
-| 3 | Any OpenAI-compatible server (incl. **vLLM**) | `substrate/providers/openai_compat.py` — no vLLM-specific adapter; it is reached through the compatible endpoint |
-| **4 — Enterprise** | Okta, Active Directory | Via **SAML 2.0** (`enterprise/saml.py`), which is protocol-level. Any conformant IdP works; there is no vendor-specific SCIM or directory-sync integration |
-| 4 | Datadog, Grafana, Jaeger | Via **OTLP export** (`observability/otel.py`), not a Datadog-specific integration |
+- Bring `check-suite` `.ts` analysis to parity with `.py`; parse WebdriverIO/Mocha specs. Reach into the healer-agent crowd (Playwright healer, WDIO v10 `ai-service`, Checksum, QA Wolf) without adding a runner.
+- Position `check`/`verify` as the verifier step inside agent loops (CLI + skills; keep the MCP tool count small).
+- Do **not** compete on API test generation (Keploy, BrowserStack).
+- Public held-out benchmark of AI-weakened test diffs (kill criterion 2).
 
-### Not implemented
+## Blocked on the maintainer
 
-**SonarQube** (Tier 2), **Splunk** (Tier 4), **Zed** and **JetBrains** (Tier 0) have no code. They remain aspirations; do not cite them as available. Anything added here should carry a tracking issue, since an unlinked list item is not a plan.
+M1 practitioner validation (never simulate), the Tauri signing key, PyPI publish (gated on M1), and the Dependabot backlog (~15 PRs open since 2026-08-16, including GitHub Actions major bumps).
 
-## 4. Growth & Adoption Strategy
+## Deferred (no-paid-tier decision, 2026-08-01)
 
-> **Corrected 2026-08-11.** This section previously described an "Open Core Model" in which "Enterprise Tier (Phase 13) monetizes SSO, audit logs, distributed testing, and hosted infrastructure." That contradicts the product decision recorded on issue #754 (2026-08-01) and is withdrawn.
+Phase 13/15/16 epics: #754, #773, #779, #780, #781, #785, #787, #789, #763. Fine-tuned-model items (#773/#779/#780) are candidates to close as not-planned.
 
-- **Fully open source.** CHERENKOV-QA is Apache-2.0 in its entirety. There is no paid tier, no pricing page, no "contact sales", and no license-gating. Phase 13's SSO/RBAC/audit/GDPR features are ordinary free, self-hosted capabilities like everything else in the CLI.
-- **Growth is adoption-led, not revenue-led.** The sequence is `NORTH_STAR.md` §3's product ladder: earn the verb at the CLI (Rung 1), own the workflow (Rung 2), then define the standard via the Certificate (Rung 3).
-- **Neutrality is never sold** (`NORTH_STAR.md` §9.4). Vendor-preferential placement, sponsored provider ranking, and CHERENKOV-operated inference are all structurally excluded — independence is the product.
+## Superseded plan files (kept for history; each carries a banner)
 
-## 5. The 10-Year Vision
-Cherenkov QA will evolve from an API testing tool into the **Autonomous Quality Fabric (AQE)**. It will sit as the ubiquitous referee between AI-generated code and production reality, ensuring that as software generation accelerates, quality and compliance accelerate even faster.
+`docs/STATUS.md`, `PHASE_PLAN.md`, `EXECUTION_PLAN.md`, `SCOPE_LEDGER.md`, `MODULE_STATUS.md`, `GAP_REPORT.md`, `wiki/Roadmap.md`, `vision/02_ROADMAP.md`, `vision/07_MASTER_PLAN.md`, `vision/08_DELIVERY_PLAN.md`, the Unified Master Plan, `INNOVATION_ROADMAP_V2.md`, `PROJECT.md`, `.agents/*`, `open_issues.txt`.

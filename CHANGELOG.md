@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Breaking
+
+* **validate:** `cherenkov validate` now exits `1` when any test fails (previously it printed `[SUCCESS]` and exited `0` with 0/N passing unless `--fail-on-drift` was passed). The status shows `PASSED` / `FAILED (n failed)`. Use `--no-fail-on-drift` for the old report-only behaviour (#993).
+
+### Security
+
+* **routines:** `POST /routines/`, `cherenkov routine create` and the scheduler adapter accept only allowlisted targets; previously a caller-supplied `module:func` was imported and run on a schedule.
+
+### Fixes
+
+* **generate:** a scenario id equal to a shipped fixture name (`password_too_short`) no longer overwrites or deletes the tracked fixture (#994).
+
 ## [1.3.0](https://github.com/moaidmoatasem/cherenkov-qa/compare/v1.2.0...v1.3.0) (2026-08-02)
 
 

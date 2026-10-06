@@ -245,7 +245,7 @@ THE UN-CORNERABLE LAYER:
 | LLM test generation | 30+ (Baserock, TestStory, Shortest, mabl, Testifly...) | Not in this fight |
 | Self-healing | 10+ (Applitools, Perfecto, mabl, Blinq.io...) | Not in this fight |
 | Spec conformance/divergence detection | ~2-3 (Schemathesis, Dredd — both non-AI) | **Owns this category** |
-| Integrity verification (catching agent cheats) | **0 mainstream tools** | **Only player** |
+| Integrity verification (catching agent cheats) | **0 mainstream tools** | **Only player** | *(2026-10-06: no longer accurate as a public claim — mutation-gating AI-generated tests is now a documented practice, and several vendors market "verified" generated tests; see [MARKET_SCAN_2026-10](reviews/MARKET_SCAN_2026-10.md).)*
 | MCP verification server | **0** | **Build this** |
 | CHERENKOV Certificate (signed trust artifact) | **0** | **Future moat** |
 

@@ -103,6 +103,7 @@ Returns:
     # else, that write is just scratch working state, not the user's real
     # output — clean it up afterwards instead of leaving stray files behind
     # in the tracked fixture directory.
+    from cherenkov.execution.fixtures import is_shipped_fixture
     from cherenkov.stages.review import default_review_scratch_dir
     _writing_to_scratch_dir = os.path.abspath(output_dir) == os.path.abspath(
         default_review_scratch_dir()
@@ -171,8 +172,11 @@ Returns:
                 # With unique output filenames that scratch copy no longer
                 # doubles as the final artifact — drop the stale,
                 # collision-prone file instead of leaving it behind.
+                # Never a shipped fixture, though: a mutation id can equal a
+                # tracked fixture's name (`password_too_short`), and deleting
+                # it violated D7 (#994). ReviewStage restores those itself.
                 scratch = os.path.join(output_dir, f"{sc.mutation_id}.spec.ts")
-                if os.path.exists(scratch):
+                if not is_shipped_fixture(scratch) and os.path.exists(scratch):
                     try:
                         os.remove(scratch)
                     except OSError as e:
