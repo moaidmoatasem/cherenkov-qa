@@ -22,14 +22,10 @@
  *      rendered in success-green because the color check only looked for the
  *      literal word "Failed" in the message.
  *
- * One thing is flagged but deliberately left as-is, since fixing it means
- * deciding product behavior, not fixing a bug: the SOC2 "Security / Availability
- * / Privacy" badges on the Compliance tab are hardcoded JSX (100%, 100%, 85%),
- * never wired to the real `GET /api/enterprise/soc2/summary` endpoint that
- * already exists server-side. That's the exact "green verdict nobody measured"
- * pattern this project has already caught and fixed once at the CLI layer
- * (`check-suite`, see HANDOVER.md) -- on its own compliance page, unmeasured
- * numbers with no source ever change.
+ * The SOC2 "Security / Availability / Privacy" badges on the Compliance tab were
+ * hardcoded JSX (100%, 100%, 85%) with no data source -- the "green verdict
+ * nobody measured" pattern. They are removed (2026-10-06); wiring the panel to
+ * `GET /api/enterprise/soc2/summary` is the follow-up if a status view is wanted.
  */
 import { test, expect } from '@playwright/test';
 import { bootstrapReal } from '../qa/page-objects';
@@ -51,16 +47,14 @@ test.describe('Enterprise Workspace — live backend', () => {
     ).toBeVisible({ timeout: 10000 });
   });
 
-  test('Compliance tab: SOC2 status badges are present but are static copy, not measured data', async ({ page }) => {
+  test('Compliance tab: no invented SOC2 status percentages are shown', async ({ page }) => {
     await page.getByRole('button', { name: 'Compliance (SOC2 / GDPR)' }).click();
     await expect(page.getByText('SOC 2 Type II Reporting')).toBeVisible();
 
-    // These three values are hardcoded in CompliancePanel.tsx. This assertion
-    // is a characterization test, not an endorsement: if this ever starts
-    // failing because someone wired the panel to the real soc2/summary
-    // endpoint, that is progress -- update the assertion, don't just re-pin it.
-    await expect(page.getByText('100% Operational')).toHaveCount(2);
-    await expect(page.getByText('85% Operational')).toBeVisible();
+    // The three badges (100% / 100% / 85% Operational) were hardcoded JSX with
+    // no data source; they were removed rather than left looking measured.
+    await expect(page.getByText(/% Operational/)).toHaveCount(0);
+    await expect(page.getByTestId('soc2-status-note')).toBeVisible();
   });
 
   test('Compliance tab: GDPR manual purge is a real, confirmed, destructive action', async ({ page }) => {

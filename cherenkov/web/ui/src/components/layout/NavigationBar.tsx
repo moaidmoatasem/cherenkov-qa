@@ -167,7 +167,8 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({
     collapsible: boolean,
     pinSection: boolean
   ) => {
-    const isCollapsed = collapsed[key] ?? false;
+    // Labs (experimental surfaces) start collapsed so a new user sees the core loop first.
+    const isCollapsed = collapsed[key] ?? (key === 'other');
     return (
       <div className="space-y-1" data-testid={`nav-section-${key}`}>
         <div className="flex items-center justify-between px-3 mb-2">
@@ -235,8 +236,8 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({
         {/* The conformance loop, in journey order, plus Settings */}
         {renderSection('workspaces', 'Workspaces', loopItems, true, false)}
 
-        {/* Other Test Surfaces */}
-        {renderSection('other', 'Other Test Surfaces', otherItems, true, false)}
+        {/* Labs: experimental surfaces, still reachable */}
+        {renderSection('other', 'Labs (experimental)', otherItems, true, false)}
       </div>
 
       {/* Footer Branding Info */}

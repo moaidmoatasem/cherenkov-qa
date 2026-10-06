@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Shield, FileText, Download, Trash2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Shield, FileText, Download, Trash2 } from 'lucide-react';
 
 const CompliancePanel: React.FC = () => {
   const [purging, setPurging] = useState(false);
@@ -50,29 +50,10 @@ const CompliancePanel: React.FC = () => {
           </a>
         </div>
         
-        <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="flex items-center gap-3 p-3 bg-white dark:bg-slate-950 rounded border border-slate-200 dark:border-slate-800">
-            <CheckCircle2 className="w-5 h-5 text-green-500" />
-            <div>
-              <div className="text-sm font-medium">Security</div>
-              <div className="text-xs text-slate-500">100% Operational</div>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 p-3 bg-white dark:bg-slate-950 rounded border border-slate-200 dark:border-slate-800">
-            <CheckCircle2 className="w-5 h-5 text-green-500" />
-            <div>
-              <div className="text-sm font-medium">Availability</div>
-              <div className="text-xs text-slate-500">100% Operational</div>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 p-3 bg-white dark:bg-slate-950 rounded border border-slate-200 dark:border-slate-800">
-            <AlertCircle className="w-5 h-5 text-amber-500" />
-            <div>
-              <div className="text-sm font-medium">Privacy</div>
-              <div className="text-xs text-slate-500">85% Operational</div>
-            </div>
-          </div>
-        </div>
+        <p className="mt-6 text-xs text-slate-500" data-testid="soc2-status-note">
+          Control status is not shown here: no measured SOC 2 status is wired into this view yet.
+          Generate a report above to see what the backend actually records.
+        </p>
       </section>
 
       {/* GDPR Section */}

@@ -10,6 +10,7 @@ const SEED_COMMON = () => {
   localStorage.setItem('[copilot] tour_seen', 'true');
   localStorage.setItem('[cherenkov] onboarding_seen', 'true');
   localStorage.setItem('[cherenkov] sidebar_mode', 'expert');
+  localStorage.setItem('[cherenkov] nav_collapsed', JSON.stringify({ other: false }));
 };
 
 export async function bootstrap(page: Page, overrides?: (page: Page) => Promise<void>) {
@@ -29,6 +30,7 @@ export async function bootstrapReal(page: Page, overrides?: (page: Page) => Prom
     localStorage.setItem('[copilot] tour_seen', 'true');
     localStorage.setItem('[cherenkov] onboarding_seen', 'true');
     localStorage.setItem('[cherenkov] sidebar_mode', 'expert');
+    localStorage.setItem('[cherenkov] nav_collapsed', JSON.stringify({ other: false }));
     localStorage.setItem('[cherenkov] auth_token', 'demo-token');
   });
   await page.goto('/');
