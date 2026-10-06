@@ -157,3 +157,40 @@ Please replace with a meaningful description.
         monkeypatch.setattr(get_settings(), "MEANINGFUL_ASSERTION_GATE_ENABLED", False)
         gates = _run_gate(_PASSING_PRISM, monkeypatch=monkeypatch)
         assert gates == []
+
+
+class TestSingleAxisCheatClasses:
+    """#1032: each cheat class must be caught by name, not hidden by a combined mutant."""
+
+    @staticmethod
+    def _gate(monkeypatch, kills: set[str]):
+        """A fake suite that fails only the mutants named in `kills`."""
+        monkeypatch.setattr(
+            "cherenkov.stages.review.PlaywrightRunner.execute_test",
+            lambda self, **kw: {"passed": not any(kw["scenario_id"].endswith(f"-{k}") for k in kills)},
+        )
+        op = {
+            "parameters": _OPERATION["parameters"],
+            "responses": {"200": {"content": {"application/json": {"schema": {
+                "type": "object", "required": ["id", "state"],
+                "properties": {"id": {"type": "integer"},
+                               "state": {"type": "string", "enum": ["open", "closed"]}},
+            }}}}},
+        }
+        return _run_gate(_PASSING_PRISM, operation=op)
+
+    def test_exact_assertions_kill_all_axes(self, monkeypatch):
+        gate = self._gate(monkeypatch, {"status", "value", "enum"})[0]
+        assert gate.passed and not gate.skipped
+
+    def test_loose_status_is_named(self, monkeypatch):
+        gate = self._gate(monkeypatch, {"value", "enum"})[0]
+        assert not gate.passed and "'status'" in gate.detail
+
+    def test_presence_only_value_check_is_named(self, monkeypatch):
+        gate = self._gate(monkeypatch, {"status", "enum"})[0]
+        assert not gate.passed and "'value'" in gate.detail
+
+    def test_unasserted_enum_is_named(self, monkeypatch):
+        gate = self._gate(monkeypatch, {"status", "value"})[0]
+        assert not gate.passed and "'enum'" in gate.detail

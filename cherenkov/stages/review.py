@@ -435,11 +435,16 @@ class ReviewStage:
             ))
             return
 
-        from cherenkov.divergence.mutant_synth import explain_unmutatable, spawn_mutant_server
+        from cherenkov.divergence.mutant_synth import (
+            GATE_MUTANTS,
+            explain_unmutatable,
+            synthesize_mutant_battery,
+        )
+        from cherenkov.divergence.self_play import BrokenImplServer
 
         endpoint = getattr(generate, "endpoint", "") or ""
-        mutant_server = spawn_mutant_server(self._MUTANT_PORT, endpoint, operation, schemas)
-        if mutant_server is None:
+        mutation = synthesize_mutant_battery(endpoint, operation, schemas)
+        if mutation is None:
             gates.append(GateResult(
                 gate="meaningful-assertion", passed=True, skipped=True,
                 detail=(
@@ -449,14 +454,23 @@ class ReviewStage:
             ))
             return
 
+        concrete_path, battery = mutation
+        axes = [name for name in GATE_MUTANTS if name in battery]
+        survivors: list[str] = []
         try:
-            with mutant_server:
-                runner = PlaywrightRunner(run_id=self.run_id)
-                result = runner.execute_test(
-                    scenario_id=f"{scenario_id}-mutant",
-                    test_code=code,
-                    api_url=mutant_server.url,
-                )
+            # One axis per mock so a survivor names what the test failed to check.
+            # Stop at the first survivor: the verdict is already "weak".
+            for name in axes:
+                status, body = battery[name]
+                with BrokenImplServer(port=self._MUTANT_PORT, responses={concrete_path: (status, body)}) as srv:
+                    result = PlaywrightRunner(run_id=self.run_id).execute_test(
+                        scenario_id=f"{scenario_id}-mutant-{name}",
+                        test_code=code,
+                        api_url=srv.url,
+                    )
+                if result["passed"]:
+                    survivors.append(name)
+                    break
         except Exception as e:
             gates.append(GateResult(
                 gate="meaningful-assertion", passed=True, skipped=True,
@@ -464,19 +478,23 @@ class ReviewStage:
             ))
             return
 
-        if not result["passed"]:
+        if not survivors:
             gates.append(GateResult(
                 gate="meaningful-assertion", passed=True,
-                detail="Test passes the spec-conforming mock and fails a synthesized spec "
-                "regression — assertions are meaningful.",
+                detail=f"Test fails every single-axis spec regression ({', '.join(axes)}) "
+                "— assertions are meaningful.",
             ))
             return
 
+        hint = {
+            "status": "Assert the exact documented status code, not just that the call succeeded.",
+            "value": "Assert field values, not just that a field exists.",
+            "enum": "Assert enum fields against their allowed values.",
+        }[survivors[0]]
         gates.append(GateResult(
             gate="meaningful-assertion", passed=False,
-            detail="Test also passes against a synthesized broken implementation (wrong "
-            "status / dropped field on the documented success response). Assert the exact "
-            "documented status code and field values, not just that a field exists.",
+            detail=f"Test still passes when the '{survivors[0]}' axis is broken on the documented "
+            f"success response (surviving mutant: {survivors[0]}). {hint}",
         ))
 
     def _gate_ocr(self, code: str, test_file_path: str, scenario_id: str, gates: list[GateResult]):
