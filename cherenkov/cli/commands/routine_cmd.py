@@ -4,6 +4,7 @@ from __future__ import annotations
 import click
 
 from cherenkov.scheduling.adapters.apscheduler_adapter import APSchedulerAdapter
+from cherenkov.scheduling.domain.targets import ALLOWED_ROUTINE_TARGETS, check_routine_target
 from cherenkov.scheduling.use_cases.manage_routines import create_routine, toggle_routine
 
 
@@ -39,7 +40,11 @@ Returns:
 @click.option("--description", default="")
 @click.option("--trigger", required=True, type=click.Choice(["cron", "interval"]))
 @click.option("--value", required=True, help="Cron expression or interval seconds")
-@click.option("--target", required=True, help="Module path e.g. 'cherenkov.scheduling.templates.health:run'")
+@click.option(
+    "--target",
+    required=True,
+    help="Routine template to run. One of: " + ", ".join(sorted(ALLOWED_ROUTINE_TARGETS)),
+)
 def create_routine_cli(name: str, description: str, trigger: str, value: str, target: str) -> None:
     """Create a new routine.
 
@@ -53,6 +58,10 @@ Args:
 Returns:
     None: Command execution result.
     """
+    try:
+        check_routine_target(target)
+    except ValueError as exc:
+        raise click.UsageError(str(exc)) from exc
     scheduler = APSchedulerAdapter()
     r = create_routine(scheduler, name, description, trigger, value, target, {})
     click.echo(f"Created routine {r.id}")

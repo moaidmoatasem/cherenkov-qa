@@ -4,7 +4,9 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+
+from cherenkov.scheduling.domain.targets import check_routine_target
 
 
 class RoutineTrigger(BaseModel):
@@ -26,6 +28,11 @@ class Routine(BaseModel):
     last_run: datetime | None = None
     next_run: datetime | None = None
     enabled: bool = True
+
+    @field_validator("target_module")
+    @classmethod
+    def _target_allowlisted(cls, value: str) -> str:
+        return check_routine_target(value)
 
 
 class RunRecord(BaseModel):
